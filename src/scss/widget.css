@@ -1,0 +1,141 @@
+/* *{
+    margin:0;
+    box-sizing: border-box;
+    font-family: Helvetica, sans-serif;
+}
+body{
+    background-color: #949494;
+    position: relative;
+    display: flex;
+    justify-content: space-evenly;
+
+
+}
+.background-img{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: -1;
+    
+} */
+
+*{
+    margin:0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Helvetica, sans-serif;
+}
+.widget{
+    height: 195px;
+    width: 180px;
+    background-color: rgba(0,0,0,0.4);
+    border-radius: 15px;
+    display:flex; 
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    /* position: absolute; */
+    box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
+    /* to center the item */
+    /* transform: translate(-50%,-50%); */
+    /* top:50%; */
+    /* left:50%; */
+
+    /* top:30px; */
+    /* left:30px; */
+    
+    /* another methode to center the item
+    margin: auto;
+    top : 0;
+    left: 0;
+    right: 0;
+    bottom:0; */
+    
+    /* margin-top: 30px; */
+}
+
+.widget-indicator{
+    width: 75%;
+    height: 15%;
+    /* background-color: red; */
+    border-radius: 7px;
+    margin-top: 10px;
+}
+
+.widget-details{
+    width: 88%;
+    height: 63%;
+    background-color: rgba(0,0,0,0.4);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    color: #D5D5D5;
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+    justify-content: space-around;
+    padding: 5px;
+    font-size: 10px;
+    text-align: center;
+    justify-self: center;
+}
+
+.widget-headline{
+    font-size: 15px;
+    font-weight: bold;
+    /* flex: 1; */
+    
+}
+
+.widget-description{
+    /* flex: 1; */
+    text-transform:uppercase ;
+    font-size: 12px;
+}
+
+.widget-bell-block{
+    display: flex;
+    /* flex: 1; */
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.widget-indicator-color{
+    color: #f74141;
+}
+
+.widget-indicator-text{
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.widget-bell{
+    /* font-size: 18px;  */
+    
+    position: relative;
+    background-color: gray;
+    padding: 5px;
+    border-radius: 5px;
+    
+}
+
+.widget-notification-value{
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: red;
+    position: absolute;
+    font-size: 10px;
+    /* padding: 1.5px; */
+    top: -5px;
+    right: -4px;
+    color: white;
+}
+
+.widget-indicator-code{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;  
+    align-items: center;
+    flex: 1;
+    
+}
