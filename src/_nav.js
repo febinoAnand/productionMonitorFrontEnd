@@ -12,7 +12,7 @@ import {
   // cilSitemap,
   // cilTouchApp,
   // cilBug,
-  // cilCenterFocus,
+  cilCenterFocus,
   cilUser,
   cilDescription,
   cilAccountLogout,
@@ -22,9 +22,9 @@ import {
   cilCloud,
   // cilListRich,
   // cilObjectGroup,
-  // cilBraille,
-  // cilCheckCircle,
-  // cilDiamond,
+  cilBraille,
+   cilCheckCircle,
+   cilDiamond,
   // cilEnvelopeLetter,
   cilArrowCircleBottom,
    //cilSettings,
@@ -42,7 +42,7 @@ import {
    //cilColumns,
   cilInputHdmi,
   cilInput,
-  // cibKeycdn,
+  cibKeycdn,
   cilHome,
   cilUserX,
   cilCog
@@ -168,35 +168,65 @@ const _nav = [
 //       to: '/event/problemcode',
 //       icon: <CIcon icon={cilBug} customClassName="nav-icon" />,
 //     },
-//     {
-//       component: CNavGroup,
-//       name: 'Received Data',
+
+    {
+      component: CNavTitle,
+      name: 'DATA',
+      style: {color: '#FFFFFF' },
+    },
+    {
+      component: CNavGroup,
+      name: 'Received Data',
       
-//       icon: <CIcon icon={cilCenterFocus} customClassName="nav-icon" />,
-//       items:[
-//       {
-//         component: CNavItem,
-//         name: 'Active Problem',
-//         to: '/data/activeproblem',
-//         icon: <CIcon icon={cilBraille} customClassName="nav-icon" />,
-//       },
-//       {
-//         component: CNavItem,
-//         name: 'Problem Data',
-//         to: '/data/problemdata',
-//         icon: <CIcon icon={cilCheckCircle} customClassName="nav-icon" />,
-//       },
-//       {
-//         component: CNavItem,
-//         name: 'Device Raw',
-//         to: '/data/devraw',
-//         icon: <CIcon icon={cilDiamond} customClassName="nav-icon" />,
-//       },
+      icon: <CIcon icon={cilCenterFocus} customClassName="nav-icon" />,
+      items:[
+        {
+          component: CNavItem,
+          name: 'Log Data',
+          to: '/data/logdata',
+          icon: <CIcon icon={cilBraille} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Machine Data',
+          to: '/data/machinedata',
+          icon: <CIcon icon={cilCheckCircle} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Device Data',
+          to: '/data/devicedata',
+          icon: <CIcon icon={cilDiamond} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Production Data',
+          to: '/data/productiondata',
+          icon: <CIcon icon={cibKeycdn} customClassName="nav-icon" />,
+        },
+      //{
+        //component: CNavItem,
+        //name: 'Active Problem',
+        //to: '/data/activeproblem',
+        //icon: <CIcon icon={cilBraille} customClassName="nav-icon" />,
+      //},
+      //{
+        //component: CNavItem,
+        //name: 'Problem Data',
+        //to: '/data/problemdata',
+        //icon: <CIcon icon={cilCheckCircle} customClassName="nav-icon" />,
+      //},
+      //{
+        //component: CNavItem,
+        //name: 'Device Raw',
+        //to: '/data/devraw',
+        //icon: <CIcon icon={cilDiamond} customClassName="nav-icon" />,
+      //},
   
-//       ]
+      ]
       
-//     },
-//   ]
+    },
+   //]
 // },
 //{
 //  component: CNavTitle,
@@ -244,6 +274,12 @@ const _nav = [
       //to: '/emailtracking/setting',
       //icon: <CIcon icon={cibKeycdn} customClassName="nav-icon" />,
     //},
+    {
+      component: CNavTitle,
+      name: 'ACTION',
+      style: {color: '#FFFFFF' },
+    },
+    
     {
     component: CNavGroup,
     name: 'Actions',
@@ -372,10 +408,17 @@ const _nav = [
     style: {color: '#FFFFFF' },
 
   },
+  //{
+    //component: CNavItem,
+    //name: 'UART',
+    //to:'/config/uart',
+    //icon: <CIcon icon={cilUsb} customClassName="nav-icon" />,
+
+  //},
   {
     component: CNavItem,
-    name: 'UART',
-    to:'/config/uart',
+    name: 'HTTP',
+    to:'/config/http',
     icon: <CIcon icon={cilUsb} customClassName="nav-icon" />,
 
   },
