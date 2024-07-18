@@ -33,13 +33,19 @@ const SendReports = React.lazy(() => import('./views/base/smsgateway/sendreport'
 const Settings = React.lazy(() => import('./views/base/smsgateway/settings'))
 
 //datas
-// const HMIRaw = React.lazy(() => import('./views/base/data/HMIRaw_function'))
-// const ActiveProblem = React.lazy(() => import('./views/base/data/ActiveProblem'))
-// const ProblemData = React.lazy(() => import('./views/base/data/ProblemData'))
+ //const HMIRaw = React.lazy(() => import('./views/base/data/HMIRaw_function'))
+ //const ActiveProblem = React.lazy(() => import('./views/base/data/ActiveProblem'))
+ //const ProblemData = React.lazy(() => import('./views/base/data/ProblemData'))
+ const LogData = React.lazy(() => import('./views/base/data/Logdata'))
+ const MachineData = React.lazy(() => import('./views/base/data/MachineData'))
+ const DeviceData = React.lazy(() => import('./views/base/data/DeviceData'))
+ const ProductionData = React.lazy(() => import('./views/base/data/ProductionData'))
 
 //config
-const UART = React.lazy(() => import('./views/base/configuration/UART'))
+//const UART = React.lazy(() => import('./views/base/configuration/UART'))
 const MQTT = React.lazy(() => import('./views/base/configuration/MQTT'))
+const HTTP = React.lazy(() => import('./views/base/configuration/HTTP'))
+
 
 //details
  const HMIDetails = React.lazy(() => import('./views/base/details/HMIDetails'))
@@ -147,9 +153,13 @@ const routes = [
   { path: '/smsgateway/sendreport', name: 'Actions / SMS Gateway / Send Report', element: SendReports}, //SMSGateway
   { path: '/smsgateway/settings', name: 'Actions / SMS Gateway / Settings', element: Settings}, //SMSGateway
 
-  // { path: '/data/activeproblem', name: 'ActiveProblem', element: ActiveProblem}, //data
-  // { path: '/data/problemdata', name: 'ProblemData', element: ProblemData}, //data
-  // { path: '/data/devraw', name: 'HMIRaw', element: HMIRaw}, //data
+  //{ path: '/data/activeproblem', name: 'ActiveProblem', element: ActiveProblem}, //data
+   //{ path: '/data/problemdata', name: 'ProblemData', element: ProblemData}, //data
+   //{ path: '/data/devraw', name: 'HMIRaw', element: HMIRaw}, //data
+   { path: '/data/logdata', name: 'LogData', element: LogData}, //data
+   { path: '/data/machinedata', name: 'MachineData', element:MachineData}, //data
+   { path: '/data/devicedata', name: 'DeviceData', element: DeviceData}, //data
+   { path: '/data/productiondata', name: 'ProductionData', element:ProductionData}, //data
 
   { path: '/details/machinedetails', name: 'Machine Details', element: MachineDetails}, //details
   { path: '/details/devdetails', name: 'HMI Device', element: HMIDetails}, //details
@@ -161,8 +171,10 @@ const routes = [
   { path: '/users/usersubpage', name: 'UserSubpage', element: UserSubpage}, //users
 
 
-   { path: '/config/uart', name: 'UART', element: UART}, //config
+   //{ path: '/config/uart', name: 'UART', element: UART}, //config
    { path: '/config/mqtt', name: 'MQTT', element: MQTT}, //config
+   { path: '/config/http', name: 'HTTP', element: HTTP}, //config
+
 
   // { path: '/setting/settings', name: 'SETTING / Settings', element: Settingss}, //Main Setting
 
