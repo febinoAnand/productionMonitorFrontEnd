@@ -228,7 +228,7 @@ render(){
               
               
                 <CTable striped hover>
-                  <CTableHead>
+                <CTableHead color='dark'>
                     <CTableRow>
                       <CTableHeaderCell scope="col">#</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Session ID</CTableHeaderCell>

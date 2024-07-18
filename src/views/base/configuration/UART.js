@@ -30,7 +30,7 @@ const UART = () => {
       <CCol xs={12}>
      <CCard className="mb-4">
           <CCardHeader>
-            <strong>UART Config</strong>
+            <strong>HTTP Config</strong>
           </CCardHeader>
           <CCardBody>
             
