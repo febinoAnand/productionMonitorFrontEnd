@@ -23,6 +23,8 @@ import {
   CModalTitle,
 } from '@coreui/react';
 
+const BaseURL = "https://productionb.univa.cloud/";
+
 const MQTT = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
@@ -35,21 +37,65 @@ const MQTT = () => {
   const [qos, setQos] = useState('0');
   const [data, setData] = useState([]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const newEntry = { host, port, userName, password, clientId, keepAlive, qos };
+
     if (editIndex !== null) {
       // Update existing entry
-      const updatedData = data.map((item, index) =>
-        index === editIndex ? newEntry : item
-      );
-      setData(updatedData);
+      await updateConfiguration(editIndex, newEntry);
     } else {
       // Add new entry
-      setData([...data, newEntry]);
+      await addConfiguration(newEntry);
     }
+
     setModalVisible(false);
     resetForm();
+  };
+
+  const addConfiguration = async (entry) => {
+    try {
+      const response = await fetch(`${BaseURL}/config/mqttsettings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(entry),
+      });
+
+      if (response.ok) {
+        const newEntry = await response.json();
+        setData([...data, newEntry]);
+      } else {
+        console.error('Failed to add configuration');
+      }
+    } catch (error) {
+      console.error('Error adding configuration:', error);
+    }
+  };
+
+  const updateConfiguration = async (index, entry) => {
+    try {
+      const response = await fetch(`${BaseURL}/config/mqttsettings/${index}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(entry),
+      });
+
+      if (response.ok) {
+        const updatedEntry = await response.json();
+        const updatedData = data.map((item, idx) =>
+          idx === index ? updatedEntry : item
+        );
+        setData(updatedData);
+      } else {
+        console.error('Failed to update configuration');
+      }
+    } catch (error) {
+      console.error('Error updating configuration:', error);
+    }
   };
 
   const handleEdit = (index) => {
@@ -65,9 +111,21 @@ const MQTT = () => {
     setModalVisible(true);
   };
 
-  const handleDelete = (index) => {
-    const updatedData = data.filter((_, i) => i !== index);
-    setData(updatedData);
+  const handleDelete = async (index) => {
+    try {
+      const response = await fetch(`${BaseURL}/config/mqttsettings/${index}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        const updatedData = data.filter((_, i) => i !== index);
+        setData(updatedData);
+      } else {
+        console.error('Failed to delete configuration');
+      }
+    } catch (error) {
+      console.error('Error deleting configuration:', error);
+    }
   };
 
   const resetForm = () => {
@@ -146,7 +204,7 @@ const MQTT = () => {
         </CCol>
       </CRow>
 
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+      <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl">
         <CModalHeader>
           <CModalTitle>{editIndex !== null ? 'Edit MQTT Configuration' : 'Add MQTT Configuration'}</CModalTitle>
         </CModalHeader>
@@ -218,14 +276,12 @@ const MQTT = () => {
                 <option value="2">2</option>
               </CFormSelect>
             </CCol>
-            <CCol xs={12}>
-              <CButton type="submit" color="primary" variant="outline">
-                {editIndex !== null ? 'Update' : 'Add'}
-              </CButton>
-            </CCol>
           </CForm>
         </CModalBody>
         <CModalFooter>
+          <CButton type="submit" color="primary" variant="outline">
+            {editIndex !== null ? 'Update' : 'Add'}
+          </CButton>
           <CButton color="secondary" onClick={() => setModalVisible(false)}>
             Close
           </CButton>

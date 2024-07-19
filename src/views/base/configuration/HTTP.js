@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   CButton,
   CCard,
@@ -20,10 +21,77 @@ import {
   CModalHeader,
   CModalTitle,
 } from '@coreui/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
+
+const BaseURL = "https://productionb.univa.cloud/";
+const url = `${BaseURL}config/httpsettings/`;
 
 const HTTP = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [responseData, setResponseData] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [settings, setSettings] = useState([]);
+  const [formData, setFormData] = useState({
+    authToken: '',
+    apiPath: '',
+  });
+
+  useEffect(() => {
+    // Fetch settings data when the component mounts
+    const fetchSettings = async () => {
+      try {
+        const response = await axios.get(url);
+        setSettings(response.data);
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [id]: value }));
+  };
+
+  const handleAdd = async () => {
+    try {
+      const response = await axios.post(url, formData);
+      setSettings((prevSettings) => [...prevSettings, response.data]);
+      setFormData({ authToken: '', apiPath: '' });
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Error adding settings:', error);
+    }
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const response = await axios.put(`${url}${formData.authToken}/`, formData);
+      setSettings((prevSettings) =>
+        prevSettings.map((setting) =>
+          setting.authToken === formData.authToken ? response.data : setting
+        )
+      );
+      setFormData({ authToken: '', apiPath: '' });
+      setModalVisible(false);
+      setIsUpdating(false);
+    } catch (error) {
+      console.error('Error updating settings:', error);
+    }
+  };
+
+  const openAddModal = () => {
+    setIsUpdating(false);
+    setModalVisible(true);
+  };
+
+  const openUpdateModal = (setting) => {
+    setFormData(setting);
+    setIsUpdating(true);
+    setModalVisible(true);
+  };
 
   return (
     <>
@@ -31,12 +99,12 @@ const HTTP = () => {
         <CCol xs={12}>
           <CCard className="mb-4">
             <CCardHeader>
-              <strong> Httpsettings</strong>
+              <strong>HTTPS Settings</strong>
               <CButton
                 color="primary"
                 variant="outline"
                 className="float-end"
-                onClick={() => setModalVisible(true)}
+                onClick={openAddModal}
               >
                 Configure Settings
               </CButton>
@@ -47,10 +115,25 @@ const HTTP = () => {
                   <CTableRow>
                     <CTableHeaderCell scope="col">Auth Token</CTableHeaderCell>
                     <CTableHeaderCell scope="col">API Path</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
-                  {/* Your table data would go here */}
+                  {settings.map((setting, index) => (
+                    <CTableRow key={index}>
+                      <CTableHeaderCell>{setting.auth_token}</CTableHeaderCell>
+                      <CTableHeaderCell>{setting.api_path}</CTableHeaderCell>
+                      <CTableHeaderCell>
+                        <CButton
+                          color="info"
+                          variant="outline"
+                          onClick={() => openUpdateModal(setting)}
+                        >
+                          <FontAwesomeIcon icon={faEdit} />
+                        </CButton>
+                      </CTableHeaderCell>
+                    </CTableRow>
+                  ))}
                 </CTableBody>
               </CTable>
             </CCardBody>
@@ -58,28 +141,42 @@ const HTTP = () => {
         </CCol>
       </CRow>
 
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl">
+      <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg">
         <CModalHeader>
-          <CModalTitle>Configure Settings</CModalTitle>
+          <CModalTitle>{isUpdating ? 'Update Settings' : 'Configure Settings'}</CModalTitle>
         </CModalHeader>
         <CModalBody>
           <CForm className="row g-3">
-            <CCol xs={12}>
+            <CCol xs={5}>
               <CFormLabel htmlFor="authToken">Authorization Token:</CFormLabel>
-              <CFormInput id="authToken" placeholder="Enter Authorization Token" size="lg" />
+              <CFormInput
+                id="authToken"
+                value={formData.authToken}
+                onChange={handleInputChange}
+                placeholder="Enter Authorization Token"
+                size="xl"
+              />
             </CCol>
-            <CCol xs={12}>
+            <CCol xs={5}>
               <CFormLabel htmlFor="apiPath">API Path:</CFormLabel>
-              <CFormInput id="apiPath" placeholder="Enter API Path" size="lg" />
-            </CCol>
-            <CCol xs={12}>
-              <CButton type="submit" color="primary" variant="outline">
-                Save
-              </CButton>
+              <CFormInput
+                id="apiPath"
+                value={formData.apiPath}
+                onChange={handleInputChange}
+                placeholder="Enter API Path"
+                size="xl"
+              />
             </CCol>
           </CForm>
         </CModalBody>
         <CModalFooter>
+          <CButton
+            color="primary"
+            variant="outline"
+            onClick={isUpdating ? handleUpdate : handleAdd}
+          >
+            {isUpdating ? 'Update' : 'Add'}
+          </CButton>
           <CButton color="secondary" onClick={() => setModalVisible(false)}>
             Close
           </CButton>
