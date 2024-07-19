@@ -11,7 +11,6 @@ import {
   CRow,
   CTable,
   CTableBody,
-  CTableDataCell,
   CTableHead,
   CTableHeaderCell,
   CTableRow,
@@ -22,80 +21,60 @@ import {
   CModalTitle,
 } from '@coreui/react';
 
-const HTTP = ({ authToken, apiPath }) => {
+const HTTP = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [responseData, setResponseData] = useState(null);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    const requestOptions = {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-    };
-
-    fetch(apiPath, requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        setResponseData(data);
-        setModalVisible(false); // close the config modal
-      })
-      .catch((error) => console.error('Error:', error));
-  };
-
   return (
-    <CRow>
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardHeader>
-            <strong>HTTP Request Details</strong>
-            <CButton
-              color="primary"
-              variant="outline"
-              className="float-end"
-              onClick={() => setModalVisible(true)}
-            >
-              Configure Request
-            </CButton>
-          </CCardHeader>
-          <CCardBody>
-            <CTable striped hover>
-              <CTableHead color="dark">
-                <CTableRow>
-                  <CTableHeaderCell scope="col">Auth Token</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">API Path</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                <CTableRow>
-                  <CTableDataCell>{authToken}</CTableDataCell>
-                  <CTableDataCell>{apiPath}</CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-            </CTable>
-          </CCardBody>
-        </CCard>
-      </CCol>
+    <>
+      <CRow>
+        <CCol xs={12}>
+          <CCard className="mb-4">
+            <CCardHeader>
+              <strong> Httpsettings</strong>
+              <CButton
+                color="primary"
+                variant="outline"
+                className="float-end"
+                onClick={() => setModalVisible(true)}
+              >
+                Configure Settings
+              </CButton>
+            </CCardHeader>
+            <CCardBody>
+              <CTable striped hover>
+                <CTableHead color="dark">
+                  <CTableRow>
+                    <CTableHeaderCell scope="col">Auth Token</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">API Path</CTableHeaderCell>
+                  </CTableRow>
+                </CTableHead>
+                <CTableBody>
+                  {/* Your table data would go here */}
+                </CTableBody>
+              </CTable>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
 
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+      <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="xl">
         <CModalHeader>
-          <CModalTitle>HTTP Request Configuration</CModalTitle>
+          <CModalTitle>Configure Settings</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <CForm onSubmit={handleSubmit} className="row g-3">
+          <CForm className="row g-3">
             <CCol xs={12}>
-              <CFormLabel>Authorization Token:</CFormLabel>
-              <CFormInput id="authToken" value={authToken} />
+              <CFormLabel htmlFor="authToken">Authorization Token:</CFormLabel>
+              <CFormInput id="authToken" placeholder="Enter Authorization Token" size="lg" />
             </CCol>
             <CCol xs={12}>
-              <CFormLabel>API Path:</CFormLabel>
-              <CFormInput id="apiPath" value={apiPath} />
+              <CFormLabel htmlFor="apiPath">API Path:</CFormLabel>
+              <CFormInput id="apiPath" placeholder="Enter API Path" size="lg" />
             </CCol>
             <CCol xs={12}>
               <CButton type="submit" color="primary" variant="outline">
-                Send Request
+                Save
               </CButton>
             </CCol>
           </CForm>
@@ -108,7 +87,7 @@ const HTTP = ({ authToken, apiPath }) => {
       </CModal>
 
       {responseData && (
-        <CModal visible={true} onClose={() => setResponseData(null)}>
+        <CModal visible={true} onClose={() => setResponseData(null)} size="xl">
           <CModalHeader>
             <CModalTitle>Response Data</CModalTitle>
           </CModalHeader>
@@ -122,7 +101,7 @@ const HTTP = ({ authToken, apiPath }) => {
           </CModalFooter>
         </CModal>
       )}
-    </CRow>
+    </>
   );
 };
 

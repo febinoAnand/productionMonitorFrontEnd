@@ -51,7 +51,8 @@ const HTTP = React.lazy(() => import('./views/base/configuration/HTTP'))
 
 
 //details
- const HMIDetails = React.lazy(() => import('./views/base/details/HMIDetails'))
+ //const HMIDetails = React.lazy(() => import('./views/base/details/HMIDetails'))
+ const DeviceDetails=React.lazy(() => import('./views/base/details/DeviceDetails'))
  const UnregisteredDevices = React.lazy(() => import('./views/base/details/UnregisteredDevices'))
  const MachineDetails = React.lazy(() => import('./views/base/details/MachineDetails'))
  const MachineGroup = React.lazy(() => import('./views/base/details/MachineGroup'))
@@ -167,7 +168,9 @@ const routes = [
 
    { path: '/details/machinegroup', name: 'Machine Group', element: MachineGroup}, //details
   { path: '/details/machinedetails', name: 'Machine Details', element: MachineDetails}, //details
-  { path: '/details/devdetails', name: 'HMI Device', element: HMIDetails}, //details
+  //{ path: '/details/devdetails', name: 'HMI Device', element: HMIDetails}, //details
+  { path: '/details/devdetails', name: 'Device', element: DeviceDetails}, //details
+
    { path: '/details/unregister', name: 'Unregistered Device', element: UnregisteredDevices}, //details
    { path: '/details/rfid', name: 'RFID', element: RFID}, //details
 

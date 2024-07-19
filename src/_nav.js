@@ -169,129 +169,109 @@ const _nav = [
 //       icon: <CIcon icon={cilBug} customClassName="nav-icon" />,
 //     },
 
-    {
-      component: CNavTitle,
-      name: 'DATA',
-      style: {color: '#FFFFFF' },
-    },
-    {
-      component: CNavGroup,
-      name: 'Received Data',
-      
-      icon: <CIcon icon={cilCenterFocus} customClassName="nav-icon" />,
-      items:[
-        {
-          component: CNavItem,
-          name: 'Log Data',
-          to: '/data/logdata',
-          icon: <CIcon icon={cilBraille} customClassName="nav-icon" />,
-        },
-        {
-          component: CNavItem,
-          name: 'Machine Data',
-          to: '/data/machinedata',
-          icon: <CIcon icon={cilCheckCircle} customClassName="nav-icon" />,
-        },
-        {
-          component: CNavItem,
-          name: 'Device Data',
-          to: '/data/devicedata',
-          icon: <CIcon icon={cilDiamond} customClassName="nav-icon" />,
-        },
-        {
-          component: CNavItem,
-          name: 'Production Data',
-          to: '/data/productiondata',
-          icon: <CIcon icon={cibKeycdn} customClassName="nav-icon" />,
-        },
-      //{
-        //component: CNavItem,
-        //name: 'Active Problem',
-        //to: '/data/activeproblem',
-        //icon: <CIcon icon={cilBraille} customClassName="nav-icon" />,
-      //},
-      //{
-        //component: CNavItem,
-        //name: 'Problem Data',
-        //to: '/data/problemdata',
-        //icon: <CIcon icon={cilCheckCircle} customClassName="nav-icon" />,
-      //},
-      //{
-        //component: CNavItem,
-        //name: 'Device Raw',
-        //to: '/data/devraw',
-        //icon: <CIcon icon={cilDiamond} customClassName="nav-icon" />,
-      //},
-  
-      ]
-      
-    },
-   //]
-// },
+{
+  component: CNavTitle,
+  name: 'DATA',
+  style: { color: '#FFFFFF' },
+},
+{
+  component: CNavItem,
+  name: 'Log Data',
+  to: '/data/logdata',
+  icon: <CIcon icon={cilBraille} customClassName="nav-icon" />,
+},
+{
+  component: CNavItem,
+  name: 'Machine Data',
+  to: '/data/machinedata',
+  icon: <CIcon icon={cilCheckCircle} customClassName="nav-icon" />,
+},
+{
+  component: CNavItem,
+  name: 'Device Data',
+  to: '/data/devicedata',
+  icon: <CIcon icon={cilDiamond} customClassName="nav-icon" />,
+},
+{
+  component: CNavItem,
+  name: 'Production Data',
+  to: '/data/productiondata',
+  icon: <CIcon icon={cibKeycdn} customClassName="nav-icon" />,
+},
+//{
+//  component: CNavItem,
+//  name: 'Active Problem',
+//  to: '/data/activeproblem',
+//  icon: <CIcon icon={cilBraille} customClassName="nav-icon" />,
+//},
+//{
+//  component: CNavItem,
+//  name: 'Problem Data',
+//  to: '/data/problemdata',
+//  icon: <CIcon icon={cilCheckCircle} customClassName="nav-icon" />,
+//},
+//{
+//  component: CNavItem,
+//  name: 'Device Raw',
+//  to: '/data/devraw',
+//  icon: <CIcon icon={cilDiamond} customClassName="nav-icon" />,
+//},
 //{
 //  component: CNavTitle,
- // name: 'Email tracking',
+//  name: 'Email tracking',
 //},
-      // {
-      //   component: CNavItem,
-      //   name: 'Dashboard',
-      //   to: '/emailtracking/dashboard',
-      //   icon: <CIcon icon={cilLaptop} customClassName="nav-icon" />,
-      // },
-   // {
-    //  component: CNavItem,
-     // name: 'Inbox',
-      //to: '/emailtracking/emailtable',
-      //icon: <CIcon icon={cilArrowCircleBottom} customClassName="nav-icon" />,
-    //},
-    //{
-      //component: CNavItem,
-      //name: 'Create Department',
-      //to: '/emailtracking/department',
-      //icon: <CIcon icon={cilSearch} customClassName="nav-icon" />,
-    //},
-    // {
-    //   component: CNavItem,
-    //   name: 'Rule Engine',
-    //   to: '/emailtracking/trigger',
-    //   icon: <CIcon icon={cilSignLanguage} customClassName="nav-icon" />,
-    // },
-    //{
-      //component: CNavItem,
-      //name: 'Ticket',
-      //to: '/emailtracking/ticket',
-      //icon: <CIcon icon={cilColumns} customClassName="nav-icon" />,
-    //},
-    //{
-     // component: CNavItem,
-      //name: 'Report',
-      //to: '/emailtracking/ticketreport',
-      //icon: <CIcon icon={cilShortText} customClassName="nav-icon" />,
-    //},
-    //{
-      //component: CNavItem,
-      //name: 'Setting',
-      //to: '/emailtracking/setting',
-      //icon: <CIcon icon={cibKeycdn} customClassName="nav-icon" />,
-    //},
+// {
+//   component: CNavItem,
+//   name: 'Dashboard',
+//   to: '/emailtracking/dashboard',
+//   icon: <CIcon icon={cilLaptop} customClassName="nav-icon" />,
+// },
+// {
+//   component: CNavItem,
+//   name: 'Inbox',
+//   to: '/emailtracking/emailtable',
+//   icon: <CIcon icon={cilArrowCircleBottom} customClassName="nav-icon" />,
+// },
+// {
+//   component: CNavItem,
+//   name: 'Create Department',
+//   to: '/emailtracking/department',
+//   icon: <CIcon icon={cilSearch} customClassName="nav-icon" />,
+// },
+// {
+//   component: CNavItem,
+//   name: 'Rule Engine',
+//   to: '/emailtracking/trigger',
+//   icon: <CIcon icon={cilSignLanguage} customClassName="nav-icon" />,
+// },
+// {
+//   component: CNavItem,
+//   name: 'Ticket',
+//   to: '/emailtracking/ticket',
+//   icon: <CIcon icon={cilColumns} customClassName="nav-icon" />,
+// },
+// {
+//   component: CNavItem,
+//   name: 'Report',
+//   to: '/emailtracking/ticketreport',
+//   icon: <CIcon icon={cilShortText} customClassName="nav-icon" />,
+// },
+// {
+//   component: CNavItem,
+//   name: 'Setting',
+//   to: '/emailtracking/setting',
+//   icon: <CIcon icon={cibKeycdn} customClassName="nav-icon" />,
+// },
+{
+  component: CNavGroup,
+  name: 'Actions',
+  icon: <CIcon icon={cilRunning} customClassName="nav-icon" />,
+  items: [
     {
-      component: CNavTitle,
-      name: 'ACTION',
-      style: {color: '#FFFFFF' },
-    },
-    
-    {
-    component: CNavGroup,
-    name: 'Actions',
-    
-    icon: <CIcon icon={cilRunning} customClassName="nav-icon" />,
-    items:[
-      {
-        component: CNavGroup,
-        name: 'Notifications',
-        
-        icon: <CIcon icon={cilBellExclamation} customClassName="nav-icon" />,
-        items:[
+      component: CNavGroup,
+      name: 'Notifications',
+      icon: <CIcon icon={cilBellExclamation} customClassName="nav-icon" />,
+      items: [
         {
           component: CNavItem,
           name: 'Notify Report',
