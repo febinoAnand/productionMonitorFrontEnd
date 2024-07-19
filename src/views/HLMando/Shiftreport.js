@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import '@fortawesome/fontawesome-free/css/all.min.css';
+import CIcon from '@coreui/icons-react';
+import { cilSearch, cilCalendar } from '@coreui/icons';
 import {
   CCard,
   CCardBody,
@@ -13,12 +14,13 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
+  CInputGroup,
+  CFormInput,
+  CButton
 } from '@coreui/react';
 
 const Shiftreport = () => {
-  const [startDate1, setStartDate1] = useState(new Date());
-  const [startDate2, setStartDate2] = useState(new Date());
-  const [startDate3, setStartDate3] = useState(new Date());
+  const [startDate, setStartDate] = useState(new Date());
 
   const CustomInput = ({ value, onClick }) => (
     <div className="input-group" style={{height: '38px', borderRadius: '0px' }}>
@@ -30,54 +32,58 @@ const Shiftreport = () => {
         readOnly
         style={{ paddingRight: '30px', height: '38px', borderRadius: '0px' }}
       />
-      <div className="input-group-append" onClick={onClick} style={{ borderRadius: '0px' }}>
-        <span className="input-group-text" style={{ height: '38px', borderRadius: '0px' }}>
-          <i className="fa fa-search"  />
-        </span>
+      <div className="input-group-append" style={{ borderRadius: '0px' }}>
+        <CButton type="button" color="secondary" onClick={onClick} style={{ height: '38px', borderRadius: '0px' }}>
+          <CIcon icon={cilCalendar} />
+        </CButton>
       </div>
     </div>
   );
 
   return (
     <>
+      <CRow className="mb-3">
+        <CCol md={4}>
+          <CInputGroup className="flex-nowrap mt-3 mb-4">
+            <CFormInput
+              placeholder="Search by time or Production Count Actual"
+              aria-label="Search"
+              aria-describedby="addon-wrapping"
+            />
+            <CButton type="button" color="secondary" id="button-addon2">
+              <CIcon icon={cilSearch} />
+            </CButton>
+          </CInputGroup>
+        </CCol>
+        <CCol md={4} className="text-end">
+          <CInputGroup className="flex-nowrap mt-3 mb-4">
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              customInput={<CustomInput />}
+              dateFormat="dd/MM/yyyy"
+              popperPlacement="bottom-end"
+            />
+          </CInputGroup>
+        </CCol>
+      </CRow>
+
       <CRow>
         <CCol xs={12}>
-          {/* First Table */}
           <h5>Shift 1</h5>
           <CCard className="mb-4">
             <CCardBody>
-              <CRow className="mb-3">
-                <CCol md={3}>
-                  <div className="input-group">
-                    <input type="text" className="form-control" placeholder="" />
-                    <div className="input-group-append">
-                      <span className="input-group-text" style={{ height: '38px', borderRadius: '0px' }}>
-                        <i className="fa fa-search" />
-                      </span>
-                    </div>
-                  </div>
-                </CCol>
-                <CCol md={4} className="text-end">
-                  <DatePicker
-                    selected={startDate1}
-                    onChange={(date) => setStartDate1(date)}
-                    customInput={<CustomInput />}
-                    dateFormat="dd/MM/yyyy"
-                    popperPlacement="bottom-end" 
-                  />
-                </CCol>
-              </CRow>
               <CTable striped hover>
                 <CTableHead color="dark">
                   <CTableRow>
+                    <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" className="text-end">
-                      Production Count Actual
-                    </CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
                   <CTableRow>
+                    <CTableDataCell></CTableDataCell>
                     <CTableDataCell></CTableDataCell>
                     <CTableDataCell></CTableDataCell>
                   </CTableRow>
@@ -85,43 +91,20 @@ const Shiftreport = () => {
               </CTable>
             </CCardBody>
           </CCard>
-
-          {/* Second Table */}
           <h5>Shift 2</h5>
           <CCard className="mb-4">
             <CCardBody>
-              <CRow className="mb-3">
-                <CCol md={3}>
-                  <div className="input-group">
-                    <input type="text" className="form-control" placeholder="" />
-                    <div className="input-group-append">
-                      <span className="input-group-text" style={{ height: '38px', borderRadius: '0px' }}>
-                        <i className="fa fa-search" />
-                      </span>
-                    </div>
-                  </div>
-                </CCol>
-                <CCol md={4} className="text-end">
-                  <DatePicker
-                    selected={startDate2}
-                    onChange={(date) => setStartDate2(date)}
-                    customInput={<CustomInput />}
-                    dateFormat="dd/MM/yyyy"
-                    popperPlacement="bottom-end" // Aligns the calendar to the right side
-                  />
-                </CCol>
-              </CRow>
               <CTable striped hover>
                 <CTableHead color="dark">
                   <CTableRow>
+                    <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" className="text-end">
-                      Production Count Actual
-                    </CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
                   <CTableRow>
+                    <CTableDataCell></CTableDataCell>
                     <CTableDataCell></CTableDataCell>
                     <CTableDataCell></CTableDataCell>
                   </CTableRow>
@@ -129,43 +112,20 @@ const Shiftreport = () => {
               </CTable>
             </CCardBody>
           </CCard>
-
-          {/* Third Table */}
           <h5>Shift 3</h5>
           <CCard className="mb-4">
             <CCardBody>
-              <CRow className="mb-3">
-                <CCol md={3}>
-                  <div className="input-group">
-                    <input type="text" className="form-control" placeholder="" />
-                    <div className="input-group-append">
-                      <span className="input-group-text" style={{ height: '38px', borderRadius: '0px' }}>
-                        <i className="fa fa-search" />
-                      </span>
-                    </div>
-                  </div>
-                </CCol>
-                <CCol md={4} className="text-end">
-                  <DatePicker
-                    selected={startDate3}
-                    onChange={(date) => setStartDate3(date)}
-                    customInput={<CustomInput />}
-                    dateFormat="dd/MM/yyyy"
-                    popperPlacement="bottom-end" // Aligns the calendar to the right side
-                  />
-                </CCol>
-              </CRow>
               <CTable striped hover>
                 <CTableHead color="dark">
                   <CTableRow>
+                    <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" className="text-end">
-                      Production Count Actual
-                    </CTableHeaderCell>
+                    <CTableHeaderCell scope="col"> Production Count Actual</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
                   <CTableRow>
+                    <CTableDataCell></CTableDataCell>
                     <CTableDataCell></CTableDataCell>
                     <CTableDataCell></CTableDataCell>
                   </CTableRow>

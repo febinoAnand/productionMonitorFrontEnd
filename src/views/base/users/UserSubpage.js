@@ -1,6 +1,6 @@
 import React from 'react'
-import BaseURL from 'src/assets/contants/BaseURL';
-import { cilTrash, cilFilter, cilMagnifyingGlass } from '@coreui/icons';
+// import BaseURL from 'src/assets/contants/BaseURL';
+// import { cilTrash, cilFilter, cilMagnifyingGlass } from '@coreui/icons';
 
 import {
     CButton,
@@ -8,23 +8,23 @@ import {
     CCardBody,
     CCardHeader,
     CCol,
-    CForm,
+    // CForm,
     CFormCheck,
     CFormInput,
     CFormLabel,
     CFormSelect,
     CRow,
-    CInputGroup,
-    CInputGroupText,
-    CTable,
-    CTableBody,
-    CTableDataCell,
-    CTableHead,
-    CTableHeaderCell,
-    CTableRow,
+    // CInputGroup,
+    // CInputGroupText,
+    // CTable,
+    // CTableBody,
+    // CTableDataCell,
+    // CTableHead,
+    // CTableHeaderCell,
+    // CTableRow,
   } from '@coreui/react'
-import CIcon from '@coreui/icons-react';
-import axios from 'axios';
+// import CIcon from '@coreui/icons-react';
+// import axios from 'axios';
 
 
 

@@ -7,6 +7,9 @@ const Typography = React.lazy(() => import('./views/theme/typography/Typography'
 //test
 const Test = React.lazy(() => import('./views/test/Test'))
 
+// Password
+const Changepassword = React.lazy(() => import('./views/base/users/changepassword'))
+
 //Events
 // const EventMap = React.lazy(() => import ('./views/base/events/EventMap'))
 // const EventGroup = React.lazy(() => import ('./views/base/events/EventGroup'))
@@ -222,6 +225,8 @@ const routes = [
   { path: '/notifications/modals', name: 'Modals', element: Modals },
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
   { path: '/widgets', name: 'Widgets', element: Widgets },
+
+  { path: '/users/changepassword', name: 'Change Password', element: Changepassword}, //Changepassword
 
 //ProductionMonitor
 { path: '/HLMando/Productionmonitor', name: 'ProductionMonitor', element: Productionmonitor },

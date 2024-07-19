@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { cilPen, cilTrash } from '@coreui/icons';
 import {
     CButton,
@@ -40,34 +40,67 @@ const Groups = () => {
     const [newGroupName, setNewGroupName] = useState('');
     const [newGroupUsers, setNewGroupUsers] = useState([]);
 
-    useEffect(() => {
-        fetchGroupData();
-        fetchUserData();
-    }, []);
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
+        };
+    };
 
-    useEffect(() => {
-        handleSearch(searchQuery);
-    }, [groupData, searchQuery]);
-
-    const fetchGroupData = async () => {
+    const fetchGroupData = useCallback(async () => {
         try {
-            const response = await axios.get(BaseURL + "app/groups/")
+            const response = await axios.get(BaseURL + "app/groups/", { headers: getAuthHeaders() });
             const sortedData = response.data.reverse();
             setGroupData(sortedData);
             setFilteredGroupData(sortedData);
         } catch (error) {
             console.error('Error fetching group data:', error);
         }
-    };
+    }, []);
 
-    const fetchUserData = async () => {
+    const fetchUserData = useCallback(async () => {
         try {
-            const response = await axios.get(BaseURL + "Userauth/userdetail/");
+            const response = await axios.get(BaseURL + "Userauth/userdetail/", { headers: getAuthHeaders() });
             setUserData(response.data);
         } catch (error) {
             console.error('Error fetching user data:', error);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchGroupData();
+        fetchUserData();
+    }, [fetchGroupData, fetchUserData]);
+
+    const handleSearch = useCallback((query) => {
+        setSearchQuery(query);
+        if (!groupData) return;
+
+        if (query === '') {
+            setFilteredGroupData(groupData);
+        } else {
+            const lowercasedQuery = query.toLowerCase();
+            const filteredData = groupData.filter(group => {
+                const name = group.name?.toLowerCase() || '';
+                const userSet = group.user_set ? group.user_set.map(userId => userId.toString().toLowerCase()).join(' ') : '';
+                const userEmails = group.user_details.map(user => user.email.toLowerCase()).join(' ');
+                const userMobileNumbers = group.user_details.map(user => user.mobile_no.toLowerCase()).join(' ');
+
+                return (
+                    name.includes(lowercasedQuery) ||
+                    userSet.includes(lowercasedQuery) ||
+                    userEmails.includes(lowercasedQuery) ||
+                    userMobileNumbers.includes(lowercasedQuery)
+                );
+            });
+            setFilteredGroupData(filteredData);
+        }
+    }, [groupData]);
+
+    useEffect(() => {
+        handleSearch(searchQuery);
+    }, [handleSearch, searchQuery]);
 
     const handleGroupSelect = (group) => {
         if (group) {
@@ -103,37 +136,12 @@ const Groups = () => {
         setNewGroupUsers(selectedUsers);
     };
 
-    const handleSearch = (query) => {
-        setSearchQuery(query);
-        if (!groupData) return;
-    
-        if (query === '') {
-            setFilteredGroupData(groupData);
-        } else {
-            const lowercasedQuery = query.toLowerCase();
-            const filteredData = groupData.filter(group => {
-                const name = group.name?.toLowerCase() || '';
-                const userSet = group.user_set ? group.user_set.map(userId => userId.toString().toLowerCase()).join(' ') : '';
-                const userEmails = group.user_details.map(user => user.email.toLowerCase()).join(' ');
-                const userMobileNumbers = group.user_details.map(user => user.mobile_no.toLowerCase()).join(' ');
-    
-                return (
-                    name.includes(lowercasedQuery) ||
-                    userSet.includes(lowercasedQuery) ||
-                    userEmails.includes(lowercasedQuery) ||
-                    userMobileNumbers.includes(lowercasedQuery)
-                );
-            });
-            setFilteredGroupData(filteredData);
-        }
-    };    
-
     const handleUpdateGroup = async () => {
         try {
             if (selectedGroup.id) {
-                await axios.put(`${BaseURL}app/groups/${selectedGroup.id}/`, selectedGroup);
+                await axios.put(`${BaseURL}app/groups/${selectedGroup.id}/`, selectedGroup, { headers: getAuthHeaders() });
             } else {
-                await axios.post(`${BaseURL}app/groups/`, selectedGroup);
+                await axios.post(`${BaseURL}app/groups/`, selectedGroup, { headers: getAuthHeaders() });
             }
             fetchGroupData();
             setModalVisible(false);
@@ -148,7 +156,7 @@ const Groups = () => {
                 name: newGroupName,
                 user_set: newGroupUsers,
             };
-            await axios.post(BaseURL + "app/groups/", newGroup);
+            await axios.post(BaseURL + "app/groups/", newGroup, { headers: getAuthHeaders() });
             fetchGroupData();
             setNewGroupModalVisible(false);
             setNewGroupName('');
@@ -160,12 +168,12 @@ const Groups = () => {
 
     const handleDeleteGroup = async (groupId) => {
         try {
-            await axios.delete(`${BaseURL}app/groups/${groupId}/`);
+            await axios.delete(`${BaseURL}app/groups/${groupId}/`, { headers: getAuthHeaders() });
             fetchGroupData();
         } catch (error) {
             console.error('Error deleting group:', error);
         }
-    };    
+    };
 
     return (
         <>
@@ -206,26 +214,30 @@ const Groups = () => {
                                     </CTableRow>
                                 </CTableHead>
                                 <CTableBody>
-                                    {filteredGroupData.map((group, index) => (
-                                        <CTableRow
-                                            key={group.id}
-                                        >
-                                            <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
-                                            <CTableDataCell>{group.name}</CTableDataCell>
-                                            <CTableDataCell>{group.user_details.map(user => user.email).join(', ')}</CTableDataCell>
-                                            <CTableDataCell>{group.user_details.map(user => user.mobile_no).join(', ')}</CTableDataCell>
-                                            <CTableDataCell>
-                                                <div className="d-flex gap-2">
-                                                    <CButton onClick={() => handleGroupSelect(group)}>
-                                                        <CIcon icon={cilPen} />
-                                                    </CButton>
-                                                    <CButton onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id); }}>
-                                                        <CIcon icon={cilTrash} />
-                                                    </CButton>
-                                                </div>
-                                            </CTableDataCell>
+                                    {filteredGroupData.length === 0 ? (
+                                        <CTableRow>
+                                            <CTableDataCell colSpan="5" className="text-center">No data available</CTableDataCell>
                                         </CTableRow>
-                                    ))}
+                                    ) : (
+                                        filteredGroupData.map((group, index) => (
+                                            <CTableRow key={group.id}>
+                                                <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                                                <CTableDataCell>{group.name}</CTableDataCell>
+                                                <CTableDataCell>{group.user_details.map(user => user.email).join(', ')}</CTableDataCell>
+                                                <CTableDataCell>{group.user_details.map(user => user.mobile_no).join(', ')}</CTableDataCell>
+                                                <CTableDataCell>
+                                                    <div className="d-flex gap-2">
+                                                        <CButton onClick={() => handleGroupSelect(group)}>
+                                                            <CIcon icon={cilPen} />
+                                                        </CButton>
+                                                        <CButton onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id); }}>
+                                                            <CIcon icon={cilTrash} />
+                                                        </CButton>
+                                                    </div>
+                                                </CTableDataCell>
+                                            </CTableRow>
+                                        ))
+                                    )}
                                 </CTableBody>
                             </CTable>
                         </CCardBody>

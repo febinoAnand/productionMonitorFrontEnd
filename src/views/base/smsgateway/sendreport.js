@@ -130,13 +130,18 @@ class SendReport extends React.Component {
                                         </CTableRow>
                                     </CTableHead>
                                     <CTableBody>
-                                        {reports.map((report, index) => (
+                                        {reports.length === 0 ? (
+                                            <CTableRow>
+                                            <CTableDataCell colSpan="8" className="text-center">No data available</CTableDataCell>
+                                            </CTableRow>
+                                        ) : (
+                                            reports.map((report, index) => (
                                             <CTableRow key={index}>
                                                 <CTableDataCell>
-                                                    <CFormCheck
-                                                        onChange={() => this.toggleRowSelection(index)}
-                                                        checked={selectedRows.includes(index)}
-                                                    />
+                                                <CFormCheck
+                                                    onChange={() => this.toggleRowSelection(index)}
+                                                    checked={selectedRows.includes(index)}
+                                                />
                                                 </CTableDataCell>
                                                 <CTableDataCell>{index + 1}</CTableDataCell>
                                                 <CTableDataCell>{report.date}</CTableDataCell>
@@ -145,13 +150,14 @@ class SendReport extends React.Component {
                                                 <CTableDataCell>{report.from_number}</CTableDataCell>
                                                 <CTableDataCell>{report.message}</CTableDataCell>
                                                 <CTableDataCell>
-                                                    <span style={{ fontWeight: report.delivery_status ? 'bold' : 'normal', color: report.delivery_status ? 'green' : 'red' }}>
-                                                        {report.delivery_status ? 'True' : 'False'}
-                                                    </span>
+                                                <span style={{ fontWeight: report.delivery_status ? 'bold' : 'normal', color: report.delivery_status ? 'green' : 'red' }}>
+                                                    {report.delivery_status ? 'True' : 'False'}
+                                                </span>
                                                 </CTableDataCell>
                                             </CTableRow>
-                                        ))}
-                                    </CTableBody>
+                                            ))
+                                        )}
+                                        </CTableBody>
                                 </CTable>
                             </CCardBody>
                         </CCard>

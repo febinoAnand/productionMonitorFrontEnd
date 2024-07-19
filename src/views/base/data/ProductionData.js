@@ -20,16 +20,36 @@ import {
 } from '@coreui/react';
 
 class ProductionData extends React.Component {
-  state = { productionDataList: [] };
+  state = {
+    productionDataList: [],
+    searchQuery: '',
+    filteredData: [],
+  };
 
   componentDidMount() {
-    axios.get(BaseURL + "data/productions/")
+    axios.get(`${BaseURL}data/productiondata/`)
       .then(res => {
         const resData = res.data;
-        this.setState({ productionDataList: resData });
-        console.log(resData);
-      });
+        const sortedData = resData.reverse();
+        this.setState({ productionDataList: sortedData, filteredData: sortedData });
+        console.log(sortedData);
+      })
+      .catch(error => console.error('Error fetching data:', error));
   }
+
+  handleSearchQueryChange = (event) => {
+    this.setState({ searchQuery: event.target.value });
+  };
+
+  handleSearch = () => {
+    const { productionDataList, searchQuery } = this.state;
+    const filteredData = productionDataList.filter(production => 
+      Object.values(production).some(value =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+    this.setState({ filteredData });
+  };
 
   render() {
     return (
@@ -47,8 +67,10 @@ class ProductionData extends React.Component {
                       placeholder="Search"
                       aria-label="Search"
                       aria-describedby="addon-wrapping"
+                      value={this.state.searchQuery}
+                      onChange={this.handleSearchQueryChange}
                     />
-                    <CButton type="button" color="dark" id="button-addon2">
+                    <CButton type="button" color="dark" id="button-addon2" onClick={this.handleSearch}>
                       Search
                     </CButton>
                   </CInputGroup>
@@ -57,40 +79,47 @@ class ProductionData extends React.Component {
                 <CCol className='mb-3'></CCol>
 
                 <CTable striped hover>
-                <CTableHead color='dark'>
+                  <CTableHead color='dark'>
                     <CTableRow>
-                      <CTableHeaderCell scope="col">ID</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Date</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Time</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Shift ID</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Shift Name</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Shift StartTime</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Shift EndTime</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Target </CTableHeaderCell>
-                      <CTableHeaderCell scope="col"> Count</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Target</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Count</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Machine Name</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Data ID</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {this.state.productionDataList.map((production, id) => (
-                      <CTableRow key={production.id}>
-                        <CTableHeaderCell scope="row">{id + 1}</CTableHeaderCell>
-                        <CTableDataCell>{production.date}</CTableDataCell>
-                        <CTableDataCell>{production.time}</CTableDataCell>
-                        <CTableDataCell>{production.shiftID}</CTableDataCell>
-                        <CTableDataCell>{production.shiftName}</CTableDataCell>
-                        <CTableDataCell>{production.shiftStartTime}</CTableDataCell>
-                        <CTableDataCell>{production.shiftEndTime}</CTableDataCell>
-                        <CTableDataCell>{production.target}</CTableDataCell>
-                        <CTableDataCell>{production.Count}</CTableDataCell>
-                        <CTableDataCell>{production.machineID}</CTableDataCell>
-                        <CTableDataCell>{production.machineName}</CTableDataCell>
-                        <CTableDataCell>{production.Count}</CTableDataCell>
-                        <CTableDataCell>{production.dataID}</CTableDataCell>
+                    {this.state.filteredData.length === 0 ? (
+                      <CTableRow>
+                        <CTableDataCell colSpan="12" className="text-center">
+                          No data available
+                        </CTableDataCell>
                       </CTableRow>
-                    ))}
+                    ) : (
+                      this.state.filteredData.map((production, index) => (
+                        <CTableRow key={production.id}>
+                          <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                          <CTableDataCell>{production.date}</CTableDataCell>
+                          <CTableDataCell>{production.time}</CTableDataCell>
+                          <CTableDataCell>{production.shift_id}</CTableDataCell>
+                          <CTableDataCell>{production.shift_name}</CTableDataCell>
+                          <CTableDataCell>{production.shift_start_time}</CTableDataCell>
+                          <CTableDataCell>{production.shift_end_time}</CTableDataCell>
+                          <CTableDataCell>{production.target_production}</CTableDataCell>
+                          <CTableDataCell>{production.production_count}</CTableDataCell>
+                          <CTableDataCell>{production.machine_id}</CTableDataCell>
+                          <CTableDataCell>{production.machine_name}</CTableDataCell>
+                          <CTableDataCell>{production.data_id}</CTableDataCell>
+                        </CTableRow>
+                      ))
+                    )}
                   </CTableBody>
                 </CTable>
               </CCardBody>

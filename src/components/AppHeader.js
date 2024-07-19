@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+// import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   CContainer,
@@ -7,20 +7,20 @@ import {
   CHeaderDivider,
   CHeaderNav,
   CHeaderToggler,
-  CButton,
-  COffcanvas,
-  COffcanvasHeader,
-  COffcanvasBody,
-  CBadge,
+  // CButton,
+  // COffcanvas,
+  // COffcanvasHeader,
+  // COffcanvasBody,
+  // CBadge,
   CNavLink,
-  CTooltip
+  // CTooltip
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
-import { cilBell, cilMenu, cilEnvelopeOpen } from '@coreui/icons';
+import { cilMenu } from '@coreui/icons';
 
 import { AppBreadcrumb } from './index';
 import { AppHeaderDropdown } from './header/index';
-import BaseURL from 'src/assets/contants/BaseURL';
+// import BaseURL from 'src/assets/contants/BaseURL';
 
 const AppHeader = () => {
   const dispatch = useDispatch();
