@@ -1,21 +1,12 @@
 import React from 'react';
 import BaseURL from 'src/assets/contants/BaseURL';
-
+import { cilPen, cilTrash } from '@coreui/icons';
 import {
   CButton,
   CCard,
   CCardBody,
   CCardHeader,
   CCol,
-  CForm,
-  CFormInput,
-  CFormLabel,
-  CFormSelect,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
   CRow,
   CTable,
   CTableBody,
@@ -23,226 +14,319 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+  CForm,
+  CFormInput,
+  CFormLabel,
+  CFormSelect,
+  CAlert
 } from '@coreui/react';
 import axios from 'axios';
+import CIcon from '@coreui/icons-react';
 
 class MachineDetails extends React.Component {
-  state = {
-    machineList: [],
-    hmiList: [],
-    url: BaseURL + 'devices/machine/',
-    id: 0,
-    line: '',
-    machineID: '',
-    manufacture: '',
-    model: '',
-    name: '',
-    Device: {},
-    hmiID: 0,
-    showModal: false,
-  };
-
-  componentDidMount() {
-    this.updateMachineTable();
+  constructor(props) {
+    super(props);
+    this.state = {
+      machineID: '',
+      name: '',
+      manufacture: '',
+      line: '',
+      hmiID: '',
+      showAddModal: false,
+      showUpdateModal: false,
+      deviceList: [],
+      machineList: [],
+      selectedMachine: {},
+      successMessage: ''
+    };
   }
 
-  machineDeleteData = (id) => {
-    axios.delete(this.state.url + id + '/')
-      .then((res) => {
-        this.updateMachineTable();
-        this.clearState();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
+  componentDidMount() {
+    this.fetchMachineList();
+    this.fetchDeviceList();
+    this.handleSuccessMessage();
+  }
 
-  machineUpdateData = (event) => {
-    event.preventDefault();
-    axios.put(this.state.url + this.state.id + '/', this.state)
-      .then((res) => {
-        this.updateMachineTable();
-        this.clearState();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
+  fetchMachineList = async () => {
+    try {
+      const response = await axios.get(`${BaseURL}devices/machine/`);
+      this.setState({ machineList: response.data });
+    } catch (error) {
+      console.error("There was an error fetching the machine list!", error);
+    }
+  }
+
+  fetchDeviceList = async () => {
+    try {
+      const response = await axios.get(`${BaseURL}devices/device/`);
+      this.setState({ deviceList: response.data });
+    } catch (error) {
+      console.error("There was an error fetching the device list!", error);
+    }
+  }
 
   clearState = () => {
     this.setState({
-      id: '',
-      line: '',
       machineID: '',
-      manufacture: '',
-      model: '',
       name: '',
-      Device: {},
-      hmiID: 0,
+      manufacture: '',
+      line: '',
+      hmiID: '',
+      selectedMachine: {},
     });
-  };
+  }
 
-  updateMachineTable = () => {
-    axios.get(this.state.url)
-      .then((res) => {
-        this.setState({
-          machineList: res.data,
-        });
-      });
+  toggleAddModal = () => {
+    this.setState(prevState => ({
+      showAddModal: !prevState.showAddModal
+    }));
+  }
 
-    axios.get(BaseURL + 'devices/device/')
-      .then((res) => {
-        this.setState({
-          hmiList: res.data,
-        });
-      });
-  };
-
-  machinePostData = (event) => {
-    event.preventDefault();
-    axios.post(this.state.url, this.state)
-      .then((res) => {
-        this.updateMachineTable();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    this.clearState();
-  };
-
-  handleFormData = (event) => {
-    this.setState({ [event.target.id]: event.target.value });
-  };
-
-  changeDropdown = (event) => {
-    this.setState({
-      hmiID: event.target.value,
-      Device: { id: event.target.value },
+  toggleUpdateModal = () => {
+    this.setState(prevState => ({
+      showUpdateModal: !prevState.showUpdateModal
+    }), () => {
+      if (!this.state.showUpdateModal) {
+        this.clearState();
+      }
     });
-  };
+  }
+
+  handleFormData = (e) => {
+    this.setState({ [e.target.id]: e.target.value });
+  }
+
+  changeDropdown = (e) => {
+    this.setState({ hmiID: e.target.value });
+  }
 
   getRowData = (machine) => {
     this.setState({
-      id: machine.id,
-      line: machine.line,
-      machineID: machine.machineID,
+      selectedMachine: machine,
+      machineID: machine.machine_id,
+      name: machine.machine_name,
       manufacture: machine.manufacture,
-      model: machine.model,
-      name: machine.name,
-      Device: machine.device,
-      hmiID: machine.device.id,
-      showModal: true,
+      line: machine.line,
+      hmiID: machine.device,
     });
-  };
+    this.toggleUpdateModal();
+  }
 
-  toggleModal = () => {
-    this.setState({ showModal: !this.state.showModal });
-  };
+  handleSuccessMessage = () => {
+    const message = localStorage.getItem('successMessage');
+    if (message) {
+      this.setState({ successMessage: message });
+      localStorage.removeItem('successMessage');
+    }
+  }
+
+  machinePostData = async () => {
+    try {
+      await axios.post(`${BaseURL}devices/machine/`, {
+        machine_id: this.state.machineID,
+        machine_name: this.state.name,
+        manufacture: this.state.manufacture,
+        line: this.state.line,
+        device: this.state.hmiID,
+      });
+      localStorage.setItem('successMessage', "Machine added successfully!");
+      this.toggleAddModal();
+      this.fetchMachineList();
+      setTimeout(() => window.location.reload(), 100);
+    } catch (error) {
+      console.error("There was an error adding the machine!", error);
+      localStorage.setItem('successMessage', "Failed to add machine!");
+      this.toggleAddModal();
+      setTimeout(() => window.location.reload(), 100);
+    }
+  }
+
+  machineUpdateData = async () => {
+    const { selectedMachine, machineID, name, manufacture, line, hmiID } = this.state;
+
+    if (!selectedMachine.id) {
+      console.error("Selected machine ID is missing!");
+      return;
+    }
+
+    try {
+      await axios.put(`${BaseURL}devices/machine/${selectedMachine.id}/`, {
+        machine_id: machineID,
+        machine_name: name,
+        manufacture: manufacture,
+        line: line,
+        device: hmiID,
+      });
+      localStorage.setItem('successMessage', "Machine updated successfully!");
+      this.toggleUpdateModal();
+      this.fetchMachineList();
+      window.location.reload();
+    } catch (error) {
+      console.error("There was an error updating the machine!", error);
+      this.toggleUpdateModal();
+      window.location.reload();
+    }
+  }
+
+  machineDeleteData = async (machineId) => {
+    try {
+      await axios.delete(`${BaseURL}devices/machine/${machineId}/`);
+      localStorage.setItem('successMessage', "Machine deleted successfully!");
+      this.fetchMachineList();
+      window.location.reload();
+    } catch (error) {
+      console.error("There was an error deleting the machine!", error);
+      localStorage.setItem('successMessage', "Failed to delete machine!");
+      window.location.reload();
+    }
+  }
 
   render() {
+    const { machineList, deviceList, showAddModal, showUpdateModal, machineID, name, manufacture, line, hmiID, successMessage } = this.state;
+
     return (
       <>
         <CRow>
+        {successMessage && (
+                  <CAlert color="success" dismissible onClose={() => this.setState({ successMessage: '' })}>
+                    {successMessage}
+                  </CAlert>
+                )}
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
                 <strong>Machine List</strong>
-                <CButton className="float-end" onClick={this.toggleModal}>Add Machine</CButton>
+                <CButton color='success' variant='outline' className='float-end' onClick={this.toggleAddModal}>Add Machine</CButton>
               </CCardHeader>
               <CCardBody>
                 <CTable striped hover>
-                <CTableHead color='dark'>
-                    <CTableRow>
-                      <CTableHeaderCell scope="col">#</CTableHeaderCell>
+                  <CTableHead>
+                    <CTableRow color="dark">
+                      <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Device ID</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Name</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Manufacture</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Model</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Line</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Action</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {this.state.machineList.map((machine, index) => (
-                      <CTableRow key={machine.id}>
-                        <CTableDataCell>{index + 1}</CTableDataCell>
-                        <CTableDataCell>{machine.machineID}</CTableDataCell>
-                        <CTableDataCell>{machine.device.id}</CTableDataCell>
-                        <CTableDataCell>{machine.name}</CTableDataCell>
-                        <CTableDataCell>{machine.manufacture}</CTableDataCell>
-                        <CTableDataCell>{machine.model}</CTableDataCell>
-                        <CTableDataCell>{machine.line}</CTableDataCell>
-                        <CTableDataCell>
-                          <CButton color="info" size="sm" onClick={() => this.getRowData(machine)}>Edit</CButton>
-                          {' '}
-                          <CButton color="danger" size="sm" onClick={() => this.machineDeleteData(machine.id)}>Delete</CButton>
+                    {machineList.length === 0 ? (
+                      <CTableRow>
+                        <CTableDataCell colSpan="7" className="text-center">
+                          No data available
                         </CTableDataCell>
                       </CTableRow>
-                    ))}
+                    ) : (
+                      machineList.map((machine, index) => (
+                        <CTableRow key={machine.id}>
+                          <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                          <CTableDataCell>{machine.machine_id}</CTableDataCell>
+                          <CTableDataCell>{machine.device}</CTableDataCell>
+                          <CTableDataCell>{machine.machine_name}</CTableDataCell>
+                          <CTableDataCell>{machine.manufacture}</CTableDataCell>
+                          <CTableDataCell>{machine.line}</CTableDataCell>
+                          <CTableDataCell>
+                            <div className="d-flex gap-2">
+                              <CButton onClick={() => this.getRowData(machine)}>
+                                <CIcon icon={cilPen} />
+                              </CButton>
+                              <CButton onClick={() => this.machineDeleteData(machine.id)}>
+                                <CIcon icon={cilTrash} />
+                              </CButton>
+                            </div>
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))
+                    )}
                   </CTableBody>
                 </CTable>
-                <CModal visible={this.state.showModal} onClose={this.toggleModal}>
-                  <CModalHeader>
-                    <CModalTitle>{this.state.id ? 'Update Machine' : 'Add Machine'}</CModalTitle>
-                  </CModalHeader>
-                  <CForm onSubmit={this.state.id ? this.machineUpdateData : this.machinePostData}>
-                    <CModalBody>
-                      <CFormLabel htmlFor="machineID">Machine ID</CFormLabel>
-                      <CFormInput
-                        type="text"
-                        id="machineID"
-                        value={this.state.machineID}
-                        onChange={this.handleFormData}
-                      />
-                      <CFormLabel htmlFor="name">Name</CFormLabel>
-                      <CFormInput
-                        type="text"
-                        id="name"
-                        value={this.state.name}
-                        onChange={this.handleFormData}
-                      />
-                      <CFormLabel htmlFor="manufacture">Manufacture</CFormLabel>
-                      <CFormInput
-                        type="text"
-                        id="manufacture"
-                        value={this.state.manufacture}
-                        onChange={this.handleFormData}
-                      />
-                      <CFormLabel htmlFor="model">Model</CFormLabel>
-                      <CFormInput
-                        type="text"
-                        id="model"
-                        value={this.state.model}
-                        onChange={this.handleFormData}
-                      />
-                      <CFormLabel htmlFor="line">Line</CFormLabel>
-                      <CFormInput
-                        type="text"
-                        id="line"
-                        value={this.state.line}
-                        onChange={this.handleFormData}
-                      />
-                      <CFormLabel htmlFor="hmiID">HMI Device</CFormLabel>
-                      <CFormSelect id="hmiID" value={this.state.hmiID} onChange={this.changeDropdown}>
-                        <option>Select HMI Device</option>
-                        {this.state.hmiList.map((device) => (
-                          <option key={device.id} value={device.id}>
-                            {device.name}
-                          </option>
-                        ))}
-                      </CFormSelect>
-                    </CModalBody>
-                    <CModalFooter>
-                      <CButton color="secondary" onClick={this.toggleModal}>Close</CButton>
-                      <CButton type="submit" color="primary">{this.state.id ? 'Update' : 'Add'}</CButton>
-                    </CModalFooter>
-                  </CForm>
-                </CModal>
               </CCardBody>
             </CCard>
           </CCol>
         </CRow>
+        <CModal visible={showAddModal} size='lg' onClose={this.toggleAddModal}>
+          <CModalHeader>
+            <CModalTitle>Add Machine Details</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <CForm className="row g-3">
+              <CCol md={3}>
+                <CFormLabel htmlFor="machineID">Machine ID</CFormLabel>
+                <CFormInput id="machineID" placeholder="eg: MAC5632" value={machineID} onChange={this.handleFormData} />
+              </CCol>
+              <CCol md={3}>
+                <CFormLabel htmlFor="name">Name</CFormLabel>
+                <CFormInput id="name" placeholder="" value={name} onChange={this.handleFormData} />
+              </CCol>
+              <CCol md={3}>
+                <CFormLabel htmlFor="manufacture">Manufacture</CFormLabel>
+                <CFormInput id="manufacture" placeholder="" value={manufacture} onChange={this.handleFormData} />
+              </CCol>
+              <CCol xs={3}>
+                <CFormLabel htmlFor="line">Line</CFormLabel>
+                <CFormInput id="line" placeholder="eg: 1, 2, 3" value={line} onChange={this.handleFormData} />
+              </CCol>
+              <CCol md={3}>
+                <CFormLabel htmlFor="Device">Device</CFormLabel>
+                <CFormSelect id="Device" value={hmiID} onChange={this.changeDropdown}>
+                  <option value="">Select Device</option>
+                  {deviceList.map((device) => (
+                    <option key={device.id} value={device.id}>{device.device_name}</option>
+                  ))}
+                </CFormSelect>
+              </CCol>
+            </CForm>
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="secondary" onClick={this.toggleAddModal}>Close</CButton>
+            <CButton color="primary" onClick={this.machinePostData}>Add Machine</CButton>
+          </CModalFooter>
+        </CModal>
+        <CModal visible={showUpdateModal} size='lg' onClose={this.toggleUpdateModal}>
+          <CModalHeader>
+            <CModalTitle>Update Machine Details</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <CForm className="row g-3">
+              <CCol md={3}>
+                <CFormLabel htmlFor="machineID">Machine ID</CFormLabel>
+                <CFormInput id="machineID" placeholder="eg: MAC5632" value={machineID} onChange={this.handleFormData} />
+              </CCol>
+              <CCol md={3}>
+                <CFormLabel htmlFor="name">Name</CFormLabel>
+                <CFormInput id="name" placeholder="" value={name} onChange={this.handleFormData} />
+              </CCol>
+              <CCol md={3}>
+                <CFormLabel htmlFor="manufacture">Manufacture</CFormLabel>
+                <CFormInput id="manufacture" placeholder="" value={manufacture} onChange={this.handleFormData} />
+              </CCol>
+              <CCol xs={3}>
+                <CFormLabel htmlFor="line">Line</CFormLabel>
+                <CFormInput id="line" placeholder="eg: 1, 2, 3" value={line} onChange={this.handleFormData} />
+              </CCol>
+              <CCol md={3}>
+                <CFormLabel htmlFor="Device">Device</CFormLabel>
+                <CFormSelect id="Device" value={hmiID} onChange={this.changeDropdown}>
+                  <option value="">Select Device</option>
+                  {deviceList.map((device) => (
+                    <option key={device.id} value={device.id}>{device.device_name}</option>
+                  ))}
+                </CFormSelect>
+              </CCol>
+            </CForm>
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="secondary" onClick={this.toggleUpdateModal}>Close</CButton>
+            <CButton color="primary" onClick={this.machineUpdateData}>Update Machine</CButton>
+          </CModalFooter>
+        </CModal>
       </>
     );
   }

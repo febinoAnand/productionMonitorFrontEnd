@@ -23,13 +23,17 @@ class MachineData extends React.Component {
   state = { machineDataList: [] };
 
   componentDidMount() {
-    axios.get(BaseURL + "data/machines/")
+    axios.get(BaseURL + "data/machinedata/")
       .then(res => {
         const resData = res.data;
-        this.setState({ machineDataList: resData });
-        console.log(resData);
+        const sortedData = resData.reverse();
+        this.setState({ machineDataList: sortedData });
+        console.log(sortedData);
+      })
+      .catch(error => {
+        console.error("There was an error fetching the machine data!", error);
       });
-  }
+  }  
 
   render() {
     return (
@@ -57,9 +61,9 @@ class MachineData extends React.Component {
                 <CCol className='mb-4'></CCol>
 
                 <CTable striped hover>
-                <CTableHead color='dark'>
+                  <CTableHead color='dark'>
                     <CTableRow>
-                      <CTableHeaderCell scope="col">ID</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Date</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Time</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
@@ -69,17 +73,25 @@ class MachineData extends React.Component {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {this.state.machineDataList.map((machine, id) => (
-                      <CTableRow key={machine.id}>
-                        <CTableHeaderCell scope="row">{id + 1}</CTableHeaderCell>
-                        <CTableDataCell>{machine.date}</CTableDataCell>
-                        <CTableDataCell>{machine.time}</CTableDataCell>
-                        <CTableDataCell>{machine.machineID}</CTableDataCell>
-                        <CTableDataCell>{machine.data}</CTableDataCell>
-                        <CTableDataCell>{machine.deviceID}</CTableDataCell>
-                        <CTableDataCell>{machine.dataID}</CTableDataCell>
+                    {this.state.machineDataList.length > 0 ? (
+                      this.state.machineDataList.map((machine, index) => (
+                        <CTableRow key={machine.id}>
+                          <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                          <CTableDataCell>{machine.date}</CTableDataCell>
+                          <CTableDataCell>{machine.time}</CTableDataCell>
+                          <CTableDataCell>{machine.machine_id}</CTableDataCell>
+                          <CTableDataCell>{JSON.stringify(machine.data)}</CTableDataCell>
+                          <CTableDataCell>{machine.device_id}</CTableDataCell>
+                          <CTableDataCell>{machine.data_id}</CTableDataCell>
+                        </CTableRow>
+                      ))
+                    ) : (
+                      <CTableRow>
+                        <CTableDataCell colSpan="7" className="text-center">
+                          No data available
+                        </CTableDataCell>
                       </CTableRow>
-                    ))}
+                    )}
                   </CTableBody>
                 </CTable>
               </CCardBody>

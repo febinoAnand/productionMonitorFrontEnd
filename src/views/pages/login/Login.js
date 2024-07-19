@@ -15,16 +15,57 @@ import {
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser, cilExitToApp } from '@coreui/icons';
+import BaseURL from 'src/assets/contants/BaseURL';
+
+
+const useAuth = () => {
+  const login = (token) => {
+    localStorage.setItem('token', token);
+    console.log(token)
+  };
+
+  return { login };
+};
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [saveId, setSaveId] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = () => {
-    // Implement your login logic here
-    navigate('/dashboard'); // Redirect to dashboard after successful login
+  const handleLogin = async (event) => {
+    event.preventDefault();
+
+    try {
+      const response = await fetch(BaseURL + 'Userauth/weblogin/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        login(data.token);
+        localStorage.setItem('username', username);
+        localStorage.setItem('password', password);
+        console.log(username);
+        console.log('Login successful. Token:', data.token);
+        navigate('/emailTracking/dashboard');
+        window.location.reload();
+      } else {
+        const errorData = await response.json();
+        alert(`Login failed: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error('An error occurred during login:', error);
+      alert('An error occurred. Please try again.');
+    }
   };
 
   return (
@@ -39,7 +80,7 @@ const Login = () => {
             />
           </CCol>
           <CCol md={3}>
-            <CCard className="p-4" style={{ height: '60vh', backgroundColor: '#1E90FF', borderRadius: 0,marginTop:'10px' }}>
+            <CCard className="p-4" style={{ height: '60vh', backgroundColor: '#1E90FF', borderRadius: 0, marginTop: '10px' }}>
               <CCardBody style={{ height: '100%', overflowY: 'auto' }}>
                 <CForm onSubmit={handleLogin}>
                   <h1 style={{ color: '#FFFFFF' }}>Login</h1>

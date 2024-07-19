@@ -133,29 +133,35 @@ class SendReport extends React.Component {
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
-                  {rowData.map((row, index) => (
-                    <CTableRow key={index}>
-                      <CTableHeaderCell>
-                        <input
-                          type="checkbox"
-                          checked={selectedRows.includes(row.id)}
-                          onChange={(e) => this.handleCheckboxChange(e, row.id)}
-                        />
-                      </CTableHeaderCell>
-                      <CTableDataCell>{index + 1}</CTableDataCell>
-                      <CTableDataCell>{row.date}</CTableDataCell>
-                      <CTableDataCell>{row.time}</CTableDataCell>
-                      <CTableDataCell>{row.title}</CTableDataCell>
-                      <CTableDataCell>{row.message}</CTableDataCell>
-                      <CTableDataCell>{row.send_to_user}</CTableDataCell>
-                      <CTableDataCell>{row.delivery_status}</CTableDataCell>
-                      <CTableDataCell>
-                        <CButton onClick={() => this.handleDelete(row.id)}>
-                          <CIcon icon={cilTrash} />
-                        </CButton>
-                      </CTableDataCell>
+                  {rowData.length === 0 ? (
+                    <CTableRow>
+                      <CTableDataCell colSpan="8" className="text-center">No data available</CTableDataCell>
                     </CTableRow>
-                  ))}
+                  ) : (
+                    rowData.map((row, index) => (
+                      <CTableRow key={index}>
+                        <CTableHeaderCell>
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.includes(row.id)}
+                            onChange={(e) => this.handleCheckboxChange(e, row.id)}
+                          />
+                        </CTableHeaderCell>
+                        <CTableDataCell>{index + 1}</CTableDataCell>
+                        <CTableDataCell>{row.date}</CTableDataCell>
+                        <CTableDataCell>{row.time}</CTableDataCell>
+                        <CTableDataCell>{row.title}</CTableDataCell>
+                        <CTableDataCell>{row.message}</CTableDataCell>
+                        <CTableDataCell>{row.send_to_user}</CTableDataCell>
+                        <CTableDataCell>{row.delivery_status}</CTableDataCell>
+                        <CTableDataCell>
+                          <CButton onClick={() => this.handleDelete(row.id)}>
+                            <CIcon icon={cilTrash} />
+                          </CButton>
+                        </CTableDataCell>
+                      </CTableRow>
+                    ))
+                  )}
                 </CTableBody>
               </CTable>
             </CCardBody>

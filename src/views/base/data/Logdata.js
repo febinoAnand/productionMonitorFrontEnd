@@ -23,11 +23,15 @@ class LogData extends React.Component {
   state = { logDataList: [] };
 
   componentDidMount() {
-    axios.get(BaseURL + "data/logs/")
+    axios.get(BaseURL + "data/logdata/")
       .then(res => {
         const resData = res.data;
-        this.setState({ logDataList: resData });
-        console.log(resData);
+        const sortedData = resData.reverse();
+        this.setState({ logDataList: sortedData });
+        console.log(sortedData);
+      })
+      .catch(error => {
+        console.error("There was an error fetching the log data!", error);
       });
   }
 
@@ -57,9 +61,9 @@ class LogData extends React.Component {
                 <CCol className='mb-4'></CCol>
 
                 <CTable striped hover>
-                <CTableHead color='dark'>
+                  <CTableHead color='dark'>
                     <CTableRow>
-                      <CTableHeaderCell scope="col">ID</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Date</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Time</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Received Data</CTableHeaderCell>
@@ -69,17 +73,25 @@ class LogData extends React.Component {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {this.state.logDataList.map((log, id) => (
-                      <CTableRow key={log.id}>
-                        <CTableHeaderCell scope="row">{id + 1}</CTableHeaderCell>
-                        <CTableDataCell>{log.date}</CTableDataCell>
-                        <CTableDataCell>{log.time}</CTableDataCell>
-                        <CTableDataCell>{log.receivedData}</CTableDataCell>
-                        <CTableDataCell>{log.protocol}</CTableDataCell>
-                        <CTableDataCell>{log.topic}</CTableDataCell>
-                        <CTableDataCell>{log.uniqueID}</CTableDataCell>
+                    {this.state.logDataList.length > 0 ? (
+                      this.state.logDataList.map((log, index) => (
+                        <CTableRow key={log.unique_id}>
+                          <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                          <CTableDataCell>{log.date}</CTableDataCell>
+                          <CTableDataCell>{log.time}</CTableDataCell>
+                          <CTableDataCell>{log.received_data}</CTableDataCell>
+                          <CTableDataCell>{log.protocol}</CTableDataCell>
+                          <CTableDataCell>{log.topic_api}</CTableDataCell>
+                          <CTableDataCell>{log.unique_id}</CTableDataCell>
+                        </CTableRow>
+                      ))
+                    ) : (
+                      <CTableRow>
+                        <CTableDataCell colSpan="7" className="text-center">
+                          No data available
+                        </CTableDataCell>
                       </CTableRow>
-                    ))}
+                    )}
                   </CTableBody>
                 </CTable>
               </CCardBody>

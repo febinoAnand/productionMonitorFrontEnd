@@ -13,9 +13,9 @@ import {
   // cilTouchApp,
   // cilBug,
   cilCenterFocus,
-  cilUser,
+  // cilUser,
   cilDescription,
-  cilAccountLogout,
+  // cilAccountLogout,
   cilClock,
 
   cilGroup,
@@ -37,7 +37,7 @@ import {
   cilBoltCircle,
    cilBellExclamation,
    cilRunning,
-   cilSignLanguage,
+  //  cilSignLanguage,
    //cilShortText,
    //cilColumns,
   cilInputHdmi,
@@ -298,12 +298,12 @@ const _nav = [
           to: '/pushnotification/sendreport',
           icon: <CIcon icon={cilSwapHorizontal} customClassName="nav-icon" />,
         },
-         {
-           component: CNavItem,
-           name: 'User Identifier',
-           to: '/pushnotification/useridentifier',
-           icon: <CIcon icon={cilVoiceOverRecord} customClassName="nav-icon" />,
-         },
+        //  {
+        //    component: CNavItem,
+        //    name: 'User Identifier',
+        //    to: '/pushnotification/useridentifier',
+        //    icon: <CIcon icon={cilVoiceOverRecord} customClassName="nav-icon" />,
+        //  },
         {
           component: CNavItem,
           name: 'Setting',
@@ -383,26 +383,6 @@ const _nav = [
   
   },
   {
-   component: CNavTitle,
-    name: 'User Management',
-    style: {color: '#FFFFFF' },
-    
-  },
-  {
-    component: CNavItem,
-    name: 'Users',
-    to: '/users/users',
-    icon: <CIcon icon={cilUserX} customClassName="nav-icon" />,
-    
-  },
-  {
-    component: CNavItem,
-    name: 'Groups',
-    to: '/users/groups',
-    icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
-    
-  },
-  {
     component: CNavTitle,
     name: 'Configurations',
     style: {color: '#FFFFFF' },
@@ -429,6 +409,26 @@ const _nav = [
     icon: <CIcon icon={cilEqualizer} customClassName="nav-icon" />,
   
   },
+  {
+    component: CNavTitle,
+     name: 'User Management',
+     style: {color: '#FFFFFF' },
+     
+   },
+   {
+     component: CNavItem,
+     name: 'Users',
+     to: '/users/users',
+     icon: <CIcon icon={cilUserX} customClassName="nav-icon" />,
+     
+   },
+   {
+     component: CNavItem,
+     name: 'Groups',
+     to: '/users/groups',
+     icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
+     
+   },
   // {
   //   component: CNavTitle,
   //   name: 'Setting',

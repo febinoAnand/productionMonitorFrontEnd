@@ -23,12 +23,14 @@ class ProductionData extends React.Component {
   state = { productionDataList: [] };
 
   componentDidMount() {
-    axios.get(BaseURL + "data/productions/")
+    axios.get(`${BaseURL}data/productiondata/`)
       .then(res => {
         const resData = res.data;
-        this.setState({ productionDataList: resData });
-        console.log(resData);
-      });
+        const sortedData = resData.reverse();
+        this.setState({ productionDataList: sortedData });
+        console.log(sortedData);
+      })
+      .catch(error => console.error('Error fetching data:', error));
   }
 
   render() {
@@ -57,7 +59,7 @@ class ProductionData extends React.Component {
                 <CCol className='mb-3'></CCol>
 
                 <CTable striped hover>
-                <CTableHead color='dark'>
+                  <CTableHead color='dark'>
                     <CTableRow>
                       <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Date</CTableHeaderCell>
@@ -66,29 +68,28 @@ class ProductionData extends React.Component {
                       <CTableHeaderCell scope="col">Shift Name</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Shift StartTime</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Shift EndTime</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Target </CTableHeaderCell>
-                      <CTableHeaderCell scope="col"> Count</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Target</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Count</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Machine Name</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Data ID</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {this.state.productionDataList.map((production, id) => (
+                    {this.state.productionDataList.map((production, index) => (
                       <CTableRow key={production.id}>
-                        <CTableHeaderCell scope="row">{id + 1}</CTableHeaderCell>
+                        <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                         <CTableDataCell>{production.date}</CTableDataCell>
                         <CTableDataCell>{production.time}</CTableDataCell>
-                        <CTableDataCell>{production.shiftID}</CTableDataCell>
-                        <CTableDataCell>{production.shiftName}</CTableDataCell>
-                        <CTableDataCell>{production.shiftStartTime}</CTableDataCell>
-                        <CTableDataCell>{production.shiftEndTime}</CTableDataCell>
-                        <CTableDataCell>{production.target}</CTableDataCell>
-                        <CTableDataCell>{production.Count}</CTableDataCell>
-                        <CTableDataCell>{production.machineID}</CTableDataCell>
-                        <CTableDataCell>{production.machineName}</CTableDataCell>
-                        <CTableDataCell>{production.Count}</CTableDataCell>
-                        <CTableDataCell>{production.dataID}</CTableDataCell>
+                        <CTableDataCell>{production.shift_id}</CTableDataCell>
+                        <CTableDataCell>{production.shift_name}</CTableDataCell>
+                        <CTableDataCell>{production.shift_start_time}</CTableDataCell>
+                        <CTableDataCell>{production.shift_end_time}</CTableDataCell>
+                        <CTableDataCell>{production.target_production}</CTableDataCell>
+                        <CTableDataCell>{production.production_count}</CTableDataCell>
+                        <CTableDataCell>{production.machine_id}</CTableDataCell>
+                        <CTableDataCell>{production.machine_name}</CTableDataCell>
+                        <CTableDataCell>{production.data_id}</CTableDataCell>
                       </CTableRow>
                     ))}
                   </CTableBody>
