@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
-import { CCol, CRow } from '@coreui/react';
+import React, { useState, forwardRef } from 'react';
+import {
+  CCol,
+  CRow,
+  CInputGroup,
+  CFormInput,
+  CButton,
+  CCard,
+  CCardHeader,
+  CCardBody,
+  CFormCheck
+} from '@coreui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { FaDownload, FaSearch} from 'react-icons/fa'; // Import necessary icons
-
+import { FaDownload, FaSearch, FaCalendarAlt } from 'react-icons/fa';
 
 const Download = () => {
   const [startDate4, setStartDate4] = useState(new Date());
@@ -11,80 +20,91 @@ const Download = () => {
   return (
     <>
       <CRow className="mb-3">
-        <CCol md={3}>
-          <div className="input-group">
-            <input type="text" className="form-control" placeholder="Search" />
-            <div className="input-group-append">
-              <span className="input-group-text" style={{ height: '38px', borderRadius: '0px' }}>
-                <FaSearch /> {/* Updated icon */}
-              </span>
-            </div>
-          </div>
-        </CCol>
-        <CCol md={4} className="text-end">
-          <DatePicker
-            selected={startDate4}
-            onChange={(date) => setStartDate4(date)}
-            customInput={<CustomInput />}
-            dateFormat="dd/MM/yyyy"
-            popperPlacement="bottom-end"
-          />
-        </CCol>
-      </CRow>
-      <CRow className="justify-content-center mt-5">
-        <CCol md={4} className="text-center">
-          <div className="d-flex flex-column align-items-center">
-            <div className="input-group" style={{ width: '100%', marginBottom: 0 }}>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="SUMMARY REPORT"
-                readOnly
-                style={{ height: '38px', borderRadius: '0px' }}
-              />
-              <div className="input-group-append">
-                <span className="input-group-text" style={{ height: '36px', borderRadius: '0px' }}>
-                  <FaDownload />
-                </span>
-              </div>
-            </div>
-            <div className="input-group" style={{ width: '100%' }}>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="SHIFTWISE REPORT"
-                readOnly
-                style={{ height: '38px', borderRadius: '0px' }}
-              />
-              <div className="input-group-append">
-                <span className="input-group-text" style={{ height: '38px', borderRadius: '0px' }}>
-                  <FaDownload />
-                </span>
-              </div>
-            </div>
-          </div>
+        <CCol xs={12}>
+          <CCard>
+            <CCardHeader>
+              <h4>Machines</h4>
+            </CCardHeader>
+            <CCardBody>
+              <CRow>
+                <CCol md={8}>
+                  <CInputGroup>
+                    <CFormInput placeholder="Search" />
+                    <CButton type="button" color="secondary">
+                      <FaSearch />
+                    </CButton>
+                  </CInputGroup>
+                </CCol>
+                <CCol md={4} className="text-end">
+                  <CInputGroup>
+                    <DatePicker
+                      selected={startDate4}
+                      onChange={(date) => setStartDate4(date)}
+                      customInput={<CustomInput />}
+                      dateFormat="dd/MM/yyyy"
+                      popperPlacement="bottom-end"
+                    />
+                  </CInputGroup>
+                </CCol>
+              </CRow>
+              <CRow className="mt-3">
+                <CCol md={12}>
+                  <CRow>
+                    <CCol md={2}>
+                      <CFormCheck
+                        id="machine1"
+                        label="Machine 1"
+                        style={{ marginBottom: '10px' }}
+                      />
+                    </CCol>
+                    <CCol md={2}>
+                      <CFormCheck
+                        id="machine2"
+                        label="Machine 2"
+                        style={{ marginBottom: '10px' }}
+                      />
+                    </CCol>
+                    <CCol md={2}>
+                      <CFormCheck
+                        id="machine3"
+                        label="Machine 3"
+                        style={{ marginBottom: '10px' }}
+                      />
+                    </CCol>
+                  </CRow>
+                </CCol>
+              </CRow>
+              <CRow className="justify-content-center mt-5">
+                <CCol md={3} className="text-center">
+                  <CButton type="button" color="primary" variant='outline' className="mb-3" style={{ width: '100%' }}>
+                    Download Summary Report
+                  </CButton>
+                  <CButton type="button" color="primary" variant='outline' style={{ width: '100%' }}>
+                    Download Shiftwise Report
+                  </CButton>
+                </CCol>
+              </CRow>
+            </CCardBody>
+          </CCard>
         </CCol>
       </CRow>
     </>
   );
 };
 
-const CustomInput = ({ value, onClick }) => (
-  <div className="input-group" style={{ height: '38px', borderRadius: '0px' }}>
-    <input
-      type="text"
-      className="form-control"
+const CustomInput = forwardRef(({ value, onClick }, ref) => (
+  <CInputGroup>
+    <CFormInput
       value={value}
       onClick={onClick}
       readOnly
+      ref={ref}
       style={{ paddingRight: '30px', height: '38px', borderRadius: '0px' }}
     />
-    <div className="input-group-append" onClick={onClick} style={{ borderRadius: '0px' }}>
-      <span className="input-group-text" style={{ height: '38px', borderRadius: '0px' }}>
-        <FaSearch />
-      </span>
-    </div>
-  </div>
-);
+    <CButton type="button" color="secondary" onClick={onClick}>
+      <FaCalendarAlt />
+    </CButton>
+  </CInputGroup>
+));
 
 export default Download;

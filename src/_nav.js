@@ -85,12 +85,12 @@ const _nav = [
           to: '/HLMando/Download',
           icon: <CIcon icon={cilArrowCircleBottom} customClassName="nav-icon" />,
         },
-          {
-          component: CNavItem,
-          name: 'List Achievement',
-          to: '/HLMando/Listachievement',
-          icon: <CIcon icon={cilClock} customClassName="nav-icon" />,
-        },
+        //   {
+        //   component: CNavItem,
+        //   name: 'List Achievement',
+        //   to: '/HLMando/Listachievement',
+        //   icon: <CIcon icon={cilClock} customClassName="nav-icon" />,
+        // },
     ]
   },
 
@@ -375,13 +375,13 @@ const _nav = [
     ]
     
   },
-  {
-    component: CNavItem,
-    name: 'Unregister Device',
-    to:'/details/unregister',
-    icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
+  // {
+  //   component: CNavItem,
+  //   name: 'Unregister Device',
+  //   to:'/details/unregister',
+  //   icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
   
-  },
+  // },
   {
     component: CNavTitle,
     name: 'Configurations',

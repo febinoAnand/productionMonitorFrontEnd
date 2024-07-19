@@ -8,6 +8,6 @@
 // const BaseURL = "http://64.227.130.181:9002/"
 // const BaseURL = "http://django.febinosolutions.com/"
 // const BaseURL = "http://febinosolutions.com:9002/"
-const BaseURL = "http://production.univa.cloud/"
+const BaseURL = "https://productionb.univa.cloud/"
 // const BaseURL = "http://localhost:9002/"
 export default BaseURL
