@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { cilPen, cilTrash } from '@coreui/icons';
 import {
     CButton,
@@ -40,15 +40,6 @@ const Groups = () => {
     const [newGroupName, setNewGroupName] = useState('');
     const [newGroupUsers, setNewGroupUsers] = useState([]);
 
-    useEffect(() => {
-        fetchGroupData();
-        fetchUserData();
-    }, []);
-
-    useEffect(() => {
-        handleSearch(searchQuery);
-    }, [groupData, searchQuery]);
-
     const getAuthHeaders = () => {
         const token = localStorage.getItem('token');
         return {
@@ -57,7 +48,7 @@ const Groups = () => {
         };
     };
 
-    const fetchGroupData = async () => {
+    const fetchGroupData = useCallback(async () => {
         try {
             const response = await axios.get(BaseURL + "app/groups/", { headers: getAuthHeaders() });
             const sortedData = response.data.reverse();
@@ -66,16 +57,50 @@ const Groups = () => {
         } catch (error) {
             console.error('Error fetching group data:', error);
         }
-    };
+    }, []);
 
-    const fetchUserData = async () => {
+    const fetchUserData = useCallback(async () => {
         try {
             const response = await axios.get(BaseURL + "Userauth/userdetail/", { headers: getAuthHeaders() });
             setUserData(response.data);
         } catch (error) {
             console.error('Error fetching user data:', error);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchGroupData();
+        fetchUserData();
+    }, [fetchGroupData, fetchUserData]);
+
+    const handleSearch = useCallback((query) => {
+        setSearchQuery(query);
+        if (!groupData) return;
+
+        if (query === '') {
+            setFilteredGroupData(groupData);
+        } else {
+            const lowercasedQuery = query.toLowerCase();
+            const filteredData = groupData.filter(group => {
+                const name = group.name?.toLowerCase() || '';
+                const userSet = group.user_set ? group.user_set.map(userId => userId.toString().toLowerCase()).join(' ') : '';
+                const userEmails = group.user_details.map(user => user.email.toLowerCase()).join(' ');
+                const userMobileNumbers = group.user_details.map(user => user.mobile_no.toLowerCase()).join(' ');
+
+                return (
+                    name.includes(lowercasedQuery) ||
+                    userSet.includes(lowercasedQuery) ||
+                    userEmails.includes(lowercasedQuery) ||
+                    userMobileNumbers.includes(lowercasedQuery)
+                );
+            });
+            setFilteredGroupData(filteredData);
+        }
+    }, [groupData]);
+
+    useEffect(() => {
+        handleSearch(searchQuery);
+    }, [handleSearch, searchQuery]);
 
     const handleGroupSelect = (group) => {
         if (group) {
@@ -109,31 +134,6 @@ const Groups = () => {
             }
         }
         setNewGroupUsers(selectedUsers);
-    };
-
-    const handleSearch = (query) => {
-        setSearchQuery(query);
-        if (!groupData) return;
-
-        if (query === '') {
-            setFilteredGroupData(groupData);
-        } else {
-            const lowercasedQuery = query.toLowerCase();
-            const filteredData = groupData.filter(group => {
-                const name = group.name?.toLowerCase() || '';
-                const userSet = group.user_set ? group.user_set.map(userId => userId.toString().toLowerCase()).join(' ') : '';
-                const userEmails = group.user_details.map(user => user.email.toLowerCase()).join(' ');
-                const userMobileNumbers = group.user_details.map(user => user.mobile_no.toLowerCase()).join(' ');
-
-                return (
-                    name.includes(lowercasedQuery) ||
-                    userSet.includes(lowercasedQuery) ||
-                    userEmails.includes(lowercasedQuery) ||
-                    userMobileNumbers.includes(lowercasedQuery)
-                );
-            });
-            setFilteredGroupData(filteredData);
-        }
     };
 
     const handleUpdateGroup = async () => {
