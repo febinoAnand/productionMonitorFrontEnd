@@ -20,14 +20,18 @@ import {
 } from '@coreui/react';
 
 class DeviceData extends React.Component {
-  state = { deviceDataList: [] };
+  state = {
+    deviceDataList: [],
+    searchQuery: '',
+    filteredData: [],
+  };
 
   componentDidMount() {
     axios.get(BaseURL + "data/devicedata/")
       .then(res => {
         const resData = res.data;
         const sortedData = resData.reverse();
-        this.setState({ deviceDataList: sortedData });
+        this.setState({ deviceDataList: sortedData, filteredData: sortedData });
         console.log(sortedData);
       })
       .catch(error => {
@@ -35,7 +39,34 @@ class DeviceData extends React.Component {
       });
   }
 
+  handleSearchChange = (event) => {
+    this.setState({ searchQuery: event.target.value });
+  }
+
+  handleSearch = () => {
+    const { searchQuery, deviceDataList } = this.state;
+    if (searchQuery.trim() === '') {
+      this.setState({ filteredData: deviceDataList });
+      return;
+    }
+    const query = searchQuery.toLowerCase();
+    const filteredData = deviceDataList.filter(device => {
+      return (
+        (String(device.date).toLowerCase().includes(query)) ||
+        (String(device.time).toLowerCase().includes(query)) ||
+        (String(device.device_id).toLowerCase().includes(query)) ||
+        (String(device.protocol).toLowerCase().includes(query)) ||
+        (String(device.topic_api).toLowerCase().includes(query)) ||
+        (String(device.log_data_id).toLowerCase().includes(query)) ||
+        (JSON.stringify(device.data).toLowerCase().includes(query))
+      );
+    });
+    this.setState({ filteredData });
+  }
+
   render() {
+    const { searchQuery, filteredData } = this.state;
+
     return (
       <>
         <CRow>
@@ -51,8 +82,10 @@ class DeviceData extends React.Component {
                       placeholder="Search"
                       aria-label="Search"
                       aria-describedby="addon-wrapping"
+                      value={searchQuery}
+                      onChange={this.handleSearchChange}
                     />
-                    <CButton type="button" color="dark" id="button-addon2">
+                    <CButton type="button" color="dark" onClick={this.handleSearch}>
                       Search
                     </CButton>
                   </CInputGroup>
@@ -74,8 +107,8 @@ class DeviceData extends React.Component {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {this.state.deviceDataList.length > 0 ? (
-                      this.state.deviceDataList.map((device, index) => (
+                    {filteredData.length > 0 ? (
+                      filteredData.map((device, index) => (
                         <CTableRow key={device.id}>
                           <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                           <CTableDataCell>{device.date}</CTableDataCell>

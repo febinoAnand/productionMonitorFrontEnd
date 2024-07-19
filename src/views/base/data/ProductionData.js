@@ -20,18 +20,36 @@ import {
 } from '@coreui/react';
 
 class ProductionData extends React.Component {
-  state = { productionDataList: [] };
+  state = {
+    productionDataList: [],
+    searchQuery: '',
+    filteredData: [],
+  };
 
   componentDidMount() {
     axios.get(`${BaseURL}data/productiondata/`)
       .then(res => {
         const resData = res.data;
         const sortedData = resData.reverse();
-        this.setState({ productionDataList: sortedData });
+        this.setState({ productionDataList: sortedData, filteredData: sortedData });
         console.log(sortedData);
       })
       .catch(error => console.error('Error fetching data:', error));
   }
+
+  handleSearchQueryChange = (event) => {
+    this.setState({ searchQuery: event.target.value });
+  };
+
+  handleSearch = () => {
+    const { productionDataList, searchQuery } = this.state;
+    const filteredData = productionDataList.filter(production => 
+      Object.values(production).some(value =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+    this.setState({ filteredData });
+  };
 
   render() {
     return (
@@ -49,8 +67,10 @@ class ProductionData extends React.Component {
                       placeholder="Search"
                       aria-label="Search"
                       aria-describedby="addon-wrapping"
+                      value={this.state.searchQuery}
+                      onChange={this.handleSearchQueryChange}
                     />
-                    <CButton type="button" color="dark" id="button-addon2">
+                    <CButton type="button" color="dark" id="button-addon2" onClick={this.handleSearch}>
                       Search
                     </CButton>
                   </CInputGroup>
@@ -61,7 +81,7 @@ class ProductionData extends React.Component {
                 <CTable striped hover>
                   <CTableHead color='dark'>
                     <CTableRow>
-                      <CTableHeaderCell scope="col">ID</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Date</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Time</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Shift ID</CTableHeaderCell>
@@ -76,22 +96,30 @@ class ProductionData extends React.Component {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {this.state.productionDataList.map((production, index) => (
-                      <CTableRow key={production.id}>
-                        <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
-                        <CTableDataCell>{production.date}</CTableDataCell>
-                        <CTableDataCell>{production.time}</CTableDataCell>
-                        <CTableDataCell>{production.shift_id}</CTableDataCell>
-                        <CTableDataCell>{production.shift_name}</CTableDataCell>
-                        <CTableDataCell>{production.shift_start_time}</CTableDataCell>
-                        <CTableDataCell>{production.shift_end_time}</CTableDataCell>
-                        <CTableDataCell>{production.target_production}</CTableDataCell>
-                        <CTableDataCell>{production.production_count}</CTableDataCell>
-                        <CTableDataCell>{production.machine_id}</CTableDataCell>
-                        <CTableDataCell>{production.machine_name}</CTableDataCell>
-                        <CTableDataCell>{production.data_id}</CTableDataCell>
+                    {this.state.filteredData.length === 0 ? (
+                      <CTableRow>
+                        <CTableDataCell colSpan="12" className="text-center">
+                          No data available
+                        </CTableDataCell>
                       </CTableRow>
-                    ))}
+                    ) : (
+                      this.state.filteredData.map((production, index) => (
+                        <CTableRow key={production.id}>
+                          <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                          <CTableDataCell>{production.date}</CTableDataCell>
+                          <CTableDataCell>{production.time}</CTableDataCell>
+                          <CTableDataCell>{production.shift_id}</CTableDataCell>
+                          <CTableDataCell>{production.shift_name}</CTableDataCell>
+                          <CTableDataCell>{production.shift_start_time}</CTableDataCell>
+                          <CTableDataCell>{production.shift_end_time}</CTableDataCell>
+                          <CTableDataCell>{production.target_production}</CTableDataCell>
+                          <CTableDataCell>{production.production_count}</CTableDataCell>
+                          <CTableDataCell>{production.machine_id}</CTableDataCell>
+                          <CTableDataCell>{production.machine_name}</CTableDataCell>
+                          <CTableDataCell>{production.data_id}</CTableDataCell>
+                        </CTableRow>
+                      ))
+                    )}
                   </CTableBody>
                 </CTable>
               </CCardBody>

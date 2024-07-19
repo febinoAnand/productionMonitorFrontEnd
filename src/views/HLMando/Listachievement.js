@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-  CButton,
+  // CButton,
   CCard,
   CCardBody,
-  CCardHeader,
+  // CCardHeader,
   CCol,
-  CFormCheck,
+  // CFormCheck,
   CRow,
   CTable,
   CTableBody,
@@ -14,8 +14,8 @@ import {
   CTableHeaderCell,
   CTableRow
 } from '@coreui/react';
-import { cilSave, cilPen } from '@coreui/icons';
-import CIcon from '@coreui/icons-react';
+// import { cilSave, cilPen } from '@coreui/icons';
+// import CIcon from '@coreui/icons-react';
 
 const Listachievement = () => {
   return (

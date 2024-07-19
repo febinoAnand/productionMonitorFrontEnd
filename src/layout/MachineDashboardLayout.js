@@ -2,7 +2,7 @@ import React from 'react'
 import { LiveHeader } from '../components/index'
 // import greyLogo from "../assets/images/grey-gredient.jpeg"
 
-import { useSearchParams } from 'react-router-dom';
+// import { useSearchParams } from 'react-router-dom';
 import MachineIndividual from 'src/views/base/details/MachineIndividual';
 
 const MachineDashboardLayout = () => {

@@ -15,7 +15,7 @@ import {
     CRow,
     CTable,
     CTableBody,
-    CTableCaption,
+    // CTableCaption,
     CTableDataCell,
     CTableHead,
     CTableHeaderCell,

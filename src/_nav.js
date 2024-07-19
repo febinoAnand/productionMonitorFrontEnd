@@ -3,7 +3,7 @@ import CIcon from '@coreui/icons-react'
 import {
   cilCursor,
   // cilMonitor,
-  cilNotes,
+  // cilNotes,
   cilPuzzle,
   // cilSpeedometer,
   // cilLightbulb,
@@ -16,7 +16,7 @@ import {
   // cilUser,
   cilDescription,
   // cilAccountLogout,
-  cilClock,
+  // cilClock,
 
   cilGroup,
   cilCloud,
@@ -30,7 +30,7 @@ import {
    //cilSettings,
    //cilSearch,
    cilSwapHorizontal,
-   cilVoiceOverRecord,
+  //  cilVoiceOverRecord,
    cilShieldAlt,
    cilPrint,
    cilLan,

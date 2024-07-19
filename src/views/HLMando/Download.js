@@ -12,7 +12,7 @@ import {
 } from '@coreui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { FaDownload, FaSearch, FaCalendarAlt } from 'react-icons/fa';
+import { FaSearch, FaCalendarAlt } from 'react-icons/fa';
 
 const Download = () => {
   const [startDate4, setStartDate4] = useState(new Date());
@@ -92,19 +92,21 @@ const Download = () => {
   );
 };
 
-const CustomInput = forwardRef(({ value, onClick }, ref) => (
+const CustomInput = forwardRef((props, ref) => (
   <CInputGroup>
     <CFormInput
-      value={value}
-      onClick={onClick}
+      value={props.value}
+      onClick={props.onClick}
       readOnly
       ref={ref}
       style={{ paddingRight: '30px', height: '38px', borderRadius: '0px' }}
     />
-    <CButton type="button" color="secondary" onClick={onClick}>
+    <CButton type="button" color="secondary" onClick={props.onClick}>
       <FaCalendarAlt />
     </CButton>
   </CInputGroup>
 ));
+
+CustomInput.displayName = 'CustomInput';
 
 export default Download;

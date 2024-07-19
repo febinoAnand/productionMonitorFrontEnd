@@ -20,14 +20,18 @@ import {
 } from '@coreui/react';
 
 class LogData extends React.Component {
-  state = { logDataList: [] };
+  state = {
+    logDataList: [],
+    searchQuery: '',
+    filteredData: [],
+  };
 
   componentDidMount() {
     axios.get(BaseURL + "data/logdata/")
       .then(res => {
         const resData = res.data;
         const sortedData = resData.reverse();
-        this.setState({ logDataList: sortedData });
+        this.setState({ logDataList: sortedData, filteredData: sortedData });
         console.log(sortedData);
       })
       .catch(error => {
@@ -35,7 +39,30 @@ class LogData extends React.Component {
       });
   }
 
+  handleSearchChange = (event) => {
+    this.setState({ searchQuery: event.target.value });
+  }
+
+  handleSearch = () => {
+    const { searchQuery, logDataList } = this.state;
+    if (searchQuery.trim() === '') {
+      this.setState({ filteredData: logDataList });
+      return;
+    }
+    const filteredData = logDataList.filter(log =>
+      log.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.time.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.received_data.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.protocol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.topic_api.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.unique_id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    this.setState({ filteredData });
+  }
+
   render() {
+    const { searchQuery, filteredData } = this.state;
+
     return (
       <>
         <CRow>
@@ -51,8 +78,10 @@ class LogData extends React.Component {
                       placeholder="Search"
                       aria-label="Search"
                       aria-describedby="addon-wrapping"
+                      value={searchQuery}
+                      onChange={this.handleSearchChange}
                     />
-                    <CButton type="button" color="dark" id="button-addon2">
+                    <CButton type="button" color="dark" onClick={this.handleSearch}>
                       Search
                     </CButton>
                   </CInputGroup>
@@ -73,8 +102,8 @@ class LogData extends React.Component {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {this.state.logDataList.length > 0 ? (
-                      this.state.logDataList.map((log, index) => (
+                    {filteredData.length > 0 ? (
+                      filteredData.map((log, index) => (
                         <CTableRow key={log.unique_id}>
                           <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                           <CTableDataCell>{log.date}</CTableDataCell>

@@ -20,22 +20,52 @@ import {
 } from '@coreui/react';
 
 class MachineData extends React.Component {
-  state = { machineDataList: [] };
+  state = {
+    machineDataList: [],
+    searchQuery: '',
+    filteredData: [],
+  };
 
   componentDidMount() {
     axios.get(BaseURL + "data/machinedata/")
       .then(res => {
         const resData = res.data;
         const sortedData = resData.reverse();
-        this.setState({ machineDataList: sortedData });
+        this.setState({ machineDataList: sortedData, filteredData: sortedData });
         console.log(sortedData);
       })
       .catch(error => {
         console.error("There was an error fetching the machine data!", error);
       });
-  }  
+  }
+
+  handleSearchChange = (event) => {
+    this.setState({ searchQuery: event.target.value });
+  }
+
+  handleSearch = () => {
+    const { searchQuery, machineDataList } = this.state;
+    if (searchQuery.trim() === '') {
+      this.setState({ filteredData: machineDataList });
+      return;
+    }
+    const filteredData = machineDataList.filter(machine => {
+      const query = searchQuery.toLowerCase();
+      return (
+        (String(machine.date).toLowerCase().includes(query)) ||
+        (String(machine.time).toLowerCase().includes(query)) ||
+        (String(machine.machine_id).toLowerCase().includes(query)) ||
+        (String(machine.data).toLowerCase().includes(query)) ||
+        (String(machine.device_id).toLowerCase().includes(query)) ||
+        (String(machine.data_id).toLowerCase().includes(query))
+      );
+    });
+    this.setState({ filteredData });
+  }
 
   render() {
+    const { searchQuery, filteredData } = this.state;
+
     return (
       <>
         <CRow>
@@ -51,8 +81,10 @@ class MachineData extends React.Component {
                       placeholder="Search"
                       aria-label="Search"
                       aria-describedby="addon-wrapping"
+                      value={searchQuery}
+                      onChange={this.handleSearchChange}
                     />
-                    <CButton type="button" color="dark" id="button-addon2">
+                    <CButton type="button" color="dark" onClick={this.handleSearch}>
                       Search
                     </CButton>
                   </CInputGroup>
@@ -73,8 +105,8 @@ class MachineData extends React.Component {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {this.state.machineDataList.length > 0 ? (
-                      this.state.machineDataList.map((machine, index) => (
+                    {filteredData.length > 0 ? (
+                      filteredData.map((machine, index) => (
                         <CTableRow key={machine.id}>
                           <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                           <CTableDataCell>{machine.date}</CTableDataCell>

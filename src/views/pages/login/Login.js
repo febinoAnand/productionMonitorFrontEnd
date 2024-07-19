@@ -56,7 +56,7 @@ const Login = () => {
         localStorage.setItem('password', password);
         console.log(username);
         console.log('Login successful. Token:', data.token);
-        navigate('/emailTracking/dashboard');
+        navigate('/HLMando/dashboard');
         window.location.reload();
       } else {
         const errorData = await response.json();
