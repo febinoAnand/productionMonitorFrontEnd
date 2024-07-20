@@ -12,7 +12,7 @@ import {
   // cilSitemap,
   // cilTouchApp,
   // cilBug,
-  cilCenterFocus,
+  // cilCenterFocus,
   // cilUser,
   cilDescription,
   // cilAccountLogout,
@@ -40,8 +40,8 @@ import {
   //  cilSignLanguage,
    //cilShortText,
    //cilColumns,
-  cilInputHdmi,
-  cilInput,
+  // cilInputHdmi,
+  // cilInput,
   cibKeycdn,
   cilHome,
   cilUserX,
@@ -326,7 +326,7 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Machine Details',
+    name: 'Machine',
     to: '/details/machinedetails',
     icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
     
@@ -339,27 +339,27 @@ const _nav = [
     
   },
   {
-    component: CNavGroup,
+    component: CNavItem,
     name: 'Device',
-
+    to: '/details/devdetails',
     icon: <CIcon icon={cilCursor} customClassName="nav-icon" />,
 
-    items:[
-      {
-        component: CNavItem,
-        name: 'Hard Device',
-        to: '/details/devdetails',
-        icon: <CIcon icon={cilInput} customClassName="nav-icon" />,
+    // items:[
+    //   {
+    //     component: CNavItem,
+    //     name: 'Hard Device',
+    //     to: '/details/devdetails',
+    //     icon: <CIcon icon={cilInput} customClassName="nav-icon" />,
         
-      },
-      {
-        component: CNavItem,
-        name: 'Soft Device',
-        to: '/details/softdetails',
-        icon: <CIcon icon={cilInputHdmi} customClassName="nav-icon" />,
+    //   },
+    //   {
+    //     component: CNavItem,
+    //     name: 'Soft Device',
+    //     to: '/details/softdetails',
+    //     icon: <CIcon icon={cilInputHdmi} customClassName="nav-icon" />,
         
-      },
-    ]
+    //   },
+    // ]
     
   },
   // {
