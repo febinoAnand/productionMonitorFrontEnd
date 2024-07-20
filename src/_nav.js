@@ -2,7 +2,7 @@ import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
   cilCursor,
-  // cilMonitor,
+  cilMonitor,
   // cilNotes,
   cilPuzzle,
   // cilSpeedometer,
@@ -329,6 +329,13 @@ const _nav = [
     name: 'Machine Details',
     to: '/details/machinedetails',
     icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+    
+  },
+  {
+    component: CNavItem,
+    name: 'Machine Groups',
+    to: '/details/machinegroup',
+    icon: <CIcon icon={cilMonitor} customClassName="nav-icon" />,
     
   },
   {
