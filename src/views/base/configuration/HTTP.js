@@ -62,7 +62,7 @@ const HTTP = () => {
         auth_token: formData.authToken,
         api_path: formData.apiPath,
       });
-      setSettings((prevSettings) => [...prevSettings, response.data]);
+      setSettings((prevSettings) => [response.data, ...prevSettings]);
       setFormData({ id: '', authToken: '', apiPath: '' });
       setModalVisible(false);
       showSuccessMessage('Settings added successfully!');
@@ -78,9 +78,7 @@ const HTTP = () => {
         api_path: formData.apiPath,
       });
       setSettings((prevSettings) =>
-        prevSettings.map((setting) =>
-          setting.id === formData.id ? response.data : setting
-        )
+        [response.data, ...prevSettings.filter((setting) => setting.id !== formData.id)]
       );
       setFormData({ id: '', authToken: '', apiPath: '' });
       setModalVisible(false);

@@ -24,15 +24,16 @@ import {
   CFormInput,
   CFormLabel
 } from '@coreui/react';
+import BaseURL from 'src/assets/contants/BaseURL';
 
-const BaseURL = "https://productionb.univa.cloud/"; 
-const url = `${BaseURL}devices/device/`; 
+const url = `${BaseURL}devices/device/`;
 
 const DeviceDetails = () => {
   const [deviceList, setDeviceList] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState(''); 
+  const [modalMode, setModalMode] = useState('');
   const [selectedDevice, setSelectedDevice] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     fetchDevices();
@@ -61,7 +62,13 @@ const DeviceDetails = () => {
     toggleModal('update', device);
   };
 
-  const handleDeleteClick = async (deviceId) => {
+  const handleDeleteClick = (deviceId) => {
+    if (window.confirm('Are you sure you want to delete this device?')) {
+      deleteDevice(deviceId);
+    }
+  };
+
+  const deleteDevice = async (deviceId) => {
     try {
       const response = await fetch(`${url}${deviceId}/`, {
         method: 'DELETE',
@@ -70,6 +77,7 @@ const DeviceDetails = () => {
         throw new Error('Network response was not ok');
       }
       setDeviceList(deviceList.filter(device => device.id !== deviceId));
+      setSuccessMessage('Device deleted successfully');
     } catch (error) {
       console.error('Error deleting device:', error);
     }
@@ -98,9 +106,9 @@ const DeviceDetails = () => {
           throw new Error('Network response was not ok');
         }
         const newDevice = await response.json();
-        setDeviceList([...deviceList, newDevice]);
+        setDeviceList([newDevice, ...deviceList]); // Add new device to the beginning
+        setSuccessMessage('Device added successfully');
       } else if (modalMode === 'update') {
-        // Update existing device logic
         const response = await fetch(`${url}${selectedDevice.id}/`, {
           method: 'PUT',
           headers: {
@@ -112,11 +120,10 @@ const DeviceDetails = () => {
           throw new Error('Network response was not ok');
         }
         const updatedDevice = await response.json();
-        setDeviceList(deviceList.map(device =>
-          device.id === updatedDevice.id ? updatedDevice : device
-        ));
+        setDeviceList([updatedDevice, ...deviceList.filter(device => device.id !== updatedDevice.id)]); // Update device and move to the beginning
+        setSuccessMessage('Device updated successfully');
       }
-      toggleModal(); 
+      toggleModal();
     } catch (error) {
       console.error('Error saving device:', error);
     }
@@ -124,6 +131,7 @@ const DeviceDetails = () => {
 
   return (
     <>
+      {successMessage && <div className="alert alert-success">{successMessage}</div>}
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
@@ -162,19 +170,19 @@ const DeviceDetails = () => {
                       <CTableDataCell>{device.sub_topic}</CTableDataCell>
                       <CTableDataCell>{device.api_path}</CTableDataCell>
                       <CTableDataCell>
-                                                    <div className="d-flex gap-2">
-                                                        <CTooltip content="Edit Group">
-                                                            <CButton color="primary" onClick={() => handleEditClick(device)}>
-                                                                <CIcon icon={cilPen} />
-                                                            </CButton>
-                                                        </CTooltip>
-                                                        <CTooltip content="Delete Group">
-                                                            <CButton color="primary" onClick={() => handleDeleteClick(device.id)}>
-                                                                <CIcon icon={cilTrash} />
-                                                            </CButton>
-                                                        </CTooltip>
-                                                    </div>
-                                                </CTableDataCell>
+                        <div className="d-flex gap-2">
+                          <CTooltip content="Edit Device">
+                            <CButton color="primary" onClick={() => handleEditClick(device)}>
+                              <CIcon icon={cilPen} />
+                            </CButton>
+                          </CTooltip>
+                          <CTooltip content="Delete Device">
+                            <CButton color="primary" onClick={() => handleDeleteClick(device.id)}>
+                              <CIcon icon={cilTrash} />
+                            </CButton>
+                          </CTooltip>
+                        </div>
+                      </CTableDataCell>
                     </CTableRow>
                   ))}
                 </CTableBody>
@@ -184,11 +192,7 @@ const DeviceDetails = () => {
         </CCol>
       </CRow>
 
-      <CModal
-        visible={showModal}
-        onClose={() => toggleModal()}
-        size="xl"
-      >
+      <CModal visible={showModal} onClose={() => setShowModal(false)} size="xl">
         <CModalHeader>
           <CModalTitle>{modalMode === 'update' ? 'Update Device' : 'Add Device'}</CModalTitle>
         </CModalHeader>
@@ -278,11 +282,11 @@ const DeviceDetails = () => {
             </CRow>
           </CModalBody>
           <CModalFooter>
-            <CButton color="secondary" onClick={() => toggleModal()}>
-              Close
+            <CButton color="secondary" onClick={() => setShowModal(false)}>
+              Cancel
             </CButton>
             <CButton color="primary" type="submit">
-              {modalMode === 'update' ? 'Update' : 'Add'}
+              {modalMode === 'update' ? 'Update Device' : 'Add Device'}
             </CButton>
           </CModalFooter>
         </CForm>

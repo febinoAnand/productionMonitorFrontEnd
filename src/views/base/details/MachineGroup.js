@@ -290,7 +290,7 @@ const Groups = () => {
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" size='sm' onClick={() => setModalVisible(false)}>Close</CButton>
-                    <CButton color="primary" size='sm' onClick={handleUpdateGroup}>Save changes</CButton>
+                    <CButton color="primary" variant='outline' size='sm' onClick={handleUpdateGroup}>Save changes</CButton>
                 </CModalFooter>
             </CModal>
             <CModal visible={newGroupModalVisible} onClose={() => setNewGroupModalVisible(false)}>
@@ -326,7 +326,7 @@ const Groups = () => {
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" size='sm' onClick={() => setNewGroupModalVisible(false)}>Close</CButton>
-                    <CButton color="primary" size='sm' onClick={handleCreateNewGroup}>Create Group</CButton>
+                    <CButton color="primary" variant='outline' size='sm' onClick={handleCreateNewGroup}>Create Group</CButton>
                 </CModalFooter>
             </CModal>
         </>

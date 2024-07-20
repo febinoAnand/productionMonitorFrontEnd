@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { cilPen, cilTrash } from '@coreui/icons';
+import { cilPen } from '@coreui/icons';
 import {
   CCard,
   CCardBody,
@@ -20,13 +20,15 @@ import {
   CModalFooter,
   CModalHeader,
   CModalTitle,
-  CButton
+  CButton,
+  CAlert 
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
+import BaseURL from 'src/assets/contants/BaseURL';
 
 const MQTT = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [editIndex, setEditIndex] = useState(null);
+  const [editId, setEditId] = useState(null);
   const [host, setHost] = useState('');
   const [port, setPort] = useState('');
   const [userName, setUserName] = useState('');
@@ -35,6 +37,7 @@ const MQTT = () => {
   const [keepAlive, setKeepAlive] = useState('60');
   const [qos, setQos] = useState('0');
   const [data, setData] = useState([]);
+  const [successMessage, setSuccessMessage] = useState(''); 
 
   useEffect(() => {
     fetchConfigurations();
@@ -42,10 +45,22 @@ const MQTT = () => {
 
   const fetchConfigurations = async () => {
     try {
-      const response = await fetch('https://productionb.univa.cloud/config/mqttsettings/');
+      const url = `${BaseURL}config/mqttsettings/`;
+      const response = await fetch(url);
       if (response.ok) {
         const configurations = await response.json();
         setData(configurations);
+        if (configurations.length > 0) {
+          const firstEntry = configurations[0];
+          setHost(firstEntry.host);
+          setPort(firstEntry.port);
+          setUserName(firstEntry.username);
+          setPassword(firstEntry.password);
+          setServerNameAlias(firstEntry.server_name_alias);
+          setKeepAlive(firstEntry.keepalive);
+          setQos(firstEntry.qos);
+          setEditId(firstEntry._id);
+        }
       } else {
         console.error('Failed to fetch configurations');
       }
@@ -54,10 +69,14 @@ const MQTT = () => {
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const newEntry = {
-      id: editIndex !== null ? editIndex : Date.now(),
+    if (editId === null) {
+      console.error('No configuration selected for update');
+      return;
+    }
+
+    const updatedEntry = {
       host,
       port,
       username: userName,
@@ -67,20 +86,38 @@ const MQTT = () => {
       qos
     };
 
-    if (editIndex !== null) {
-      setData((prevData) =>
-        prevData.map((item) => (item.id === editIndex ? newEntry : item))
-      );
-    } else {
-      setData((prevData) => [...prevData, newEntry]);
-    }
+    try {
+      const url = `${BaseURL}config/mqttsettings/${editId}/`;
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+         
+        },
+        body: JSON.stringify(updatedEntry),
+      });
 
-    setModalVisible(false);
-    resetForm();
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update configuration: ${response.status} ${errorText}`);
+      }
+
+      setData((prevData) =>
+        prevData.map((item) =>
+          item._id === editId ? { ...item, ...updatedEntry } : item
+        )
+      );
+
+      setModalVisible(false);
+      setSuccessMessage('Configuration updated successfully!'); 
+      resetForm();
+    } catch (error) {
+      console.error('Error updating configuration:', error);
+    }
   };
 
   const handleEdit = (id) => {
-    const entry = data.find((item) => item.id === id);
+    const entry = data.find((item) => item._id === id);
     setHost(entry.host);
     setPort(entry.port);
     setUserName(entry.username);
@@ -88,12 +125,8 @@ const MQTT = () => {
     setServerNameAlias(entry.server_name_alias);
     setKeepAlive(entry.keepalive);
     setQos(entry.qos);
-    setEditIndex(id);
+    setEditId(id);
     setModalVisible(true);
-  };
-
-  const handleDelete = (id) => {
-    setData((prevData) => prevData.filter((item) => item.id !== id));
   };
 
   const resetForm = () => {
@@ -104,24 +137,21 @@ const MQTT = () => {
     setServerNameAlias('');
     setKeepAlive('60');
     setQos('0');
-    setEditIndex(null);
+    setEditId(null);
   };
 
   return (
     <>
+      {successMessage && (
+                <CAlert color="success" dismissible onClose={() => setSuccessMessage('')}>
+                  {successMessage}
+                </CAlert>
+              )}
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
             <CCardHeader>
               <strong>MQTT Config</strong>
-              <CButton
-                color="success"
-                variant="outline"
-                className="float-end"
-                onClick={() => setModalVisible(true)}
-              >
-                Add Configuration
-              </CButton>
             </CCardHeader>
             <CCardBody>
               <CTable striped hover>
@@ -139,7 +169,7 @@ const MQTT = () => {
                 </CTableHead>
                 <CTableBody>
                   {data.map((entry) => (
-                    <CTableRow key={entry.id}>
+                    <CTableRow key={entry._id}>
                       <CTableDataCell>{entry.host}</CTableDataCell>
                       <CTableDataCell>{entry.port}</CTableDataCell>
                       <CTableDataCell>{entry.username}</CTableDataCell>
@@ -148,16 +178,12 @@ const MQTT = () => {
                       <CTableDataCell>{entry.keepalive}</CTableDataCell>
                       <CTableDataCell>{entry.qos}</CTableDataCell>
                       <CTableDataCell>
-                            <div className="d-flex gap-2">
-                              <CButton  onClick={() => handleEdit(entry.id)}>
-                                <CIcon icon={cilPen} />
-                              </CButton>
-                              <CButton onClick={() => handleDelete(entry.id)}>
-                                <CIcon icon={cilTrash} />
-                              </CButton>
-                            </div>
-                          </CTableDataCell>
-
+                        <div className="d-flex gap-2">
+                          <CButton onClick={() => handleEdit(entry._id)}>
+                            <CIcon icon={cilPen} />
+                          </CButton>
+                        </div>
+                      </CTableDataCell>
                     </CTableRow>
                   ))}
                 </CTableBody>
@@ -169,7 +195,7 @@ const MQTT = () => {
 
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg">
         <CModalHeader>
-          <CModalTitle>{editIndex !== null ? 'Edit MQTT Configuration' : 'Add MQTT Configuration'}</CModalTitle>
+          <CModalTitle>Edit MQTT Configuration</CModalTitle>
         </CModalHeader>
         <CModalBody>
           <CForm onSubmit={handleSubmit} className="row g-3">
@@ -223,6 +249,7 @@ const MQTT = () => {
               <CFormLabel htmlFor="keepAlive">Keep Alive</CFormLabel>
               <CFormInput
                 id="keepAlive"
+                type="number"
                 value={keepAlive}
                 onChange={(e) => setKeepAlive(e.target.value)}
                 placeholder="e.g., 60"
@@ -232,19 +259,20 @@ const MQTT = () => {
               <CFormLabel htmlFor="qos">QOS</CFormLabel>
               <CFormInput
                 id="qos"
+                type="number"
                 value={qos}
                 onChange={(e) => setQos(e.target.value)}
                 placeholder="e.g., 0"
               />
             </CCol>
+            <CCol xs={12}>
+              <CButton type="submit" color="primary">Update</CButton>
+            </CCol>
           </CForm>
         </CModalBody>
         <CModalFooter>
-          <CButton color="primary" onClick={handleSubmit}>
-            {editIndex !== null ? 'Update' : 'Add'}
-          </CButton>
           <CButton color="secondary" onClick={() => setModalVisible(false)}>
-            Cancel
+            Close
           </CButton>
         </CModalFooter>
       </CModal>
