@@ -257,7 +257,7 @@ const Users = () => {
                         <CCardHeader>
                             <div className="d-flex align-items-center justify-content-between">
                                 <strong>USER LIST</strong>
-                                <CButton type="button" color="primary" size='sm' onClick={handleDeleteSelectedUsers}>
+                                <CButton type="button" color="success" variant='outline' size='sm' onClick={handleDeleteSelectedUsers}>
                                     Delete Selected
                                 </CButton>
                             </div>
@@ -385,14 +385,14 @@ const Users = () => {
                             </CRow>
                             <CRow className="justify-content-center">
                                 <CCol md="auto">
-                                    <CButton color="primary" onClick={handleUpdateUser}>Update</CButton>
+                                    <CButton color="primary" variant='outline' size='sm' onClick={handleUpdateUser}>Update</CButton>
                                 </CCol>
                             </CRow>
                         </CForm>
                     )}
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setModalVisible(false)}>
+                    <CButton color="secondary" size='sm' onClick={() => setModalVisible(false)}>
                         Close
                     </CButton>
                 </CModalFooter>
@@ -423,14 +423,14 @@ const Users = () => {
                             </CRow>
                             <CRow className="justify-content-center">
                                 <CCol md="auto">
-                                    <CButton color="primary" onClick={handleUpdatePassword}>Update</CButton>
+                                    <CButton color="primary" variant='outline' size='sm' onClick={handleUpdatePassword}>Update</CButton>
                                 </CCol>
                             </CRow>
                         </CForm>
                     )}
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setPasswordModalVisible(false)}>
+                    <CButton color="secondary" size='sm' onClick={() => setPasswordModalVisible(false)}>
                         Close
                     </CButton>
                 </CModalFooter>

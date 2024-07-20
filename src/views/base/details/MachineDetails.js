@@ -41,7 +41,7 @@ class MachineDetails extends React.Component {
       showUpdateModal: false,
       deviceList: [],
       machineList: [],
-      selectedMachine: {},
+      selectedMachine: null,
       successMessage: ''
     };
   }
@@ -49,7 +49,6 @@ class MachineDetails extends React.Component {
   componentDidMount() {
     this.fetchMachineList();
     this.fetchDeviceList();
-    this.handleSuccessMessage();
   }
 
   fetchMachineList = async () => {
@@ -77,24 +76,24 @@ class MachineDetails extends React.Component {
       manufacture: '',
       line: '',
       hmiID: '',
-      selectedMachine: {},
+      selectedMachine: null,
     });
   }
 
-  toggleAddModal = () => {
-    this.setState(prevState => ({
-      showAddModal: !prevState.showAddModal
-    }));
+  openAddModal = () => {
+    this.setState({ showAddModal: true });
   }
 
-  toggleUpdateModal = () => {
-    this.setState(prevState => ({
-      showUpdateModal: !prevState.showUpdateModal
-    }), () => {
-      if (!this.state.showUpdateModal) {
-        this.clearState();
-      }
-    });
+  closeAddModal = () => {
+    this.setState({ showAddModal: false });
+  }
+
+  openUpdateModal = () => {
+    this.setState({ showUpdateModal: true });
+  }
+
+  closeUpdateModal = () => {
+    this.setState({ showUpdateModal: false }, this.clearState);
   }
 
   handleFormData = (e) => {
@@ -114,43 +113,38 @@ class MachineDetails extends React.Component {
       line: machine.line,
       hmiID: machine.device,
     });
-    this.toggleUpdateModal();
+    this.openUpdateModal();
   }
 
-  handleSuccessMessage = () => {
-    const message = localStorage.getItem('successMessage');
-    if (message) {
-      this.setState({ successMessage: message });
-      localStorage.removeItem('successMessage');
-    }
+  displaySuccessMessage = (message) => {
+    this.setState({ successMessage: message });
+    setTimeout(() => this.setState({ successMessage: '' }), 3000);
   }
 
   machinePostData = async () => {
+    const { machineID, name, manufacture, line, hmiID } = this.state;
     try {
       await axios.post(`${BaseURL}devices/machine/`, {
-        machine_id: this.state.machineID,
-        machine_name: this.state.name,
-        manufacture: this.state.manufacture,
-        line: this.state.line,
-        device: this.state.hmiID,
+        machine_id: machineID,
+        machine_name: name,
+        manufacture: manufacture,
+        line: line,
+        device: hmiID,
       });
-      localStorage.setItem('successMessage', "Machine added successfully!");
-      this.toggleAddModal();
+      this.displaySuccessMessage("Machine added successfully!");
+      this.closeAddModal();
       this.fetchMachineList();
-      setTimeout(() => window.location.reload(), 100);
     } catch (error) {
       console.error("There was an error adding the machine!", error);
-      localStorage.setItem('successMessage', "Failed to add machine!");
-      this.toggleAddModal();
-      setTimeout(() => window.location.reload(), 100);
+      this.closeAddModal();
     }
   }
 
   machineUpdateData = async () => {
     const { selectedMachine, machineID, name, manufacture, line, hmiID } = this.state;
 
-    if (!selectedMachine.id) {
-      console.error("Selected machine ID is missing!");
+    if (!selectedMachine) {
+      console.error("Selected machine data is missing!");
       return;
     }
 
@@ -162,27 +156,28 @@ class MachineDetails extends React.Component {
         line: line,
         device: hmiID,
       });
-      localStorage.setItem('successMessage', "Machine updated successfully!");
-      this.toggleUpdateModal();
+      this.displaySuccessMessage("Machine updated successfully!");
+      this.closeUpdateModal();
       this.fetchMachineList();
-      window.location.reload();
     } catch (error) {
       console.error("There was an error updating the machine!", error);
-      this.toggleUpdateModal();
-      window.location.reload();
+      this.closeUpdateModal();
     }
   }
 
   machineDeleteData = async (machineId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this machine?");
+    
+    if (!confirmDelete) {
+      return;
+    }
+  
     try {
       await axios.delete(`${BaseURL}devices/machine/${machineId}/`);
-      localStorage.setItem('successMessage', "Machine deleted successfully!");
+      this.displaySuccessMessage("Machine deleted successfully!");
       this.fetchMachineList();
-      window.location.reload();
     } catch (error) {
       console.error("There was an error deleting the machine!", error);
-      localStorage.setItem('successMessage', "Failed to delete machine!");
-      window.location.reload();
     }
   }
 
@@ -192,16 +187,16 @@ class MachineDetails extends React.Component {
     return (
       <>
         <CRow>
-        {successMessage && (
-                  <CAlert color="success" dismissible onClose={() => this.setState({ successMessage: '' })}>
-                    {successMessage}
-                  </CAlert>
-                )}
+          {successMessage && (
+            <CAlert color="success" dismissible onClose={() => this.setState({ successMessage: '' })}>
+              {successMessage}
+            </CAlert>
+          )}
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
                 <strong>Machine List</strong>
-                <CButton color='success' variant='outline' className='float-end' onClick={this.toggleAddModal}>Add Machine</CButton>
+                <CButton color='success' variant='outline' size='sm' className='float-end' onClick={this.openAddModal}>Add Machine</CButton>
               </CCardHeader>
               <CCardBody>
                 <CTable striped hover>
@@ -234,10 +229,10 @@ class MachineDetails extends React.Component {
                           <CTableDataCell>{machine.line}</CTableDataCell>
                           <CTableDataCell>
                             <div className="d-flex gap-2">
-                              <CButton onClick={() => this.getRowData(machine)}>
+                              <CButton color="primary" size='sm' onClick={() => this.getRowData(machine)}>
                                 <CIcon icon={cilPen} />
                               </CButton>
-                              <CButton onClick={() => this.machineDeleteData(machine.id)}>
+                              <CButton color="primary" size='sm' onClick={() => this.machineDeleteData(machine.id)}>
                                 <CIcon icon={cilTrash} />
                               </CButton>
                             </div>
@@ -251,7 +246,8 @@ class MachineDetails extends React.Component {
             </CCard>
           </CCol>
         </CRow>
-        <CModal visible={showAddModal} size='lg' onClose={this.toggleAddModal}>
+
+        <CModal visible={showAddModal} size='lg' onClose={this.closeAddModal}>
           <CModalHeader>
             <CModalTitle>Add Machine Details</CModalTitle>
           </CModalHeader>
@@ -285,11 +281,12 @@ class MachineDetails extends React.Component {
             </CForm>
           </CModalBody>
           <CModalFooter>
-            <CButton color="secondary" onClick={this.toggleAddModal}>Close</CButton>
-            <CButton color="primary" onClick={this.machinePostData}>Add Machine</CButton>
+            <CButton color="secondary" size='sm' onClick={this.closeAddModal}>Close</CButton>
+            <CButton color="primary" size='sm' onClick={this.machinePostData}>Add Machine</CButton>
           </CModalFooter>
         </CModal>
-        <CModal visible={showUpdateModal} size='lg' onClose={this.toggleUpdateModal}>
+
+        <CModal visible={showUpdateModal} size='lg' onClose={this.closeUpdateModal}>
           <CModalHeader>
             <CModalTitle>Update Machine Details</CModalTitle>
           </CModalHeader>
@@ -323,8 +320,8 @@ class MachineDetails extends React.Component {
             </CForm>
           </CModalBody>
           <CModalFooter>
-            <CButton color="secondary" onClick={this.toggleUpdateModal}>Close</CButton>
-            <CButton color="primary" onClick={this.machineUpdateData}>Update Machine</CButton>
+            <CButton color="secondary" size='sm' onClick={this.closeUpdateModal}>Close</CButton>
+            <CButton color="primary" size='sm' onClick={this.machineUpdateData}>Update Machine</CButton>
           </CModalFooter>
         </CModal>
       </>
