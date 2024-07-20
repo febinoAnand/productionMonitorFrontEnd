@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { cilPen } from '@coreui/icons';
+import CIcon from '@coreui/icons-react';
 import axios from 'axios';
 import {
   CButton,
@@ -21,8 +23,6 @@ import {
   CModalHeader,
   CModalTitle,
 } from '@coreui/react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit } from '@fortawesome/free-solid-svg-icons';
 
 const BaseURL = "https://productionb.univa.cloud/";
 const url = `${BaseURL}config/httpsettings/`;
@@ -101,7 +101,7 @@ const HTTP = () => {
             <CCardHeader>
               <strong>HTTPS Settings</strong>
               <CButton
-                color="primary"
+                color="success"
                 variant="outline"
                 className="float-end"
                 onClick={openAddModal}
@@ -124,14 +124,12 @@ const HTTP = () => {
                       <CTableHeaderCell>{setting.auth_token}</CTableHeaderCell>
                       <CTableHeaderCell>{setting.api_path}</CTableHeaderCell>
                       <CTableHeaderCell>
-                        <CButton
-                          color="info"
-                          variant="outline"
-                          onClick={() => openUpdateModal(setting)}
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                        </CButton>
-                      </CTableHeaderCell>
+                            <div className="d-flex gap-2">
+                              <CButton  onClick={() => openUpdateModal(setting)}>
+                                <CIcon icon={cilPen} />
+                              </CButton>
+                            </div>
+                          </CTableHeaderCell>
                     </CTableRow>
                   ))}
                 </CTableBody>

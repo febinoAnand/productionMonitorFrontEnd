@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { cilPen, cilTrash } from '@coreui/icons';
 import {
   CCard,
   CCardBody,
@@ -22,7 +23,6 @@ import {
   CButton
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
-import { cilPencil, cilTrash } from '@coreui/icons';
 
 const MQTT = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -115,7 +115,7 @@ const MQTT = () => {
             <CCardHeader>
               <strong>MQTT Config</strong>
               <CButton
-                color="primary"
+                color="success"
                 variant="outline"
                 className="float-end"
                 onClick={() => setModalVisible(true)}
@@ -148,24 +148,16 @@ const MQTT = () => {
                       <CTableDataCell>{entry.keepalive}</CTableDataCell>
                       <CTableDataCell>{entry.qos}</CTableDataCell>
                       <CTableDataCell>
-                        <CButton
-                          color="primary"
-                          variant="outline"
-                          size="sm"
-                          className="me-2"
-                          onClick={() => handleEdit(entry.id)}
-                        >
-                          <CIcon icon={cilPencil} className="me-1" />
-                        </CButton>
-                        <CButton
-                          color="danger"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(entry.id)}
-                        >
-                          <CIcon icon={cilTrash} className="me-1" />
-                        </CButton>
-                      </CTableDataCell>
+                            <div className="d-flex gap-2">
+                              <CButton  onClick={() => handleEdit(entry.id)}>
+                                <CIcon icon={cilPen} />
+                              </CButton>
+                              <CButton onClick={() => handleDelete(entry.id)}>
+                                <CIcon icon={cilTrash} />
+                              </CButton>
+                            </div>
+                          </CTableDataCell>
+
                     </CTableRow>
                   ))}
                 </CTableBody>

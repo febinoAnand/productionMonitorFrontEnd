@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { cilPen, cilTrash } from '@coreui/icons';
+import CIcon from '@coreui/icons-react';
 import {
   CButton,
   CCard,
@@ -6,6 +8,7 @@ import {
   CCardHeader,
   CCol,
   CRow,
+  CTooltip,
   CTable,
   CTableBody,
   CTableDataCell,
@@ -21,7 +24,6 @@ import {
   CFormInput,
   CFormLabel
 } from '@coreui/react';
-import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const BaseURL = "https://productionb.univa.cloud/"; 
 const url = `${BaseURL}devices/device/`; 
@@ -127,7 +129,7 @@ const DeviceDetails = () => {
           <CCard className="mb-4">
             <CCardHeader>
               <strong>Device Details</strong>
-              <CButton className="float-end" onClick={() => toggleModal('add')}>
+              <CButton className="float-end" color="success" variant='outline' onClick={() => toggleModal('add')}>
                 Add Device
               </CButton>
             </CCardHeader>
@@ -160,17 +162,19 @@ const DeviceDetails = () => {
                       <CTableDataCell>{device.sub_topic}</CTableDataCell>
                       <CTableDataCell>{device.api_path}</CTableDataCell>
                       <CTableDataCell>
-                        <FaEdit
-                          color="orange"
-                          style={{ cursor: 'pointer', marginRight: '10px' }}
-                          onClick={() => handleEditClick(device)}
-                        />
-                        <FaTrash
-                          color="red"
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => handleDeleteClick(device.id)}
-                        />
-                      </CTableDataCell>
+                                                    <div className="d-flex gap-2">
+                                                        <CTooltip content="Edit Group">
+                                                            <CButton color="primary" onClick={() => handleEditClick(device)}>
+                                                                <CIcon icon={cilPen} />
+                                                            </CButton>
+                                                        </CTooltip>
+                                                        <CTooltip content="Delete Group">
+                                                            <CButton color="primary" onClick={() => handleDeleteClick(device.id)}>
+                                                                <CIcon icon={cilTrash} />
+                                                            </CButton>
+                                                        </CTooltip>
+                                                    </div>
+                                                </CTableDataCell>
                     </CTableRow>
                   ))}
                 </CTableBody>
