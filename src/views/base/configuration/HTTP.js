@@ -25,7 +25,7 @@ import {
   CAlert,
 } from '@coreui/react';
 
-const BaseURL = "https://productionb.univa.cloud/";
+import BaseURL from 'src/assets/contants/BaseURL';
 const url = `${BaseURL}config/httpsettings/`;
 
 const HTTP = () => {
@@ -92,14 +92,21 @@ const HTTP = () => {
   };
 
   const handleDelete = async (id) => {
-    try {
-      await axios.delete(`${url}${id}/`);
-      setSettings((prevSettings) =>
-        prevSettings.filter((setting) => setting.id !== id)
-      );
-      showSuccessMessage('Settings deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting settings:', error);
+    const confirmDelete = window.confirm('Are you sure you want to delete this setting?');
+
+    if (confirmDelete) {
+      try {
+        await axios.delete(`${url}${id}/`);
+        setSettings((prevSettings) =>
+          prevSettings.filter((setting) => setting.id !== id)
+        );
+        showSuccessMessage('Settings deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting settings:', error);
+        showSuccessMessage('Error deleting settings.');
+      }
+    } else {
+      showSuccessMessage('Deletion canceled.');
     }
   };
 
