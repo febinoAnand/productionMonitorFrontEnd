@@ -11,7 +11,7 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
-  CFormCheck,
+  //CFormCheck,
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser, cilExitToApp } from '@coreui/icons';
@@ -30,7 +30,7 @@ const useAuth = () => {
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [saveId, setSaveId] = useState(false);
+  //const [saveId, setSaveId] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -108,12 +108,6 @@ const Login = () => {
                       autoComplete="current-password"
                     />
                   </CInputGroup>
-                  <CFormCheck
-                    id="save-id"
-                    label="Save ID"
-                    checked={saveId}
-                    onChange={(e) => setSaveId(e.target.checked)}
-                  />
                   <CButton type="submit" color="primary" className="w-100" style={{
                     backgroundColor: 'black', 
                     borderColor: '#6CB4EE', 

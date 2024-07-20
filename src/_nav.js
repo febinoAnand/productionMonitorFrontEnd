@@ -34,9 +34,9 @@ import {
    cilShieldAlt,
    cilPrint,
    cilLan,
-  cilBoltCircle,
-   cilBellExclamation,
-   cilRunning,
+  //cilBoltCircle,
+   //cilBellExclamation,
+   //cilRunning,
   //  cilSignLanguage,
    //cilShortText,
    //cilColumns,
@@ -262,63 +262,7 @@ const _nav = [
 //   to: '/emailtracking/setting',
 //   icon: <CIcon icon={cibKeycdn} customClassName="nav-icon" />,
 // },
-{
-  component: CNavGroup,
-  name: 'Actions',
-  icon: <CIcon icon={cilRunning} customClassName="nav-icon" />,
-  items: [
-    {
-      component: CNavGroup,
-      name: 'Notifications',
-      icon: <CIcon icon={cilBellExclamation} customClassName="nav-icon" />,
-      items: [
-        {
-          component: CNavItem,
-          name: 'Notify Report',
-          to: '/pushnotification/sendreport',
-          icon: <CIcon icon={cilSwapHorizontal} customClassName="nav-icon" />,
-        },
-        //  {
-        //    component: CNavItem,
-        //    name: 'User Identifier',
-        //    to: '/pushnotification/useridentifier',
-        //    icon: <CIcon icon={cilVoiceOverRecord} customClassName="nav-icon" />,
-        //  },
-        {
-          component: CNavItem,
-          name: 'Setting',
-          to: '/pushnotification/setting',
-          icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
-        },
-    
-        ]
-        
-      },
-      {
-        component: CNavGroup,
-        name: 'SMS Gateway',
-        
-        icon: <CIcon icon={cilBoltCircle} customClassName="nav-icon" />,
-        items:[
-          {
-            component: CNavItem,
-            name: 'SMS Report',
-            to: '/smsgateway/sendreport',
-            icon: <CIcon icon={cilPrint} customClassName="nav-icon" />,
-          },
-          {
-            component: CNavItem,
-            name: 'Settings',
-            to: '/smsgateway/settings',
-            icon: <CIcon icon={cilLan} customClassName="nav-icon" />,
-          },
-        ]
-        
-      },
 
-    ]
-    
-  },
   {
     component: CNavTitle,
     name: 'Device Management',
@@ -426,6 +370,42 @@ const _nav = [
   //   to:'/setting/settings',
   //   icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
   // }
+  {
+    component: CNavTitle,
+    name: 'ACTIONS',
+    style: { color: '#FFFFFF' },
+  },
+  {
+            component: CNavItem,
+            name: 'Notify Report',
+            to: '/pushnotification/sendreport',
+            icon: <CIcon icon={cilSwapHorizontal} customClassName="nav-icon" />,
+          },
+          //  {
+          //    component: CNavItem,
+          //    name: 'User Identifier',
+          //    to: '/pushnotification/useridentifier',
+          //    icon: <CIcon icon={cilVoiceOverRecord} customClassName="nav-icon" />,
+          //  },
+          {
+            component: CNavItem,
+            name: 'Setting',
+            to: '/pushnotification/setting',
+            icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
+          },
+            {
+              component: CNavItem,
+              name: 'SMS Report',
+              to: '/smsgateway/sendreport',
+              icon: <CIcon icon={cilPrint} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: 'Settings',
+              to: '/smsgateway/settings',
+              icon: <CIcon icon={cilLan} customClassName="nav-icon" />,
+            },
+  
 ]
 
 export default _nav
