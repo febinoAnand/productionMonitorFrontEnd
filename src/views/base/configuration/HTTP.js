@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { cilPen } from '@coreui/icons';
+import { cilPen, cilTrash } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import axios from 'axios';
 import {
@@ -22,6 +22,7 @@ import {
   CModalFooter,
   CModalHeader,
   CModalTitle,
+  CAlert,
 } from '@coreui/react';
 
 const BaseURL = "https://productionb.univa.cloud/";
@@ -29,16 +30,16 @@ const url = `${BaseURL}config/httpsettings/`;
 
 const HTTP = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [responseData, setResponseData] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [settings, setSettings] = useState([]);
   const [formData, setFormData] = useState({
+    id: '',
     authToken: '',
     apiPath: '',
   });
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    // Fetch settings data when the component mounts
     const fetchSettings = async () => {
       try {
         const response = await axios.get(url);
@@ -57,10 +58,14 @@ const HTTP = () => {
 
   const handleAdd = async () => {
     try {
-      const response = await axios.post(url, formData);
+      const response = await axios.post(url, {
+        auth_token: formData.authToken,
+        api_path: formData.apiPath,
+      });
       setSettings((prevSettings) => [...prevSettings, response.data]);
-      setFormData({ authToken: '', apiPath: '' });
+      setFormData({ id: '', authToken: '', apiPath: '' });
       setModalVisible(false);
+      showSuccessMessage('Settings added successfully!');
     } catch (error) {
       console.error('Error adding settings:', error);
     }
@@ -68,33 +73,74 @@ const HTTP = () => {
 
   const handleUpdate = async () => {
     try {
-      const response = await axios.put(`${url}${formData.authToken}/`, formData);
+      const response = await axios.put(`${url}${formData.id}/`, {
+        auth_token: formData.authToken,
+        api_path: formData.apiPath,
+      });
       setSettings((prevSettings) =>
         prevSettings.map((setting) =>
-          setting.authToken === formData.authToken ? response.data : setting
+          setting.id === formData.id ? response.data : setting
         )
       );
-      setFormData({ authToken: '', apiPath: '' });
+      setFormData({ id: '', authToken: '', apiPath: '' });
       setModalVisible(false);
       setIsUpdating(false);
+      showSuccessMessage('Settings updated successfully!');
     } catch (error) {
       console.error('Error updating settings:', error);
     }
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${url}${id}/`);
+      setSettings((prevSettings) =>
+        prevSettings.filter((setting) => setting.id !== id)
+      );
+      showSuccessMessage('Settings deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting settings:', error);
+    }
+  };
+
   const openAddModal = () => {
     setIsUpdating(false);
+    setFormData({ id: '', authToken: '', apiPath: '' });
     setModalVisible(true);
   };
 
   const openUpdateModal = (setting) => {
-    setFormData(setting);
+    setFormData({
+      id: setting.id,
+      authToken: setting.auth_token,
+      apiPath: setting.api_path,
+    });
     setIsUpdating(true);
     setModalVisible(true);
   };
 
+  const handleSubmit = () => {
+    if (isUpdating) {
+      handleUpdate();
+    } else {
+      handleAdd();
+    }
+  };
+
+  const showSuccessMessage = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => {
+      setSuccessMessage('');
+    }, 3000);
+  };
+
   return (
     <>
+      {successMessage && (
+        <CAlert color="success" dismissible>
+          {successMessage}
+        </CAlert>
+      )}
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
@@ -124,12 +170,15 @@ const HTTP = () => {
                       <CTableHeaderCell>{setting.auth_token}</CTableHeaderCell>
                       <CTableHeaderCell>{setting.api_path}</CTableHeaderCell>
                       <CTableHeaderCell>
-                            <div className="d-flex gap-2">
-                              <CButton  onClick={() => openUpdateModal(setting)}>
-                                <CIcon icon={cilPen} />
-                              </CButton>
-                            </div>
-                          </CTableHeaderCell>
+                        <div className="d-flex gap-2">
+                          <CButton color="primary" onClick={() => openUpdateModal(setting)}>
+                            <CIcon icon={cilPen} />
+                          </CButton>
+                          <CButton color="primary" onClick={() => handleDelete(setting.id)}>
+                            <CIcon icon={cilTrash} />
+                          </CButton>
+                        </div>
+                      </CTableHeaderCell>
                     </CTableRow>
                   ))}
                 </CTableBody>
@@ -152,7 +201,7 @@ const HTTP = () => {
                 value={formData.authToken}
                 onChange={handleInputChange}
                 placeholder="Enter Authorization Token"
-                size="xl"
+                size="lg"
               />
             </CCol>
             <CCol xs={5}>
@@ -162,7 +211,7 @@ const HTTP = () => {
                 value={formData.apiPath}
                 onChange={handleInputChange}
                 placeholder="Enter API Path"
-                size="xl"
+                size="lg"
               />
             </CCol>
           </CForm>
@@ -171,7 +220,7 @@ const HTTP = () => {
           <CButton
             color="primary"
             variant="outline"
-            onClick={isUpdating ? handleUpdate : handleAdd}
+            onClick={handleSubmit}
           >
             {isUpdating ? 'Update' : 'Add'}
           </CButton>
@@ -180,22 +229,6 @@ const HTTP = () => {
           </CButton>
         </CModalFooter>
       </CModal>
-
-      {responseData && (
-        <CModal visible={true} onClose={() => setResponseData(null)} size="xl">
-          <CModalHeader>
-            <CModalTitle>Response Data</CModalTitle>
-          </CModalHeader>
-          <CModalBody>
-            <pre>{JSON.stringify(responseData, null, 2)}</pre>
-          </CModalBody>
-          <CModalFooter>
-            <CButton color="secondary" onClick={() => setResponseData(null)}>
-              Close
-            </CButton>
-          </CModalFooter>
-        </CModal>
-      )}
     </>
   );
 };
