@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CRow, CCol, CCard, CCardBody, CWidgetStatsE } from '@coreui/react';
 import BaseURL from 'src/assets/contants/BaseURL'; 
 
-const Dashboard = () => {
+const WidgetDisplay = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -122,4 +122,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default WidgetDisplay;
