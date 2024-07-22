@@ -31,9 +31,9 @@ import {
    //cilSearch,
    cilSwapHorizontal,
   //  cilVoiceOverRecord,
-   cilShieldAlt,
+  //  cilShieldAlt,
    cilPrint,
-   cilLan,
+  //  cilLan,
   //cilBoltCircle,
    //cilBellExclamation,
    //cilRunning,
@@ -387,24 +387,24 @@ const _nav = [
           //    to: '/pushnotification/useridentifier',
           //    icon: <CIcon icon={cilVoiceOverRecord} customClassName="nav-icon" />,
           //  },
-          {
-            component: CNavItem,
-            name: 'Setting',
-            to: '/pushnotification/setting',
-            icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
-          },
+          // {
+          //   component: CNavItem,
+          //   name: 'Setting',
+          //   to: '/pushnotification/setting',
+          //   icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
+          // },
             {
               component: CNavItem,
               name: 'SMS Report',
               to: '/smsgateway/sendreport',
               icon: <CIcon icon={cilPrint} customClassName="nav-icon" />,
             },
-            {
-              component: CNavItem,
-              name: 'Settings',
-              to: '/smsgateway/settings',
-              icon: <CIcon icon={cilLan} customClassName="nav-icon" />,
-            },
+            // {
+            //   component: CNavItem,
+            //   name: 'Settings',
+            //   to: '/smsgateway/settings',
+            //   icon: <CIcon icon={cilLan} customClassName="nav-icon" />,
+            // },
   
 ]
 

@@ -15,7 +15,7 @@ import {
 const Productionmonitor = () => {
 
   return (
-    <>
+    <div className="page">
       <CRow className="mb-5"> 
         <CCol xs={12}>
           <h5>MCLMI</h5>
@@ -128,7 +128,7 @@ const Productionmonitor = () => {
           </CCard>
         </CCol>
       </CRow>
-    </>
+    </div>
   );
 };
 

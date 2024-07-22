@@ -140,7 +140,7 @@ const HTTP = () => {
   };
 
   return (
-    <>
+    <div className="page">
       {successMessage && (
         <CAlert color="success" dismissible>
           {successMessage}
@@ -236,7 +236,7 @@ const HTTP = () => {
           </CButton>
         </CModalFooter>
       </CModal>
-    </>
+    </div>
   );
 };
 

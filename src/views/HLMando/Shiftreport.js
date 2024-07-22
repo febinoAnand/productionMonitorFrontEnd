@@ -41,7 +41,7 @@ const Shiftreport = () => {
   );
 
   return (
-    <>
+    <div className="page">
       <CRow className="mb-3">
         <CCol md={4}>
           <CInputGroup className="flex-nowrap mt-3 mb-4">
@@ -135,7 +135,7 @@ const Shiftreport = () => {
           </CCard>
         </CCol>
       </CRow>
-    </>
+    </div>
   );
 };
 

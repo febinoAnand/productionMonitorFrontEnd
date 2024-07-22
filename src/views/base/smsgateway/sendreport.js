@@ -93,7 +93,7 @@ class SendReport extends React.Component {
         const { reports, selectedRows, selectAllChecked, successMessage } = this.state;
 
         return (
-            <>
+            <div className="page">
             {successMessage && ( 
                     <div className="alert alert-success" role="alert">
                         {successMessage}
@@ -163,7 +163,7 @@ class SendReport extends React.Component {
                         </CCard>
                     </CCol>
                 </CRow>
-            </>
+            </div>
         );
     }
 }

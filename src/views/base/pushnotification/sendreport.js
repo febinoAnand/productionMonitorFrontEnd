@@ -92,7 +92,7 @@ class SendReport extends React.Component {
     const { rowData, selectedRows, selectAllChecked, successMessage } = this.state;
 
     return (
-      <>
+      <div className="page">
       {successMessage && ( 
         <div className="alert alert-success" role="alert">
             {successMessage}
@@ -135,7 +135,7 @@ class SendReport extends React.Component {
                 <CTableBody>
                   {rowData.length === 0 ? (
                     <CTableRow>
-                      <CTableDataCell colSpan="8" className="text-center">No data available</CTableDataCell>
+                      <CTableDataCell colSpan="9" className="text-center">No data available</CTableDataCell>
                     </CTableRow>
                   ) : (
                     rowData.map((row, index) => (
@@ -168,7 +168,7 @@ class SendReport extends React.Component {
           </CCard>
         </CCol>
       </CRow>
-      </>
+      </div>
     );
   }
 }
