@@ -114,6 +114,9 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 //MAin Setting
 // const Settingss = React.lazy(() => import('./views/base/setting/settings'))
 
+//Dashboard
+const Dashboard=React.lazy(()=>import('./views/HLMando/Dashboard'))
+
 //Production Monitor
 const Productionmonitor = React.lazy(() => import('./views/HLMando/Productionmonitor'))
 
@@ -229,6 +232,8 @@ const routes = [
   { path: '/widgets', name: 'Widgets', element: Widgets },
 
   { path: '/users/changepassword', name: 'Change Password', element: Changepassword}, //Changepassword
+//Dashboard
+{path:'/HLMando/Dashboard',name:'Dashboard',element:Dashboard},
 
 //ProductionMonitor
 { path: '/HLMando/Productionmonitor', name: 'ProductionMonitor', element: Productionmonitor },
