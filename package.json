@@ -13,7 +13,7 @@
   "license": "MIT",
   "author": "The CoreUI Team (https://github.com/orgs/coreui/people)",
   "scripts": {
-    "build": "react-scripts build",
+    "build": "react-scripts --max-old-space-size=512 build",
     "eject": "react-scripts eject",
     "start": "react-scripts start",
     "test": "react-scripts test",
