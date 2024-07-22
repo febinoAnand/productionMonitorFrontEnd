@@ -137,7 +137,7 @@ const DeviceDetails = () => {
           <CCard className="mb-4">
             <CCardHeader>
               <strong>Device Details</strong>
-              <CButton className="float-end" color="success" variant='outline' onClick={() => toggleModal('add')}>
+              <CButton className="float-end"  size="sm"color="success" variant='outline' onClick={() => toggleModal('add')}>
                 Add Device
               </CButton>
             </CCardHeader>
@@ -172,12 +172,12 @@ const DeviceDetails = () => {
                       <CTableDataCell>
                         <div className="d-flex gap-2">
                           <CTooltip content="Edit Device">
-                            <CButton color="primary" onClick={() => handleEditClick(device)}>
+                            <CButton color="primary" size="sm" onClick={() => handleEditClick(device)}>
                               <CIcon icon={cilPen} />
                             </CButton>
                           </CTooltip>
                           <CTooltip content="Delete Device">
-                            <CButton color="primary" onClick={() => handleDeleteClick(device.id)}>
+                            <CButton color="primary" size="sm" onClick={() => handleDeleteClick(device.id)}>
                               <CIcon icon={cilTrash} />
                             </CButton>
                           </CTooltip>
@@ -194,9 +194,9 @@ const DeviceDetails = () => {
 
       <CModal visible={showModal} onClose={() => setShowModal(false)} size="xl">
         <CModalHeader>
-          <CModalTitle>{modalMode === 'update' ? 'Update Device' : 'Add Device'}</CModalTitle>
+          <CModalTitle> {modalMode === 'update' ? 'Update Device' : 'Add Device'}</CModalTitle>
         </CModalHeader>
-        <CForm onSubmit={handleSubmit}>
+        <CForm  onSubmit={handleSubmit}>
           <CModalBody>
             <CRow className="g-3">
               <CCol md={3}>
@@ -282,11 +282,11 @@ const DeviceDetails = () => {
             </CRow>
           </CModalBody>
           <CModalFooter>
-            <CButton color="secondary" onClick={() => setShowModal(false)}>
+            <CButton color="secondary" size="sm" onClick={() => setShowModal(false)}>
               Cancel
             </CButton>
-            <CButton color="primary" type="submit">
-              {modalMode === 'update' ? 'Update Device' : 'Add Device'}
+            <CButton color="primary"  size="sm"  variant='outline'type="submit">
+              {modalMode === 'update' ? 'Update ' : 'Add '}
             </CButton>
           </CModalFooter>
         </CForm>

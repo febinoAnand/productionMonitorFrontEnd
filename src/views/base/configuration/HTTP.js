@@ -154,6 +154,7 @@ const HTTP = () => {
               <CButton
                 color="success"
                 variant="outline"
+                 size="sm"
                 className="float-end"
                 onClick={openAddModal}
               >
@@ -176,10 +177,10 @@ const HTTP = () => {
                       <CTableHeaderCell>{setting.api_path}</CTableHeaderCell>
                       <CTableHeaderCell>
                         <div className="d-flex gap-2">
-                          <CButton color="primary" onClick={() => openUpdateModal(setting)}>
+                          <CButton color="primary"  size="sm"onClick={() => openUpdateModal(setting)}>
                             <CIcon icon={cilPen} />
                           </CButton>
-                          <CButton color="primary" onClick={() => handleDelete(setting.id)}>
+                          <CButton color="primary"  size="sm"onClick={() => handleDelete(setting.id)}>
                             <CIcon icon={cilTrash} />
                           </CButton>
                         </div>
@@ -225,11 +226,12 @@ const HTTP = () => {
           <CButton
             color="primary"
             variant="outline"
+             size="sm"
             onClick={handleSubmit}
           >
             {isUpdating ? 'Update' : 'Add'}
           </CButton>
-          <CButton color="secondary" onClick={() => setModalVisible(false)}>
+          <CButton color="secondary" size="sm" onClick={() => setModalVisible(false)}>
             Close
           </CButton>
         </CModalFooter>

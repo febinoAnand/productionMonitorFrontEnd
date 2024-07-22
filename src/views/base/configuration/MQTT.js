@@ -179,7 +179,7 @@ const MQTT = () => {
                       <CTableDataCell>{entry.qos}</CTableDataCell>
                       <CTableDataCell>
                         <div className="d-flex gap-2">
-                          <CButton onClick={() => handleEdit(entry._id)}>
+                          <CButton  size="sm" onClick={() => handleEdit(entry._id)}>
                             <CIcon icon={cilPen} />
                           </CButton>
                         </div>
@@ -265,13 +265,11 @@ const MQTT = () => {
                 placeholder="e.g., 0"
               />
             </CCol>
-            <CCol xs={12}>
-              <CButton type="submit" color="primary">Update</CButton>
-            </CCol>
           </CForm>
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" onClick={() => setModalVisible(false)}>
+        <CButton type="submit"  size="sm" variant='outline'color="primary">Update</CButton>
+          <CButton color="secondary"  size="sm"onClick={() => setModalVisible(false)}>
             Close
           </CButton>
         </CModalFooter>
