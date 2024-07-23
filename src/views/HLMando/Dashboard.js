@@ -18,13 +18,14 @@ const Dashboard = () => {
   }, []);
 
   return (
+    <div className="page">
     <CRow className="mb-3">
       {data.map(group => (
         group.machine_count > 0 && (
           <CCol xs={12} key={group.group_id}style={{ marginBottom: '20px' }}>
             <CCard>
               <CCardHeader>
-                <h3>{group.group_name}</h3>
+                <h4>{group.group_name}</h4>
               </CCardHeader>
               <CCardBody>
                 <CRow>
@@ -38,7 +39,7 @@ const Dashboard = () => {
                             style={{ height: '60px', width: '50px' }}
                           />
                         }
-                         title={<span style={{ fontSize: '20px', fontWeight: 'bold' }}>{machine.machine_name}</span>}
+                         title={<span style={{ fontSize: '14px', fontWeight: 'bold' }}>{machine.machine_name}</span>}
                         value={
                           <span style={{
                             display: 'inline-block',
@@ -61,6 +62,7 @@ const Dashboard = () => {
         )
       ))}
     </CRow>
+    </div>
   );
 };
 
