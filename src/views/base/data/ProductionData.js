@@ -53,7 +53,7 @@ class ProductionData extends React.Component {
 
   render() {
     return (
-      <>
+      <div className="page">
         <CRow>
           <CCol xs={12}>
             <CCard className="mb-4">
@@ -126,7 +126,7 @@ class ProductionData extends React.Component {
             </CCard>
           </CCol>
         </CRow>
-      </>
+      </div>
     );
   }
 }

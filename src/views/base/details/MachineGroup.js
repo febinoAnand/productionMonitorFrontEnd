@@ -173,7 +173,7 @@ const Groups = () => {
     };
 
     return (
-        <>
+        <div className="page">
             {successMessage && (
                 <CRow>
                     <CCol>
@@ -329,7 +329,7 @@ const Groups = () => {
                     <CButton color="primary" variant='outline' size='sm' onClick={handleCreateNewGroup}>Create Group</CButton>
                 </CModalFooter>
             </CModal>
-        </>
+        </div>
     );
 };
 

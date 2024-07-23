@@ -245,7 +245,7 @@ const Users = () => {
     };
 
     return (
-        <>
+        <div className="page">
             {successMessage && (
                 <div className="alert alert-success" role="alert">
                     {successMessage}
@@ -435,7 +435,7 @@ const Users = () => {
                     </CButton>
                 </CModalFooter>
             </CModal>
-        </>
+        </div>
     );
 };
 

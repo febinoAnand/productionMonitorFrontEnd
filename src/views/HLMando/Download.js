@@ -18,7 +18,7 @@ const Download = () => {
   const [startDate4, setStartDate4] = useState(new Date());
 
   return (
-    <>
+    <div className="page">
       <CRow className="mb-3">
         <CCol xs={12}>
           <CCard>
@@ -88,7 +88,7 @@ const Download = () => {
           </CCard>
         </CCol>
       </CRow>
-    </>
+    </div>
   );
 };
 

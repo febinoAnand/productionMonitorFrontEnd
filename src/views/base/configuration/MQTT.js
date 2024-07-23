@@ -141,7 +141,7 @@ const MQTT = () => {
   };
 
   return (
-    <>
+    <div className="page">
       {successMessage && (
                 <CAlert color="success" dismissible onClose={() => setSuccessMessage('')}>
                   {successMessage}
@@ -274,7 +274,7 @@ const MQTT = () => {
           </CButton>
         </CModalFooter>
       </CModal>
-    </>
+    </div>
   );
 };
 

@@ -185,7 +185,7 @@ class MachineDetails extends React.Component {
     const { machineList, deviceList, showAddModal, showUpdateModal, machineID, name, manufacture, line, hmiID, successMessage } = this.state;
 
     return (
-      <>
+      <div className="page">
         <CRow>
           {successMessage && (
             <CAlert color="success" dismissible onClose={() => this.setState({ successMessage: '' })}>
@@ -324,7 +324,7 @@ class MachineDetails extends React.Component {
             <CButton color="primary" size='sm' onClick={this.machineUpdateData}>Update Machine</CButton>
           </CModalFooter>
         </CModal>
-      </>
+      </div>
     );
   }
 }

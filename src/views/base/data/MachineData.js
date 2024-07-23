@@ -67,7 +67,7 @@ class MachineData extends React.Component {
     const { searchQuery, filteredData } = this.state;
 
     return (
-      <>
+      <div className="page">
         <CRow>
           <CCol xs={12}>
             <CCard className="mb-4">
@@ -130,7 +130,7 @@ class MachineData extends React.Component {
             </CCard>
           </CCol>
         </CRow>
-      </>
+      </div>
     );
   }
 }

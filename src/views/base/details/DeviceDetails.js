@@ -130,7 +130,7 @@ const DeviceDetails = () => {
   };
 
   return (
-    <>
+    <div className="page">
       {successMessage && <div className="alert alert-success">{successMessage}</div>}
       <CRow>
         <CCol xs={12}>
@@ -291,7 +291,7 @@ const DeviceDetails = () => {
           </CModalFooter>
         </CForm>
       </CModal>
-    </>
+    </div>
   );
 };
 
