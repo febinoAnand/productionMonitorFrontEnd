@@ -17,7 +17,6 @@ import {
   CTableRow,
   CModal,
   CModalBody,
-  CModalFooter,
   CModalHeader,
   CModalTitle,
   CButton,
@@ -92,7 +91,6 @@ const MQTT = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-         
         },
         body: JSON.stringify(updatedEntry),
       });
@@ -109,7 +107,7 @@ const MQTT = () => {
       );
 
       setModalVisible(false);
-      setSuccessMessage('Configuration updated successfully!'); 
+      setSuccessMessage('Configuration updated successfully!');
       resetForm();
     } catch (error) {
       console.error('Error updating configuration:', error);
@@ -143,10 +141,10 @@ const MQTT = () => {
   return (
     <div className="page">
       {successMessage && (
-                <CAlert color="success" dismissible onClose={() => setSuccessMessage('')}>
-                  {successMessage}
-                </CAlert>
-              )}
+        <CAlert color="success" dismissible onClose={() => setSuccessMessage('')}>
+          {successMessage}
+        </CAlert>
+      )}
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
@@ -179,7 +177,7 @@ const MQTT = () => {
                       <CTableDataCell>{entry.qos}</CTableDataCell>
                       <CTableDataCell>
                         <div className="d-flex gap-2">
-                          <CButton  size="sm" onClick={() => handleEdit(entry._id)}>
+                          <CButton size="sm" onClick={() => handleEdit(entry._id)}>
                             <CIcon icon={cilPen} />
                           </CButton>
                         </div>
@@ -256,7 +254,7 @@ const MQTT = () => {
               />
             </CCol>
             <CCol md={3}>
-              <CFormLabel htmlFor="qos">QOS</CFormLabel>
+              <CFormLabel htmlFor="qos">QoS</CFormLabel>
               <CFormInput
                 id="qos"
                 type="number"
@@ -265,14 +263,16 @@ const MQTT = () => {
                 placeholder="e.g., 0"
               />
             </CCol>
+            <CCol xs={12}>
+            <div className="d-flex justify-content-end">
+              <CButton type="submit" color="success"
+                variant="outline"
+                 size="sm">Update</CButton>
+              <CButton color="secondary"size="sm" onClick={() => setModalVisible(false)} className="ms-2">Close</CButton>
+              </div>
+            </CCol>
           </CForm>
         </CModalBody>
-        <CModalFooter>
-        <CButton type="submit"  size="sm" variant='outline'color="primary">Update</CButton>
-          <CButton color="secondary"  size="sm"onClick={() => setModalVisible(false)}>
-            Close
-          </CButton>
-        </CModalFooter>
       </CModal>
     </div>
   );
