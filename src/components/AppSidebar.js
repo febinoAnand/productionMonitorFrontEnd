@@ -13,7 +13,7 @@ import { AppSidebarNav } from './AppSidebarNav'
 
 // import { logoNegative } from 'src/assets/brand/logo-negative'
 // import { sygnet } from 'src/assets/brand/sygnet'
-// import logoImage from 'src/assets/images/hlmando.svg'
+import logoImage from 'src/assets/images/hlmando.svg'
 import SimpleBar from 'simplebar-react'
 import 'simplebar/dist/simplebar.min.css'
 
@@ -34,11 +34,10 @@ const AppSidebar = () => {
         dispatch({ type: 'set', sidebarShow: visible })
       }}
       
-     
+      style={{overflowY: 'auto' }}
     >
-      <CSidebarBrand className="d-none d-md-flex" to="/">
-        {/* <img src={logoImage} alt="Logo" className="sidebar-brand-full" height={109} />
-        <img src={logoImage} alt="Logo" className="sidebar-brand-narrow" /> */}
+      <CSidebarBrand style={{ display: 'flex', alignItems: 'center' }} to="/">
+      <img src={logoImage} alt="Logo"  style={{ height: 'auto', width: 'auto' }}/>
       </CSidebarBrand>
       <CSidebarNav >
         <SimpleBar>
