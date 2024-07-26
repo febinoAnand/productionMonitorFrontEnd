@@ -20,6 +20,7 @@ const Productionmonitor = () => {
         <CCol xs={12}>
           <h5>MCLMI</h5>
           <CCard className="mb-4">
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
             <CCardBody>
               <CTable striped hover>
                 <CTableHead color="dark">
@@ -44,9 +45,11 @@ const Productionmonitor = () => {
                 </CTableBody>
               </CTable>
             </CCardBody>
+            </div>
           </CCard>
           <h5>HSGMI</h5>
           <CCard className="mb-4">
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
             <CCardBody>
               <CTable striped hover>
                 <CTableHead color="dark">
@@ -71,9 +74,11 @@ const Productionmonitor = () => {
                 </CTableBody>
               </CTable>
             </CCardBody>
+            </div>
           </CCard>
           <h5>CRRMI</h5>
           <CCard className="mb-4">
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
             <CCardBody>
               <CTable striped hover>
                 <CTableHead color="dark">
@@ -98,9 +103,11 @@ const Productionmonitor = () => {
                 </CTableBody>
               </CTable>
             </CCardBody>
+            </div>
           </CCard>
           <h5>CALPI</h5>
           <CCard className="mb-4">
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
             <CCardBody>
               <CTable striped hover>
                 <CTableHead color="dark">
@@ -125,10 +132,12 @@ const Productionmonitor = () => {
                 </CTableBody>
               </CTable>
             </CCardBody>
+            </div>
           </CCard>
         </CCol>
       </CRow>
     </div>
+
   );
 };
 

@@ -209,6 +209,7 @@ const Groups = () => {
                                     </CButton>
                                 </CInputGroup>
                             </CCol>
+                            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                             <CTable striped hover>
                                 <CTableHead>
                                     <CTableRow color="dark">
@@ -253,7 +254,9 @@ const Groups = () => {
                                     )}
                                 </CTableBody>
                             </CTable>
+                            </div>
                         </CCardBody>
+
                     </CCard>
                 </CCol>
             </CRow>

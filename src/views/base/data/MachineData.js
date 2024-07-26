@@ -91,6 +91,7 @@ class MachineData extends React.Component {
                 </CCol>
 
                 <CCol className='mb-4'></CCol>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
 
                 <CTable striped hover>
                   <CTableHead color='dark'>
@@ -126,6 +127,7 @@ class MachineData extends React.Component {
                     )}
                   </CTableBody>
                 </CTable>
+                </div>
               </CCardBody>
             </CCard>
           </CCol>

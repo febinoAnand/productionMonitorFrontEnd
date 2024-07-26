@@ -77,6 +77,7 @@ class ProductionData extends React.Component {
                 </CCol>
 
                 <CCol className='mb-3'></CCol>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
 
                 <CTable striped hover>
                   <CTableHead color='dark'>
@@ -122,6 +123,7 @@ class ProductionData extends React.Component {
                     )}
                   </CTableBody>
                 </CTable>
+                </div>
               </CCardBody>
             </CCard>
           </CCol>

@@ -88,7 +88,7 @@ class LogData extends React.Component {
                 </CCol>
 
                 <CCol className='mb-4'></CCol>
-
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <CTable striped hover>
                   <CTableHead color='dark'>
                     <CTableRow>
@@ -123,6 +123,7 @@ class LogData extends React.Component {
                     )}
                   </CTableBody>
                 </CTable>
+                </div>
               </CCardBody>
             </CCard>
           </CCol>
