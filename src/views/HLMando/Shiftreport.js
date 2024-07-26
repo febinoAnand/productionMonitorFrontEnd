@@ -54,23 +54,30 @@ const Shiftreport = () => {
   }, []);
 
   const handleSearchClick = () => {
-    if (!startDate) return; 
+    if (!startDate) return;
 
-    const formattedDate = format(startDate, 'yyyy-MM-dd'); 
+    const formattedDate = format(startDate, 'yyyy-MM-dd');
 
     const filteredData = shiftData.filter(shift => {
-      const shiftDate = shift.shift_date.split('T')[0]; 
-      const matchMachine = selectedMachine === '' || shift.groups.some(group =>
+      const shiftDate = shift.shift_date.split('T')[0];
+      const matchDate = shiftDate === formattedDate;
+
+      // Filter groups that contain the selected machine
+      const filteredGroups = shift.groups.filter(group => 
         group.machines.some(machine => machine.machine_name === selectedMachine)
       );
-      const matchDate = shiftDate === formattedDate;
-      return matchMachine && matchDate;
-    });
+
+      return matchDate && filteredGroups.length > 0;
+    }).map(shift => ({
+      ...shift,
+      groups: shift.groups.filter(group => 
+        group.machines.some(machine => machine.machine_name === selectedMachine)
+      )
+    }));
 
     setFilteredShiftData(filteredData);
     setSearchClicked(true);
   };
-
 
   const CustomInput = ({ value, onClick }) => (
     <div className="input-group" style={{ height: '38px', borderRadius: '0px' }}>
@@ -92,30 +99,32 @@ const Shiftreport = () => {
 
   const renderShiftTable = (shift) => (
     <CCard className="mb-4" key={shift.shift_id}>
-      <CCardBody>
-        <CTable striped hover>
-          <CTableHead color="dark">
-            <CTableRow>
-              <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-              <CTableHeaderCell scope="col">GroupName</CTableHeaderCell>
-              <CTableHeaderCell scope="col">StartTime</CTableHeaderCell>
-              <CTableHeaderCell scope="col">EndTime</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {shift.groups.map((group, index) => (
-              <CTableRow key={group.group_id}>
-                <CTableDataCell>{index + 1}</CTableDataCell>
-                <CTableDataCell>{group.group_name}</CTableDataCell>
-                <CTableDataCell>{shift.shift_start_time}</CTableDataCell>
-                <CTableDataCell>{shift.shift_end_time}</CTableDataCell>
-                <CTableDataCell>{group.total_production_count_by_group}</CTableDataCell>
+      <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+        <CCardBody>
+          <CTable striped hover>
+            <CTableHead color="dark">
+              <CTableRow>
+                <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
+                <CTableHeaderCell scope="col">GroupName</CTableHeaderCell>
+                <CTableHeaderCell scope="col">StartTime</CTableHeaderCell>
+                <CTableHeaderCell scope="col">EndTime</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
               </CTableRow>
-            ))}
-          </CTableBody>
-        </CTable>
-      </CCardBody>
+            </CTableHead>
+            <CTableBody>
+              {shift.groups.map((group, index) => (
+                <CTableRow key={group.group_id}>
+                  <CTableDataCell>{index + 1}</CTableDataCell>
+                  <CTableDataCell>{group.group_name}</CTableDataCell>
+                  <CTableDataCell>{shift.shift_start_time}</CTableDataCell>
+                  <CTableDataCell>{shift.shift_end_time}</CTableDataCell>
+                  <CTableDataCell>{group.total_production_count_by_group}</CTableDataCell>
+                </CTableRow>
+              ))}
+            </CTableBody>
+          </CTable>
+        </CCardBody>
+      </div>
     </CCard>
   );
 

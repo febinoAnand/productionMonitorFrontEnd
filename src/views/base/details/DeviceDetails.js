@@ -106,7 +106,7 @@ const DeviceDetails = () => {
           throw new Error('Network response was not ok');
         }
         const newDevice = await response.json();
-        setDeviceList([newDevice, ...deviceList]); // Add new device to the beginning
+        setDeviceList([newDevice, ...deviceList]); 
         setSuccessMessage('Device added successfully');
       } else if (modalMode === 'update') {
         const response = await fetch(`${url}${selectedDevice.id}/`, {
@@ -120,7 +120,7 @@ const DeviceDetails = () => {
           throw new Error('Network response was not ok');
         }
         const updatedDevice = await response.json();
-        setDeviceList([updatedDevice, ...deviceList.filter(device => device.id !== updatedDevice.id)]); // Update device and move to the beginning
+        setDeviceList([updatedDevice, ...deviceList.filter(device => device.id !== updatedDevice.id)]); 
         setSuccessMessage('Device updated successfully');
       }
       toggleModal();
@@ -134,6 +134,7 @@ const DeviceDetails = () => {
       {successMessage && <div className="alert alert-success">{successMessage}</div>}
       <CRow>
         <CCol xs={12}>
+        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
           <CCard className="mb-4">
             <CCardHeader>
               <strong>Device Details</strong>
@@ -189,6 +190,7 @@ const DeviceDetails = () => {
               </CTable>
             </CCardBody>
           </CCard>
+          </div>
         </CCol>
       </CRow>
 

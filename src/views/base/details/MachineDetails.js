@@ -197,6 +197,7 @@ class MachineDetails extends React.Component {
           )}
           <CCol xs={12}>
             <CCard className="mb-4">
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               <CCardHeader>
                 <strong>Machine List</strong>
                 <CButton color='success' variant='outline' size='sm' className='float-end' onClick={this.openAddModal}>Add Machine</CButton>
@@ -246,6 +247,7 @@ class MachineDetails extends React.Component {
                   </CTableBody>
                 </CTable>
               </CCardBody>
+              </div>
             </CCard>
           </CCol>
         </CRow>
