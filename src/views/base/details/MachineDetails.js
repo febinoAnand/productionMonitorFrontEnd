@@ -124,16 +124,19 @@ class MachineDetails extends React.Component {
   machinePostData = async () => {
     const { machineID, name, manufacture, line, hmiID } = this.state;
     try {
-      await axios.post(`${BaseURL}devices/machine/`, {
+      const response = await axios.post(`${BaseURL}devices/machine/`, {
         machine_id: machineID,
         machine_name: name,
         manufacture: manufacture,
         line: line,
         device: hmiID,
       });
+      const newMachine = response.data;
       this.displaySuccessMessage("Machine added successfully!");
+      this.setState((prevState) => ({
+        machineList: [newMachine, ...prevState.machineList],
+      }));
       this.closeAddModal();
-      this.fetchMachineList();
     } catch (error) {
       console.error("There was an error adding the machine!", error);
       this.closeAddModal();
@@ -325,7 +328,7 @@ class MachineDetails extends React.Component {
           </CModalFooter>
         </CModal>
       </div>
-    );
+    )
   }
 }
 
