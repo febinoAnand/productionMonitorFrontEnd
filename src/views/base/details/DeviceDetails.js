@@ -50,7 +50,8 @@ const DeviceDetails = () => {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-      setDeviceList(data);
+      const sortedData = data.reverse(); // Reverse the data
+      setDeviceList(sortedData);
     } catch (error) {
       console.error('Error fetching devices:', error);
     }
@@ -198,14 +199,13 @@ const DeviceDetails = () => {
                 </CTable>
                 </div>
               </CCardBody>
-
           </CCard>
         </CCol>
       </CRow>
 
       <CModal visible={showModal} onClose={() => setShowModal(false)} size="xl">
         <CModalHeader>
-          <CModalTitle> {modalMode === 'update' ? 'Update Device' : 'Add Device'}</CModalTitle>
+          <CModalTitle>{modalMode === 'update' ? 'Update Device' : 'Add Device'}</CModalTitle>
         </CModalHeader>
         <CForm onSubmit={handleSubmit}>
           <CModalBody>
@@ -297,7 +297,7 @@ const DeviceDetails = () => {
               Cancel
             </CButton>
             <CButton color="primary" size="sm" variant='outline' type="submit">
-              {modalMode === 'update' ? 'Update ' : 'Add '}
+              {modalMode === 'update' ? 'Update' : 'Add'}
             </CButton>
           </CModalFooter>
         </CForm>

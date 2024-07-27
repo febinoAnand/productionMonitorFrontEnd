@@ -27,9 +27,8 @@ import BaseURL from 'src/assets/contants/BaseURL';
 
 const url = `${BaseURL}config/mqttsettings/`;
 
-
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token'); 
+  const token = localStorage.getItem('token');
   return {
     'Authorization': `Token ${token}`,
     'Content-Type': 'application/json'
@@ -58,9 +57,10 @@ const MQTT = () => {
       const response = await fetch(url, { headers: getAuthHeaders() });
       if (response.ok) {
         const configurations = await response.json();
-        setData(configurations);
-        if (configurations.length > 0) {
-          const firstEntry = configurations[0];
+        const sortedData = configurations.reverse(); // Reverse the data
+        setData(sortedData);
+        if (sortedData.length > 0) {
+          const firstEntry = sortedData[0];
           setHost(firstEntry.host);
           setPort(firstEntry.port);
           setUserName(firstEntry.username);
