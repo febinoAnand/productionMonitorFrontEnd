@@ -6,20 +6,25 @@ import BaseURL from 'src/assets/contants/BaseURL';
 const Dashboard = () => {
   const [data, setData] = useState([]);
 
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(BaseURL + 'data/dashboard/');
+      setData(response.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   useEffect(() => {
-    axios.get(BaseURL + 'data/dashboard/')
-      .then(response => {
-        setData(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
+    fetchData();
+    const intervalId = setInterval(fetchData, 60000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const colors = ['#4a90e2', '#50e3c2', '#f5a623', '#d0021b', '#8b572a', '#7ed321'];
 
   const widgetStyles = {
-    backgroundColor: '#4a90e2', 
+    backgroundColor: '#4a90e2',
     color: '#fff',
     borderRadius: '12px',
     padding: '20px',
@@ -32,7 +37,7 @@ const Dashboard = () => {
     textAlign: 'center',
     boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
     border: '1px solid rgba(255,255,255,0.2)',
-    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif' // Consistent font
+    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
   };
 
   return (
@@ -61,7 +66,7 @@ const Dashboard = () => {
                           className="mb-2"
                           style={{
                             ...widgetStyles,
-                            backgroundColor: colors[index % colors.length] 
+                            backgroundColor: colors[index % colors.length]
                           }}
                           value={
                             <span style={{
