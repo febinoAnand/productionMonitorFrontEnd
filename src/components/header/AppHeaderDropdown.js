@@ -43,7 +43,7 @@ const AppHeaderDropdown = () => {
   };
 
   return (
-    <CDropdown variant="nav-item">
+    <CDropdown variant="nav-item"style={{ transform: 'scale(0.8)'}}>
       <CDropdownToggle placement="bottom-end" className="py-0" caret={false}>
         <CIcon icon={cilUser}></CIcon>
       </CDropdownToggle>
