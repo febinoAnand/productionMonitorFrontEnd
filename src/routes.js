@@ -55,6 +55,7 @@ const HTTP = React.lazy(() => import('./views/base/configuration/HTTP'))
  const DeviceDetails=React.lazy(() => import('./views/base/details/DeviceDetails'))
  const UnregisteredDevices = React.lazy(() => import('./views/base/details/UnregisteredDevices'))
  const MachineDetails = React.lazy(() => import('./views/base/details/MachineDetails'))
+ const ShiftTiming = React.lazy(() => import('./views/base/details/ShiftTiming'))
  const MachineGroup = React.lazy(() => import('./views/base/details/MachineGroup'))
  const RFID = React.lazy(() => import('./views/base/details/RFID'))
 
@@ -171,6 +172,7 @@ const routes = [
 
    { path: '/details/machinegroup', name: 'Machine Group', element: MachineGroup}, //details
   { path: '/details/machinedetails', name: 'Machine Details', element: MachineDetails}, //details
+  { path: '/details/shifttiming', name: 'Shift Timing', element: ShiftTiming}, //details
   //{ path: '/details/devdetails', name: 'HMI Device', element: HMIDetails}, //details
   { path: '/details/devdetails', name: 'Device', element: DeviceDetails}, //details
 
