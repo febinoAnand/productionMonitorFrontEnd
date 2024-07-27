@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { CRow, CCol, CCard, CCardHeader, CCardBody, CWidgetStatsA } from '@coreui/react';
 import BaseURL from 'src/assets/contants/BaseURL';
@@ -6,20 +6,32 @@ import BaseURL from 'src/assets/contants/BaseURL';
 const Dashboard = () => {
   const [data, setData] = useState([]);
 
-  const fetchData = async () => {
+  // Utility function to get authentication headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token'); // Adjust based on where you store your token
+    return {
+      'Authorization': `Token ${token}`,
+      'Content-Type': 'application/json'
+    };
+  };
+
+  // Fetch data function with headers
+  const fetchData = useCallback(async () => {
     try {
-      const response = await axios.get(BaseURL + 'data/dashboard/');
+      const response = await axios.get(BaseURL + 'data/dashboard/', {
+        headers: getAuthHeaders()
+      });
       setData(response.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
     const intervalId = setInterval(fetchData, 60000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [fetchData]);
 
   const colors = ['#4a90e2', '#50e3c2', '#f5a623', '#d0021b', '#8b572a', '#7ed321'];
 

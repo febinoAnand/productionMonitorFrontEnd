@@ -70,7 +70,7 @@ const Login = () => {
 
   return (
     <div className="bg-light min-vh-100 d-flex flex-row align-items-center justify-content-center">
-      <CContainer className="container-md">
+      <CContainer className="container-md"  style={{ transform: 'scale(0.8)'}}>
         <CRow className="justify-content-center">
           <CCol md={6}>
             <img
