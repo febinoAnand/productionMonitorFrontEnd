@@ -190,7 +190,7 @@ const HTTP = () => {
                           <CButton color="primary" size="sm" onClick={() => openUpdateModal(setting)}>
                             <CIcon icon={cilPen} />
                           </CButton>
-                          <CButton color="danger" size="sm" onClick={() => handleDelete(setting.id)}>
+                          <CButton color="primary" size="sm" onClick={() => handleDelete(setting.id)}>
                             <CIcon icon={cilTrash} />
                           </CButton>
                         </div>

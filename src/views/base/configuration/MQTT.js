@@ -57,7 +57,7 @@ const MQTT = () => {
       const response = await fetch(url, { headers: getAuthHeaders() });
       if (response.ok) {
         const configurations = await response.json();
-        const sortedData = configurations.reverse(); // Reverse the data
+        const sortedData = configurations.reverse(); 
         setData(sortedData);
         if (sortedData.length > 0) {
           const firstEntry = sortedData[0];
@@ -84,7 +84,7 @@ const MQTT = () => {
       console.error('No configuration selected for update');
       return;
     }
-
+  
     const updatedEntry = {
       host,
       port,
@@ -94,33 +94,38 @@ const MQTT = () => {
       keepalive: keepAlive,
       qos
     };
-
+  
     try {
       const response = await fetch(`${url}${editId}/`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(updatedEntry),
       });
-
+  
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Failed to update configuration: ${response.status} ${errorText}`);
       }
-
+  
       setData((prevData) =>
         prevData.map((item) =>
           item._id === editId ? { ...item, ...updatedEntry } : item
         )
       );
-
+  
       setModalVisible(false);
       setSuccessMessage('Configuration updated successfully!');
       resetForm();
+  
+      
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
     } catch (error) {
       console.error('Error updating configuration:', error);
     }
   };
-
+  
   const handleEdit = (id) => {
     const entry = data.find((item) => item._id === id);
     setHost(entry.host);
