@@ -29,7 +29,6 @@ import BaseURL from 'src/assets/contants/BaseURL';
 
 const url = `${BaseURL}config/httpsettings/`;
 
-
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token'); 
   return {
@@ -53,7 +52,8 @@ const HTTP = () => {
     const fetchSettings = async () => {
       try {
         const response = await axios.get(url, { headers: getAuthHeaders() });
-        setSettings(response.data);
+        const sortedData = response.data.reverse(); // Reverse the data
+        setSettings(sortedData);
       } catch (error) {
         console.error('Error fetching settings:', error);
       }
@@ -190,7 +190,7 @@ const HTTP = () => {
                           <CButton color="primary" size="sm" onClick={() => openUpdateModal(setting)}>
                             <CIcon icon={cilPen} />
                           </CButton>
-                          <CButton color="primary" size="sm" onClick={() => handleDelete(setting.id)}>
+                          <CButton color="danger" size="sm" onClick={() => handleDelete(setting.id)}>
                             <CIcon icon={cilTrash} />
                           </CButton>
                         </div>

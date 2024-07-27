@@ -62,7 +62,8 @@ class MachineDetails extends React.Component {
   fetchMachineList = async () => {
     try {
       const response = await axios.get(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
-      this.setState({ machineList: response.data });
+      const sortedData = response.data.reverse(); // Reverse the data
+      this.setState({ machineList: sortedData });
     } catch (error) {
       console.error("There was an error fetching the machine list!", error);
     }
@@ -71,7 +72,8 @@ class MachineDetails extends React.Component {
   fetchDeviceList = async () => {
     try {
       const response = await axios.get(`${BaseURL}devices/device/`, { headers: getAuthHeaders() });
-      this.setState({ deviceList: response.data });
+      const sortedData = response.data.reverse(); // Reverse the data
+      this.setState({ deviceList: sortedData });
     } catch (error) {
       console.error("There was an error fetching the device list!", error);
     }
@@ -142,7 +144,7 @@ class MachineDetails extends React.Component {
       const newMachine = response.data;
       this.displaySuccessMessage("Machine added successfully!");
       this.setState((prevState) => ({
-        machineList: [newMachine, ...prevState.machineList],
+        machineList: [newMachine, ...prevState.machineList], // New machine added to the top
       }));
       this.closeAddModal();
     } catch (error) {
@@ -210,50 +212,50 @@ class MachineDetails extends React.Component {
                 <CButton color='success' variant='outline' size='sm' className='float-end' onClick={this.openAddModal}>Add Machine</CButton>
               </CCardHeader>
               <CCardBody>
-              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                <CTable striped hover>
-                  <CTableHead>
-                    <CTableRow color="dark">
-                      <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Device ID</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Name</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Manufacture</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Line</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Action</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    {machineList.length === 0 ? (
-                      <CTableRow>
-                        <CTableDataCell colSpan="7" className="text-center">
-                          No data available
-                        </CTableDataCell>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <CTable striped hover>
+                    <CTableHead>
+                      <CTableRow color="dark">
+                        <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Device ID</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Name</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Manufacture</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Line</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Action</CTableHeaderCell>
                       </CTableRow>
-                    ) : (
-                      machineList.map((machine, index) => (
-                        <CTableRow key={machine.id}>
-                          <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
-                          <CTableDataCell>{machine.machine_id}</CTableDataCell>
-                          <CTableDataCell>{machine.device}</CTableDataCell>
-                          <CTableDataCell>{machine.machine_name}</CTableDataCell>
-                          <CTableDataCell>{machine.manufacture}</CTableDataCell>
-                          <CTableDataCell>{machine.line}</CTableDataCell>
-                          <CTableDataCell>
-                            <div className="d-flex gap-2">
-                              <CButton color="primary" size='sm' onClick={() => this.getRowData(machine)}>
-                                <CIcon icon={cilPen} />
-                              </CButton>
-                              <CButton color="primary" size='sm' onClick={() => this.machineDeleteData(machine.id)}>
-                                <CIcon icon={cilTrash} />
-                              </CButton>
-                            </div>
+                    </CTableHead>
+                    <CTableBody>
+                      {machineList.length === 0 ? (
+                        <CTableRow>
+                          <CTableDataCell colSpan="7" className="text-center">
+                            No data available
                           </CTableDataCell>
                         </CTableRow>
-                      ))
-                    )}
-                  </CTableBody>
-                </CTable>
+                      ) : (
+                        machineList.map((machine, index) => (
+                          <CTableRow key={machine.id}>
+                            <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                            <CTableDataCell>{machine.machine_id}</CTableDataCell>
+                            <CTableDataCell>{machine.device}</CTableDataCell>
+                            <CTableDataCell>{machine.machine_name}</CTableDataCell>
+                            <CTableDataCell>{machine.manufacture}</CTableDataCell>
+                            <CTableDataCell>{machine.line}</CTableDataCell>
+                            <CTableDataCell>
+                              <div className="d-flex gap-2">
+                                <CButton color="primary" size='sm' onClick={() => this.getRowData(machine)}>
+                                  <CIcon icon={cilPen} />
+                                </CButton>
+                                <CButton color="primary" size='sm' onClick={() => this.machineDeleteData(machine.id)}>
+                                  <CIcon icon={cilTrash} />
+                                </CButton>
+                              </div>
+                            </CTableDataCell>
+                          </CTableRow>
+                        ))
+                      )}
+                    </CTableBody>
+                  </CTable>
                 </div>
               </CCardBody>
             </CCard>
@@ -338,7 +340,7 @@ class MachineDetails extends React.Component {
           </CModalFooter>
         </CModal>
       </div>
-    )
+    );
   }
 }
 
