@@ -52,8 +52,15 @@ const Dashboard = () => {
     fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
   };
 
+  const zoomOutStyle = {
+    transform: 'scale(0.8)', 
+    transformOrigin: 'top left',
+    width: '125%', 
+    height: '125%'
+  };
+
   return (
-    <div className="page">
+    <div className="page" style={zoomOutStyle}>
       <CRow className="mb-3">
         {data.map(group => (
           group.machine_count > 0 && (

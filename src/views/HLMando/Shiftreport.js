@@ -21,9 +21,8 @@ import {
 } from '@coreui/react';
 import BaseURL from 'src/assets/contants/BaseURL';
 
-
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token'); 
+  const token = localStorage.getItem('token');
   return {
     'Authorization': `Token ${token}`,
     'Content-Type': 'application/json'
@@ -41,21 +40,27 @@ const Shiftreport = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${BaseURL}/data/production-monitor/`, { headers: getAuthHeaders() });
+        // Fetch shift data
+        const response = await fetch(`${BaseURL}data/production-monitor/`, { headers: getAuthHeaders() });
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
 
         const shiftData = data.shift_wise_data || [];
-        const cumulativeMachineData = data.cumulative_machine_data || [];
-
         setShiftData(shiftData);
 
-        const machineNames = Array.from(new Set(cumulativeMachineData.map(machine => machine.machine_name)));
+        // Fetch machine data
+        const machineResponse = await fetch(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
+        if (!machineResponse.ok) {
+          throw new Error(`HTTP error! Status: ${machineResponse.status}`);
+        }
+        const machineData = await machineResponse.json();
+
+        const machineNames = Array.from(new Set(machineData.map(machine => machine.machine_name)));
         setMachineOptions(machineNames);
       } catch (error) {
-        console.error("Error fetching shift data:", error);
+        console.error("Error fetching data:", error);
       }
     };
 

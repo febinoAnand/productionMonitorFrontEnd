@@ -59,7 +59,8 @@ class ShiftTiming extends React.Component {
   fetchShiftData = async () => {
     try {
       const response = await axios.get(`${BaseURL}devices/shifttimings/`, { headers: getAuthHeaders() });
-      this.setState({ shiftData: response.data });
+      const sortedData = response.data.reverse();
+      this.setState({ shiftData: sortedData });
     } catch (error) {
       console.error("Error fetching shift data", error);
     }
