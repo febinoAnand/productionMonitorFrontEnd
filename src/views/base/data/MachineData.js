@@ -1,7 +1,6 @@
 import React from 'react';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
-
 import {
   CButton,
   CCard,
@@ -19,6 +18,15 @@ import {
   CTableRow,
 } from '@coreui/react';
 
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token'); 
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
+
 class MachineData extends React.Component {
   state = {
     machineDataList: [],
@@ -27,7 +35,7 @@ class MachineData extends React.Component {
   };
 
   componentDidMount() {
-    axios.get(BaseURL + "data/machinedata/")
+    axios.get(BaseURL + "data/machinedata/", { headers: getAuthHeaders() })
       .then(res => {
         const resData = res.data;
         const sortedData = resData.reverse();

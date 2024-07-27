@@ -28,6 +28,14 @@ import {
 import axios from 'axios';
 import CIcon from '@coreui/icons-react';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
+
 class MachineDetails extends React.Component {
   constructor(props) {
     super(props);
@@ -53,7 +61,7 @@ class MachineDetails extends React.Component {
 
   fetchMachineList = async () => {
     try {
-      const response = await axios.get(`${BaseURL}devices/machine/`);
+      const response = await axios.get(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
       this.setState({ machineList: response.data });
     } catch (error) {
       console.error("There was an error fetching the machine list!", error);
@@ -62,7 +70,7 @@ class MachineDetails extends React.Component {
 
   fetchDeviceList = async () => {
     try {
-      const response = await axios.get(`${BaseURL}devices/device/`);
+      const response = await axios.get(`${BaseURL}devices/device/`, { headers: getAuthHeaders() });
       this.setState({ deviceList: response.data });
     } catch (error) {
       console.error("There was an error fetching the device list!", error);
@@ -130,7 +138,7 @@ class MachineDetails extends React.Component {
         manufacture: manufacture,
         line: line,
         device: hmiID,
-      });
+      }, { headers: getAuthHeaders() });
       const newMachine = response.data;
       this.displaySuccessMessage("Machine added successfully!");
       this.setState((prevState) => ({
@@ -158,7 +166,7 @@ class MachineDetails extends React.Component {
         manufacture: manufacture,
         line: line,
         device: hmiID,
-      });
+      }, { headers: getAuthHeaders() });
       this.displaySuccessMessage("Machine updated successfully!");
       this.closeUpdateModal();
       this.fetchMachineList();
@@ -176,7 +184,7 @@ class MachineDetails extends React.Component {
     }
   
     try {
-      await axios.delete(`${BaseURL}devices/machine/${machineId}/`);
+      await axios.delete(`${BaseURL}devices/machine/${machineId}/`, { headers: getAuthHeaders() });
       this.displaySuccessMessage("Machine deleted successfully!");
       this.fetchMachineList();
     } catch (error) {
@@ -197,12 +205,12 @@ class MachineDetails extends React.Component {
           )}
           <CCol xs={12}>
             <CCard className="mb-4">
-            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               <CCardHeader>
                 <strong>Machine List</strong>
                 <CButton color='success' variant='outline' size='sm' className='float-end' onClick={this.openAddModal}>Add Machine</CButton>
               </CCardHeader>
               <CCardBody>
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <CTable striped hover>
                   <CTableHead>
                     <CTableRow color="dark">
@@ -246,8 +254,8 @@ class MachineDetails extends React.Component {
                     )}
                   </CTableBody>
                 </CTable>
+                </div>
               </CCardBody>
-              </div>
             </CCard>
           </CCol>
         </CRow>

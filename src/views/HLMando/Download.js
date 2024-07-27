@@ -19,6 +19,15 @@ import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL'; 
 import 'jspdf-autotable';
 
+// Utility function to get authentication headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token'); // Adjust based on where you store your token
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
+
 const Download = () => {
   const [startDate4, setStartDate4] = useState(new Date());
   const [endDate4, setEndDate4] = useState(new Date());
@@ -29,7 +38,7 @@ const Download = () => {
   useEffect(() => {
     const fetchMachines = async () => {
       try {
-        const response = await axios.get(`${BaseURL}/devices/machine/`);
+        const response = await axios.get(`${BaseURL}/devices/machine/`, { headers: getAuthHeaders() });
         console.log('API Response:', response.data); 
         const machinesData = response.data;
 
@@ -63,24 +72,23 @@ const Download = () => {
     return `${year}-${month}-${day}`;
   };
 
-  
   const generatePDF = () => {
     if (!apiData || !apiData.machines) {
       console.error('Invalid data for PDF generation:', apiData);
       return;
     }
-  
+
     const doc = new jsPDF('p', 'mm', 'a4');
     doc.text('Production Report', 10, 10);
-  
+
     apiData.machines.forEach((machine) => {
       doc.text(`Machine ID : ${machine.machine_id}`, 10, doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : 20);
-  
+
       const header = [
         [{ content: 'Shifts', colSpan: 2 }, { content: 'Date/Time', colSpan: 3 }, { content: `${machine.machine_id}`, colSpan: 3 }],
         ['', 'Date', 'From Time', 'To Time', 'Count', 'Target', 'Total']
       ];
-  
+
       const dataRows = machine.shifts.map((shift) => [
         shift.shift_name,
         shift.date,
@@ -90,7 +98,7 @@ const Download = () => {
         shift.target_production,
         shift.total
       ]);
-  
+
       doc.autoTable({
         head: header,
         body: dataRows,
@@ -116,79 +124,77 @@ const Download = () => {
         pageBreak: 'avoid'
       });
     });
-  
+
     doc.save('shift_report.pdf');
   };
-  
-  
-const generateCSV = async () => {
-  const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
-  const data = {
-    machine_ids: selectedMachineIds,
-    from_date: formatDate(startDate4),
-    to_date: formatDate(endDate4)
-  };
 
-  try {
-    const response = await axios.post(`${BaseURL}/data/table-report/`, data);
-    const apiData = response.data;
-    setApiData(apiData);
+  const generateCSV = async () => {
+    const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
+    const data = {
+      machine_ids: selectedMachineIds,
+      from_date: formatDate(startDate4),
+      to_date: formatDate(endDate4)
+    };
 
-    const header = ['SHIFT', ' ', 'Date/Time', '', ''];
-    const subHeader = ['', 'Date', 'From', 'To'];
+    try {
+      const response = await axios.post(`${BaseURL}/data/table-report/`, data, { headers: getAuthHeaders() });
+      const apiData = response.data;
+      setApiData(apiData);
 
-    selectedMachineIds.forEach((machineId) => {
-      header.push(`${machineId}`, '', '');
-      subHeader.push('count', 'target', 'total');
-    });
+      const header = ['SHIFT', ' ', 'Date/Time', '', ''];
+      const subHeader = ['', 'Date', 'From', 'To'];
 
-    const dataRows = [header.join(','), subHeader.join(',')];
+      selectedMachineIds.forEach((machineId) => {
+        header.push(`${machineId}`, '', '');
+        subHeader.push('count', 'target', 'total');
+      });
 
-    apiData.machines.forEach(machine => {
-      machine.shifts.forEach((shift) => {
-        const row = [
-          shift.shift_name,
-          `${shift.date} ${shift.time}`,
-          shift.shift_start_time,
-          shift.shift_end_time,
-        ];
+      const dataRows = [header.join(','), subHeader.join(',')];
 
-        selectedMachineIds.forEach((machineId) => {
-          const machineData = apiData.machines.find(m => m.machine_id === machineId);
-          if (machineData) {
-            const shiftData = machineData.shifts.find(s => s.date === shift.date && s.shift_name === shift.shift_name);
-            if (shiftData) {
-              row.push(shiftData.production_count, shiftData.target_production, shiftData.total);
+      apiData.machines.forEach(machine => {
+        machine.shifts.forEach((shift) => {
+          const row = [
+            shift.shift_name,
+            `${shift.date} ${shift.time}`,
+            shift.shift_start_time,
+            shift.shift_end_time,
+          ];
+
+          selectedMachineIds.forEach((machineId) => {
+            const machineData = apiData.machines.find(m => m.machine_id === machineId);
+            if (machineData) {
+              const shiftData = machineData.shifts.find(s => s.date === shift.date && s.shift_name === shift.shift_name);
+              if (shiftData) {
+                row.push(shiftData.production_count, shiftData.target_production, shiftData.total);
+              } else {
+                row.push('', '', '');
+              }
             } else {
               row.push('', '', '');
             }
-          } else {
-            row.push('', '', '');
-          }
+          });
+
+          dataRows.push(row.join(','));
         });
-
-        dataRows.push(row.join(','));
       });
-    });
 
-    const csv = dataRows.join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', 'Shift_Table.csv');
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const csv = dataRows.join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'Shift_Table.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error('Error generating CSV:', error);
     }
-  } catch (error) {
-    console.error('Error generating CSV:', error);
-  }
-};
+  };
 
-  
   const handleSearch = async () => {
     const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
     const data = {
@@ -197,17 +203,15 @@ const generateCSV = async () => {
       to_date: formatDate(endDate4)
     };
     console.log('Posting data:', data);
-  
+
     try {
-      const response = await axios.post(`${BaseURL}/data/table-report/`, data);
+      const response = await axios.post(`${BaseURL}/data/table-report/`, data, { headers: getAuthHeaders() });
       console.log('API Response -->:', response.data);
       setApiData(response.data); 
     } catch (error) {
       console.error('Error posting data:', error);
     }
   };
-  
-  
 
   return (
     <div className="page">
@@ -245,14 +249,14 @@ const generateCSV = async () => {
                         popperPlacement="bottom-end"
                       />
                       <CButton
-              type="button"
-              color="secondary"
-              className="ms-2"
-              style={{ height: '38px', borderRadius: '0px' }}
-              onClick={handleSearch}
-            >
-              <CIcon icon={cilSearch} />
-            </CButton>
+                        type="button"
+                        color="secondary"
+                        className="ms-2"
+                        style={{ height: '38px', borderRadius: '0px' }}
+                        onClick={handleSearch}
+                      >
+                        <CIcon icon={cilSearch} />
+                      </CButton>
                     </CInputGroup>
                   </div>
                 </CCol>
@@ -304,7 +308,6 @@ const generateCSV = async () => {
     </div>
   );
 };
-
 
 const CustomInput = forwardRef((props, ref) => (
   <CInputGroup>

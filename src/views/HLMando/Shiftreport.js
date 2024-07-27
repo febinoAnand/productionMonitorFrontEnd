@@ -21,6 +21,15 @@ import {
 } from '@coreui/react';
 import BaseURL from 'src/assets/contants/BaseURL';
 
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token'); 
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
+
 const Shiftreport = () => {
   const [startDate, setStartDate] = useState(null);
   const [shiftData, setShiftData] = useState([]);
@@ -32,7 +41,7 @@ const Shiftreport = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${BaseURL}/data/production-monitor/`);
+        const response = await fetch(`${BaseURL}/data/production-monitor/`, { headers: getAuthHeaders() });
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
