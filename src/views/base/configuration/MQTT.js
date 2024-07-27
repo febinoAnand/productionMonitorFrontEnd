@@ -20,10 +20,21 @@ import {
   CModalHeader,
   CModalTitle,
   CButton,
-  CAlert 
+  CAlert
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import BaseURL from 'src/assets/contants/BaseURL';
+
+const url = `${BaseURL}config/mqttsettings/`;
+
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token'); 
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
 
 const MQTT = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -36,7 +47,7 @@ const MQTT = () => {
   const [keepAlive, setKeepAlive] = useState('60');
   const [qos, setQos] = useState('0');
   const [data, setData] = useState([]);
-  const [successMessage, setSuccessMessage] = useState(''); 
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     fetchConfigurations();
@@ -44,8 +55,7 @@ const MQTT = () => {
 
   const fetchConfigurations = async () => {
     try {
-      const url = `${BaseURL}config/mqttsettings/`;
-      const response = await fetch(url);
+      const response = await fetch(url, { headers: getAuthHeaders() });
       if (response.ok) {
         const configurations = await response.json();
         setData(configurations);
@@ -86,12 +96,9 @@ const MQTT = () => {
     };
 
     try {
-      const url = `${BaseURL}config/mqttsettings/${editId}/`;
-      const response = await fetch(url, {
+      const response = await fetch(`${url}${editId}/`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updatedEntry),
       });
 
@@ -264,11 +271,9 @@ const MQTT = () => {
               />
             </CCol>
             <CCol xs={12}>
-            <div className="d-flex justify-content-end">
-              <CButton type="submit" color="success"
-                variant="outline"
-                 size="sm">Update</CButton>
-              <CButton color="secondary"size="sm" onClick={() => setModalVisible(false)} className="ms-2">Close</CButton>
+              <div className="d-flex justify-content-end">
+                <CButton type="submit" color="success" variant="outline" size="sm">Update</CButton>
+                <CButton color="secondary" size="sm" onClick={() => setModalVisible(false)} className="ms-2">Close</CButton>
               </div>
             </CCol>
           </CForm>

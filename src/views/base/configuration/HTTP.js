@@ -26,7 +26,17 @@ import {
 } from '@coreui/react';
 
 import BaseURL from 'src/assets/contants/BaseURL';
+
 const url = `${BaseURL}config/httpsettings/`;
+
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token'); 
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
 
 const HTTP = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -42,7 +52,7 @@ const HTTP = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await axios.get(url);
+        const response = await axios.get(url, { headers: getAuthHeaders() });
         setSettings(response.data);
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -61,7 +71,7 @@ const HTTP = () => {
       const response = await axios.post(url, {
         auth_token: formData.authToken,
         api_path: formData.apiPath,
-      });
+      }, { headers: getAuthHeaders() });
       setSettings((prevSettings) => [response.data, ...prevSettings]);
       setFormData({ id: '', authToken: '', apiPath: '' });
       setModalVisible(false);
@@ -76,7 +86,7 @@ const HTTP = () => {
       const response = await axios.put(`${url}${formData.id}/`, {
         auth_token: formData.authToken,
         api_path: formData.apiPath,
-      });
+      }, { headers: getAuthHeaders() });
       setSettings((prevSettings) =>
         [response.data, ...prevSettings.filter((setting) => setting.id !== formData.id)]
       );
@@ -94,7 +104,7 @@ const HTTP = () => {
 
     if (confirmDelete) {
       try {
-        await axios.delete(`${url}${id}/`);
+        await axios.delete(`${url}${id}/`, { headers: getAuthHeaders() });
         setSettings((prevSettings) =>
           prevSettings.filter((setting) => setting.id !== id)
         );
@@ -154,7 +164,7 @@ const HTTP = () => {
               <CButton
                 color="success"
                 variant="outline"
-                 size="sm"
+                size="sm"
                 className="float-end"
                 onClick={openAddModal}
               >
@@ -177,10 +187,10 @@ const HTTP = () => {
                       <CTableHeaderCell>{setting.api_path}</CTableHeaderCell>
                       <CTableHeaderCell>
                         <div className="d-flex gap-2">
-                          <CButton color="primary"  size="sm"onClick={() => openUpdateModal(setting)}>
+                          <CButton color="primary" size="sm" onClick={() => openUpdateModal(setting)}>
                             <CIcon icon={cilPen} />
                           </CButton>
-                          <CButton color="primary"  size="sm"onClick={() => handleDelete(setting.id)}>
+                          <CButton color="primary" size="sm" onClick={() => handleDelete(setting.id)}>
                             <CIcon icon={cilTrash} />
                           </CButton>
                         </div>
@@ -226,7 +236,7 @@ const HTTP = () => {
           <CButton
             color="primary"
             variant="outline"
-             size="sm"
+            size="sm"
             onClick={handleSubmit}
           >
             {isUpdating ? 'Update' : 'Add'}

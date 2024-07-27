@@ -1,7 +1,6 @@
 import React from 'react';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
-
 import {
   CButton,
   CCard,
@@ -19,6 +18,14 @@ import {
   CTableRow,
 } from '@coreui/react';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token'); 
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
+
 class ProductionData extends React.Component {
   state = {
     productionDataList: [],
@@ -27,7 +34,7 @@ class ProductionData extends React.Component {
   };
 
   componentDidMount() {
-    axios.get(`${BaseURL}data/productiondata/`)
+    axios.get(`${BaseURL}data/productiondata/`, { headers: getAuthHeaders() })
       .then(res => {
         const resData = res.data;
         const sortedData = resData.reverse();
@@ -78,7 +85,6 @@ class ProductionData extends React.Component {
 
                 <CCol className='mb-3'></CCol>
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-
                 <CTable striped hover>
                   <CTableHead color='dark'>
                     <CTableRow>

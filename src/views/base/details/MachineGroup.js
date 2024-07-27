@@ -30,6 +30,14 @@ import axios from 'axios';
 import CIcon from '@coreui/icons-react';
 import BaseURL from 'src/assets/contants/BaseURL';
 
+
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('token'); 
+    return {
+        Authorization: `Token ${token}`,
+    };
+};
+
 const Groups = () => {
     const [groupData, setGroupData] = useState([]);
     const [machineData, setMachineData] = useState([]);
@@ -44,7 +52,7 @@ const Groups = () => {
 
     const fetchGroupData = useCallback(async () => {
         try {
-            const response = await axios.get(BaseURL + "devices/machinegroup/");
+            const response = await axios.get(BaseURL + "devices/machinegroup/", { headers: getAuthHeaders() });
             const sortedData = response.data.reverse();
             setGroupData(sortedData);
             setFilteredGroupData(sortedData);
@@ -55,7 +63,7 @@ const Groups = () => {
 
     const fetchMachineData = useCallback(async () => {
         try {
-            const response = await axios.get(BaseURL + "devices/machine/");
+            const response = await axios.get(BaseURL + "devices/machine/", { headers: getAuthHeaders() });
             setMachineData(response.data);
         } catch (error) {
             console.error('Error fetching machine data:', error);
@@ -128,7 +136,7 @@ const Groups = () => {
                     machine_list: selectedGroup.machine_list
                 };
 
-                await axios.put(`${BaseURL}devices/machinegroup/${selectedGroup.id}/`, updatedGroup);
+                await axios.put(`${BaseURL}devices/machinegroup/${selectedGroup.id}/`, updatedGroup, { headers: getAuthHeaders() });
                 fetchGroupData();
                 setModalVisible(false);
                 setSuccessMessage('Group updated successfully!');
@@ -145,7 +153,7 @@ const Groups = () => {
                 machine_list: newGroupMachines
             };
 
-            await axios.post(BaseURL + "devices/machinegroup/", newGroup);
+            await axios.post(BaseURL + "devices/machinegroup/", newGroup, { headers: getAuthHeaders() });
             fetchGroupData();
             setNewGroupModalVisible(false);
             setNewGroupName('');
@@ -164,7 +172,7 @@ const Groups = () => {
         }
     
         try {
-            await axios.delete(`${BaseURL}devices/machinegroup/${groupId}/`);
+            await axios.delete(`${BaseURL}devices/machinegroup/${groupId}/`, { headers: getAuthHeaders() });
             fetchGroupData();
             setSuccessMessage('Group deleted successfully!');
         } catch (error) {

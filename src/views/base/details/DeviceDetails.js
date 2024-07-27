@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { cilPen, cilTrash } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import {
@@ -35,13 +35,17 @@ const DeviceDetails = () => {
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
 
-  useEffect(() => {
-    fetchDevices();
-  }, []);
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      'Authorization': `Token ${token}`,
+      'Content-Type': 'application/json'
+    };
+  };
 
-  const fetchDevices = async () => {
+  const fetchDevices = useCallback(async () => {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { headers: getAuthHeaders() });
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -50,7 +54,11 @@ const DeviceDetails = () => {
     } catch (error) {
       console.error('Error fetching devices:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDevices();
+  }, [fetchDevices]);
 
   const toggleModal = (mode = '', device = null) => {
     setModalMode(mode);
@@ -72,12 +80,14 @@ const DeviceDetails = () => {
     try {
       const response = await fetch(`${url}${deviceId}/`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       });
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       setDeviceList(deviceList.filter(device => device.id !== deviceId));
       setSuccessMessage('Device deleted successfully');
+      setTimeout(() => setSuccessMessage(''), 3000); // Hide message after 3 seconds
     } catch (error) {
       console.error('Error deleting device:', error);
     }
@@ -97,9 +107,7 @@ const DeviceDetails = () => {
       if (modalMode === 'add') {
         const response = await fetch(url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify(selectedDevice),
         });
         if (!response.ok) {
@@ -108,12 +116,11 @@ const DeviceDetails = () => {
         const newDevice = await response.json();
         setDeviceList([newDevice, ...deviceList]); 
         setSuccessMessage('Device added successfully');
+        setTimeout(() => setSuccessMessage(''), 3000); // Hide message after 3 seconds
       } else if (modalMode === 'update') {
         const response = await fetch(`${url}${selectedDevice.id}/`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify(selectedDevice),
         });
         if (!response.ok) {
@@ -122,6 +129,7 @@ const DeviceDetails = () => {
         const updatedDevice = await response.json();
         setDeviceList([updatedDevice, ...deviceList.filter(device => device.id !== updatedDevice.id)]); 
         setSuccessMessage('Device updated successfully');
+        setTimeout(() => setSuccessMessage(''), 3000); // Hide message after 3 seconds
       }
       toggleModal();
     } catch (error) {
@@ -134,63 +142,64 @@ const DeviceDetails = () => {
       {successMessage && <div className="alert alert-success">{successMessage}</div>}
       <CRow>
         <CCol xs={12}>
-        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
           <CCard className="mb-4">
-            <CCardHeader>
-              <strong>Device Details</strong>
-              <CButton className="float-end"  size="sm"color="success" variant='outline' onClick={() => toggleModal('add')}>
-                Add Device
-              </CButton>
-            </CCardHeader>
-            <CCardBody>
-              <CTable striped hover>
-                <CTableHead color='dark'>
-                  <CTableRow>
-                    <CTableHeaderCell scope="col">Si No</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Device Name</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Device Token</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Hardware Version</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Software Version</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Protocol</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Pub Topic</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Sub Topic</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">API Path</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
-                  {deviceList.map((device, index) => (
-                    <CTableRow key={device.id}>
-                      <CTableDataCell>{index + 1}</CTableDataCell>
-                      <CTableDataCell>{device.device_name}</CTableDataCell>
-                      <CTableDataCell>{device.device_token}</CTableDataCell>
-                      <CTableDataCell>{device.hardware_version}</CTableDataCell>
-                      <CTableDataCell>{device.software_version}</CTableDataCell>
-                      <CTableDataCell>{device.protocol}</CTableDataCell>
-                      <CTableDataCell>{device.pub_topic}</CTableDataCell>
-                      <CTableDataCell>{device.sub_topic}</CTableDataCell>
-                      <CTableDataCell>{device.api_path}</CTableDataCell>
-                      <CTableDataCell>
-                        <div className="d-flex gap-2">
-                          <CTooltip content="Edit Device">
-                            <CButton color="primary" size="sm" onClick={() => handleEditClick(device)}>
-                              <CIcon icon={cilPen} />
-                            </CButton>
-                          </CTooltip>
-                          <CTooltip content="Delete Device">
-                            <CButton color="primary" size="sm" onClick={() => handleDeleteClick(device.id)}>
-                              <CIcon icon={cilTrash} />
-                            </CButton>
-                          </CTooltip>
-                        </div>
-                      </CTableDataCell>
+              <CCardHeader>
+                <strong>Device Details</strong>
+                <CButton className="float-end"  size="sm" color="success" variant='outline' onClick={() => toggleModal('add')}>
+                  Add Device
+                </CButton>
+              </CCardHeader>
+              <CCardBody>
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                <CTable striped hover>
+                  <CTableHead color='dark'>
+                    <CTableRow>
+                      <CTableHeaderCell scope="col">Si No</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Device Name</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Device Token</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Hardware Version</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Software Version</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Protocol</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Pub Topic</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Sub Topic</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">API Path</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
                     </CTableRow>
-                  ))}
-                </CTableBody>
-              </CTable>
-            </CCardBody>
+                  </CTableHead>
+                  <CTableBody>
+                    {deviceList.map((device, index) => (
+                      <CTableRow key={device.id}>
+                        <CTableDataCell>{index + 1}</CTableDataCell>
+                        <CTableDataCell>{device.device_name}</CTableDataCell>
+                        <CTableDataCell>{device.device_token}</CTableDataCell>
+                        <CTableDataCell>{device.hardware_version}</CTableDataCell>
+                        <CTableDataCell>{device.software_version}</CTableDataCell>
+                        <CTableDataCell>{device.protocol}</CTableDataCell>
+                        <CTableDataCell>{device.pub_topic}</CTableDataCell>
+                        <CTableDataCell>{device.sub_topic}</CTableDataCell>
+                        <CTableDataCell>{device.api_path}</CTableDataCell>
+                        <CTableDataCell>
+                          <div className="d-flex gap-2">
+                            <CTooltip content="Edit Device">
+                              <CButton color="primary" size="sm" onClick={() => handleEditClick(device)}>
+                                <CIcon icon={cilPen} />
+                              </CButton>
+                            </CTooltip>
+                            <CTooltip content="Delete Device">
+                              <CButton color="primary" size="sm" onClick={() => handleDeleteClick(device.id)}>
+                                <CIcon icon={cilTrash} />
+                              </CButton>
+                            </CTooltip>
+                          </div>
+                        </CTableDataCell>
+                      </CTableRow>
+                    ))}
+                  </CTableBody>
+                </CTable>
+                </div>
+              </CCardBody>
+
           </CCard>
-          </div>
         </CCol>
       </CRow>
 
@@ -198,7 +207,7 @@ const DeviceDetails = () => {
         <CModalHeader>
           <CModalTitle> {modalMode === 'update' ? 'Update Device' : 'Add Device'}</CModalTitle>
         </CModalHeader>
-        <CForm  onSubmit={handleSubmit}>
+        <CForm onSubmit={handleSubmit}>
           <CModalBody>
             <CRow className="g-3">
               <CCol md={3}>
@@ -287,7 +296,7 @@ const DeviceDetails = () => {
             <CButton color="secondary" size="sm" onClick={() => setShowModal(false)}>
               Cancel
             </CButton>
-            <CButton color="primary"  size="sm"  variant='outline'type="submit">
+            <CButton color="primary" size="sm" variant='outline' type="submit">
               {modalMode === 'update' ? 'Update ' : 'Add '}
             </CButton>
           </CModalFooter>

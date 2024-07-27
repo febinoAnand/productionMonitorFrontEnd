@@ -1,7 +1,6 @@
 import React from 'react';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
-
 import {
   CButton,
   CCard,
@@ -19,6 +18,14 @@ import {
   CTableRow,
 } from '@coreui/react';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token'); 
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
+
 class LogData extends React.Component {
   state = {
     logDataList: [],
@@ -27,7 +34,7 @@ class LogData extends React.Component {
   };
 
   componentDidMount() {
-    axios.get(BaseURL + "data/logdata/")
+    axios.get(BaseURL + "data/logdata/", { headers: getAuthHeaders() })
       .then(res => {
         const resData = res.data;
         const sortedData = resData.reverse();
