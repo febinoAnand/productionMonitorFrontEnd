@@ -50,7 +50,7 @@ const DeviceDetails = () => {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-      const sortedData = data.reverse(); // Reverse the data
+      const sortedData = data.reverse(); 
       setDeviceList(sortedData);
     } catch (error) {
       console.error('Error fetching devices:', error);

@@ -6,22 +6,21 @@ import BaseURL from 'src/assets/contants/BaseURL';
 const Dashboard = () => {
   const [data, setData] = useState([]);
 
-  // Utility function to get authentication headers
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token'); // Adjust based on where you store your token
+    const token = localStorage.getItem('token'); 
     return {
       'Authorization': `Token ${token}`,
       'Content-Type': 'application/json'
     };
   };
 
-  // Fetch data function with headers
   const fetchData = useCallback(async () => {
     try {
       const response = await axios.get(BaseURL + 'data/dashboard/', {
         headers: getAuthHeaders()
       });
-      setData(response.data);
+      const sortedData = response.data.reverse(); 
+      setData(sortedData);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -40,8 +39,8 @@ const Dashboard = () => {
     color: '#fff',
     borderRadius: '12px',
     padding: '20px',
-    width: '100%',
-    height: '150px',
+    width: '250px', 
+    height: '130px', 
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -55,8 +54,7 @@ const Dashboard = () => {
   const zoomOutStyle = {
     transform: 'scale(0.8)', 
     transformOrigin: 'top left',
-    width: '125%', 
-    height: '125%'
+    width:'125%',
   };
 
   return (
@@ -69,7 +67,7 @@ const Dashboard = () => {
                 <CCardHeader style={{
                   backgroundColor: '#f8f9fa',
                   color: '#343a40',
-                  fontSize: '20px',
+                  fontSize: '16px',
                   fontWeight: '700',
                   padding: '10px 20px',
                   borderBottom: '2px solid #e9ecef',
@@ -80,9 +78,9 @@ const Dashboard = () => {
                 <CCardBody>
                   <CRow>
                     {group.machines.map((machine, index) => (
-                      <CCol xs={4} key={machine.machine_id}>
+                      <CCol xs={12} md={3} key={machine.machine_id}>
                         <CWidgetStatsA
-                          className="mb-2"
+                          className="mb-4"
                           style={{
                             ...widgetStyles,
                             backgroundColor: colors[index % colors.length]
@@ -90,7 +88,7 @@ const Dashboard = () => {
                           value={
                             <span style={{
                               display: 'block',
-                              fontSize: '24px',
+                              fontSize: '18px',
                               fontWeight: 'bold',
                               lineHeight: '1.2',
                               color: '#fff'

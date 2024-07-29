@@ -76,7 +76,6 @@ const Shiftreport = () => {
       const shiftDate = shift.shift_date.split('T')[0];
       const matchDate = shiftDate === formattedDate;
 
-      // Filter groups that contain the selected machine
       const filteredGroups = shift.groups.filter(group => 
         group.machines.some(machine => machine.machine_name === selectedMachine)
       );

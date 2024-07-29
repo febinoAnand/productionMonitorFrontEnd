@@ -19,9 +19,9 @@ import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL'; 
 import 'jspdf-autotable';
 
-// Utility function to get authentication headers
+
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token'); // Adjust based on where you store your token
+  const token = localStorage.getItem('token'); 
   return {
     'Authorization': `Token ${token}`,
     'Content-Type': 'application/json'

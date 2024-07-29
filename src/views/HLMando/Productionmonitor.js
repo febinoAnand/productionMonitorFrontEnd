@@ -23,7 +23,7 @@ const ProductionMonitor = () => {
       try {
         const response = await fetch(`${BaseURL}/data/production-monitor/`);
         const result = await response.json();
-        console.log(result); // Log the result to understand its structure
+        console.log(result); 
         setShiftData(result.shift_wise_data || []);
       } catch (error) {
         setError(error);

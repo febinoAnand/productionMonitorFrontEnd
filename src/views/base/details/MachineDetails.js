@@ -62,7 +62,7 @@ class MachineDetails extends React.Component {
   fetchMachineList = async () => {
     try {
       const response = await axios.get(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
-      const sortedData = response.data.reverse(); // Reverse the data
+      const sortedData = response.data.reverse(); 
       this.setState({ machineList: sortedData });
     } catch (error) {
       console.error("There was an error fetching the machine list!", error);
