@@ -36,11 +36,12 @@ const Shiftreport = () => {
   const [machineOptions, setMachineOptions] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState('');
   const [searchClicked, setSearchClicked] = useState(false);
+  const [highlightedDates, setHighlightedDates] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch shift data
+        
         const response = await fetch(`${BaseURL}data/production-monitor/`, { headers: getAuthHeaders() });
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -50,7 +51,7 @@ const Shiftreport = () => {
         const shiftData = data.shift_wise_data || [];
         setShiftData(shiftData);
 
-        // Fetch machine data
+      
         const machineResponse = await fetch(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
         if (!machineResponse.ok) {
           throw new Error(`HTTP error! Status: ${machineResponse.status}`);
@@ -59,13 +60,22 @@ const Shiftreport = () => {
 
         const machineNames = Array.from(new Set(machineData.map(machine => machine.machine_name)));
         setMachineOptions(machineNames);
+
+        
+        const datesWithData = Array.from(new Set(
+          shiftData
+            .flatMap(shift => shift.groups.flatMap(group => group.machines))
+            .filter(machine => machine.machine_name === selectedMachine)
+            .map(machine => shiftData.find(shift => shift.groups.some(group => group.machines.includes(machine))).shift_date.split('T')[0])
+        ));
+        setHighlightedDates(datesWithData.map(date => new Date(date)));
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [selectedMachine]);
 
   const handleSearchClick = () => {
     if (!startDate) return;
@@ -172,6 +182,8 @@ const Shiftreport = () => {
               customInput={<CustomInput />}
               dateFormat="yyyy-MM-dd"
               popperPlacement="bottom-end"
+              highlightDates={highlightedDates}
+              onChangeRaw={(e) => setStartDate(new Date(e.target.value))}
             />
             <CButton
               type="button"

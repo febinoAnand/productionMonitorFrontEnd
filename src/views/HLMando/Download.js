@@ -8,7 +8,7 @@ import {
   CCard,
   CCardHeader,
   CCardBody,
-  CFormCheck
+  CFormCheck,
 } from '@coreui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -18,7 +18,6 @@ import jsPDF from 'jspdf';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL'; 
 import 'jspdf-autotable';
-
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token'); 
@@ -34,6 +33,7 @@ const Download = () => {
   const [selectedMachines, setSelectedMachines] = useState({});
   const [machines, setMachines] = useState([]);
   const [apiData, setApiData] = useState(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchMachines = async () => {
@@ -196,26 +196,45 @@ const Download = () => {
   };
 
   const handleSearch = async () => {
+    
+    if (startDate4 > endDate4) {
+      setError('Please select correct dates.');
+      setTimeout(() => setError(''), 3000); 
+      return; 
+    }
+  
+  
+    setError('');
+  
+    
     const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
     const data = {
       machine_ids: selectedMachineIds,
       from_date: formatDate(startDate4),
       to_date: formatDate(endDate4)
     };
-    console.log('Posting data:', data);
-
+  
     try {
+      
       const response = await axios.post(`${BaseURL}/data/table-report/`, data, { headers: getAuthHeaders() });
       console.log('API Response -->:', response.data);
-      setApiData(response.data); 
+      setApiData(response.data);
     } catch (error) {
       console.error('Error posting data:', error);
+      setError('An error occurred while fetching data.'); 
     }
   };
-
   return (
+    
     <div className="page">
       <CRow className="mb-3">
+      {error && (
+                <CRow className="justify-content-center mt-3">
+                  <CCol md={6}>
+                    <div style={{ color: 'red', textAlign: 'center' }}>{error}</div>
+                  </CCol>
+                </CRow>
+              )}
         <CCol xs={12}>
           <CCard>
             <CCardHeader>
@@ -225,7 +244,7 @@ const Download = () => {
               <CRow>
                 <CCol md={6} className="text-end">
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '425px' }}>From Date</div>
+                  <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '425px' }}>From Date</div>
                     <CInputGroup>
                       <DatePicker
                         selected={startDate4}
@@ -239,7 +258,7 @@ const Download = () => {
                 </CCol>
                 <CCol md={6} className="text-end">
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '445px' }}>To Date</div>
+                  <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '445px' }}>To Date</div>
                     <CInputGroup>
                       <DatePicker
                         selected={endDate4}
@@ -261,6 +280,7 @@ const Download = () => {
                   </div>
                 </CCol>
               </CRow>
+
               <CRow className="mt-4">
                 <CCol md={12}>
                   <CCard>
@@ -271,7 +291,7 @@ const Download = () => {
                       <CRow>
                         {machines.length > 0 ? (
                           machines.map(machine => (
-                            <CCol md={2} key={machine.machine_id} style={{ marginBottom: '20px' }}>
+                            <CCol md={3} key={machine.machine_id} style={{ marginBottom: '20px' }}>
                               <CFormCheck
                                 id={machine.machine_id}
                                 label={`${machine.machine_name} - ${machine.machine_id}`}
