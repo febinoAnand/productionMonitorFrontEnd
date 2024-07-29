@@ -20,12 +20,21 @@ import { cilCalendar, cilSearch } from '@coreui/icons';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-// Utility function to format Date object to yyyy-MM-dd
+
 const formatDate = (date) => {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const month = String(date.getMonth() + 1).padStart(2, '0'); 
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+};
+
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token'); 
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
 };
 
 const ProductionMonitor = () => {
@@ -39,7 +48,7 @@ const ProductionMonitor = () => {
     setLoading(true);
     setError(null);
     try {
-      // Format the date to yyyy-MM-dd
+      
       const formattedDate = formatDate(date);
 
       console.log('Formatted date for fetching data:', formattedDate);
@@ -47,14 +56,12 @@ const ProductionMonitor = () => {
       const response = await axios.post(`${BaseURL}data/group-wise-machine-data/`, {
         date: formattedDate
       }, {
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: getAuthHeaders() 
       });
 
       const result = response.data;
 
-      // Process the data as needed
+     
       const reversedGroups = (result.groups || []).reverse().map(group => ({
         ...group,
         machines: group.machines.reverse()
