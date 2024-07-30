@@ -52,7 +52,7 @@ class MachineDetails extends React.Component {
       machineList: [],
       selectedMachine: null,
       successMessage: '',
-      errors: {} // Added errors state
+      errors: {} 
     };
   }
 
@@ -74,7 +74,7 @@ class MachineDetails extends React.Component {
   fetchDeviceList = async () => {
     try {
       const response = await axios.get(`${BaseURL}devices/device/`, { headers: getAuthHeaders() });
-      const sortedData = response.data.reverse(); // Reverse the data
+      const sortedData = response.data.reverse(); 
       this.setState({ deviceList: sortedData });
     } catch (error) {
       console.error("There was an error fetching the device list!", error);
@@ -89,7 +89,7 @@ class MachineDetails extends React.Component {
       line: '',
       hmiID: '',
       selectedMachine: null,
-      errors: {} // Clear errors on form close
+      errors: {} 
     });
   }
 
@@ -185,13 +185,13 @@ class MachineDetails extends React.Component {
       const newMachine = response.data;
       this.displaySuccessMessage("Machine added successfully!");
       this.setState((prevState) => ({
-        machineList: [newMachine, ...prevState.machineList], // New machine added to the top
+        machineList: [newMachine, ...prevState.machineList], 
       }));
-      this.closeAddModal(); // Close the modal on success
+      this.closeAddModal(); 
     } catch (error) {
       console.error("There was an error adding the machine!", error);
       this.setState({ errors: { submit: "There was an error adding the machine" } });
-      this.closeAddModal(); // Close the modal on error
+      this.closeAddModal(); 
     }
   }
 
@@ -216,12 +216,12 @@ class MachineDetails extends React.Component {
         device: hmiID,
       }, { headers: getAuthHeaders() });
       this.displaySuccessMessage("Machine updated successfully!");
-      this.closeUpdateModal(); // Close the modal on success
+      this.closeUpdateModal(); 
       this.fetchMachineList();
     } catch (error) {
       console.error("There was an error updating the machine!", error);
       this.setState({ errors: { submit: "There was an error updating the machine" } });
-      this.closeUpdateModal(); // Close the modal on error
+      this.closeUpdateModal(); 
     }
   }
 
