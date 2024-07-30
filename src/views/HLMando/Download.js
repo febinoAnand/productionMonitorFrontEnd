@@ -8,7 +8,7 @@ import {
   CCard,
   CCardHeader,
   CCardBody,
-  CFormCheck,
+  CFormCheck
 } from '@coreui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -19,8 +19,9 @@ import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL'; 
 import 'jspdf-autotable';
 
+// Utility function to get authentication headers
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token'); 
+  const token = localStorage.getItem('token'); // Adjust based on where you store your token
   return {
     'Authorization': `Token ${token}`,
     'Content-Type': 'application/json'
@@ -33,7 +34,6 @@ const Download = () => {
   const [selectedMachines, setSelectedMachines] = useState({});
   const [machines, setMachines] = useState([]);
   const [apiData, setApiData] = useState(null);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchMachines = async () => {
@@ -73,22 +73,28 @@ const Download = () => {
   };
 
   const generatePDF = () => {
+    const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
+    if (selectedMachineIds.length === 0) {
+      alert('Please select at least one machine to generate the PDF.');
+      return;
+    }
+  
     if (!apiData || !apiData.machines) {
       console.error('Invalid data for PDF generation:', apiData);
       return;
     }
-
+  
     const doc = new jsPDF('p', 'mm', 'a4');
     doc.text('Production Report', 10, 10);
-
+  
     apiData.machines.forEach((machine) => {
       doc.text(`Machine ID : ${machine.machine_id}`, 10, doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : 20);
-
+  
       const header = [
         [{ content: 'Shifts', colSpan: 2 }, { content: 'Date/Time', colSpan: 3 }, { content: `${machine.machine_id}`, colSpan: 3 }],
         ['', 'Date', 'From Time', 'To Time', 'Count', 'Target', 'Total']
       ];
-
+  
       const dataRows = machine.shifts.map((shift) => [
         shift.shift_name,
         shift.date,
@@ -98,7 +104,7 @@ const Download = () => {
         shift.target_production,
         shift.total
       ]);
-
+  
       doc.autoTable({
         head: header,
         body: dataRows,
@@ -124,33 +130,39 @@ const Download = () => {
         pageBreak: 'avoid'
       });
     });
-
+  
     doc.save('shift_report.pdf');
   };
+  
 
   const generateCSV = async () => {
     const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
+    if (selectedMachineIds.length === 0) {
+      alert('Please select at least one machine to generate the CSV.');
+      return;
+    }
+  
     const data = {
       machine_ids: selectedMachineIds,
       from_date: formatDate(startDate4),
       to_date: formatDate(endDate4)
     };
-
+  
     try {
       const response = await axios.post(`${BaseURL}/data/table-report/`, data, { headers: getAuthHeaders() });
       const apiData = response.data;
       setApiData(apiData);
-
+  
       const header = ['SHIFT', ' ', 'Date/Time', '', ''];
       const subHeader = ['', 'Date', 'From', 'To'];
-
+  
       selectedMachineIds.forEach((machineId) => {
         header.push(`${machineId}`, '', '');
         subHeader.push('count', 'target', 'total');
       });
-
+  
       const dataRows = [header.join(','), subHeader.join(',')];
-
+  
       apiData.machines.forEach(machine => {
         machine.shifts.forEach((shift) => {
           const row = [
@@ -159,7 +171,7 @@ const Download = () => {
             shift.shift_start_time,
             shift.shift_end_time,
           ];
-
+  
           selectedMachineIds.forEach((machineId) => {
             const machineData = apiData.machines.find(m => m.machine_id === machineId);
             if (machineData) {
@@ -173,11 +185,11 @@ const Download = () => {
               row.push('', '', '');
             }
           });
-
+  
           dataRows.push(row.join(','));
         });
       });
-
+  
       const csv = dataRows.join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
@@ -194,47 +206,29 @@ const Download = () => {
       console.error('Error generating CSV:', error);
     }
   };
+  
 
   const handleSearch = async () => {
-    
-    if (startDate4 > endDate4) {
-      setError('Please select correct dates.');
-      setTimeout(() => setError(''), 3000); 
-      return; 
-    }
-  
-  
-    setError('');
-  
-    
     const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
     const data = {
       machine_ids: selectedMachineIds,
       from_date: formatDate(startDate4),
       to_date: formatDate(endDate4)
     };
-  
+    console.log('Posting data:', data);
+
     try {
-      
       const response = await axios.post(`${BaseURL}/data/table-report/`, data, { headers: getAuthHeaders() });
       console.log('API Response -->:', response.data);
-      setApiData(response.data);
+      setApiData(response.data); 
     } catch (error) {
       console.error('Error posting data:', error);
-      setError('An error occurred while fetching data.'); 
     }
   };
+
   return (
-    
     <div className="page">
       <CRow className="mb-3">
-      {error && (
-                <CRow className="justify-content-center mt-3">
-                  <CCol md={6}>
-                    <div style={{ color: 'red', textAlign: 'center' }}>{error}</div>
-                  </CCol>
-                </CRow>
-              )}
         <CCol xs={12}>
           <CCard>
             <CCardHeader>
@@ -244,7 +238,7 @@ const Download = () => {
               <CRow>
                 <CCol md={6} className="text-end">
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '425px' }}>From Date</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '425px' }}>From Date</div>
                     <CInputGroup>
                       <DatePicker
                         selected={startDate4}
@@ -258,7 +252,7 @@ const Download = () => {
                 </CCol>
                 <CCol md={6} className="text-end">
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '445px' }}>To Date</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '445px' }}>To Date</div>
                     <CInputGroup>
                       <DatePicker
                         selected={endDate4}
@@ -280,7 +274,6 @@ const Download = () => {
                   </div>
                 </CCol>
               </CRow>
-
               <CRow className="mt-4">
                 <CCol md={12}>
                   <CCard>
@@ -291,7 +284,7 @@ const Download = () => {
                       <CRow>
                         {machines.length > 0 ? (
                           machines.map(machine => (
-                            <CCol md={3} key={machine.machine_id} style={{ marginBottom: '20px' }}>
+                            <CCol md={2} key={machine.machine_id} style={{ marginBottom: '20px' }}>
                               <CFormCheck
                                 id={machine.machine_id}
                                 label={`${machine.machine_name} - ${machine.machine_id}`}
