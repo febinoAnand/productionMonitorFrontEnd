@@ -285,34 +285,34 @@ const Download = () => {
                       <h4>Available Machines</h4>
                     </CCardHeader>
                     <CCardBody>
-                      {machinesByGroup.length > 0 ? (
-                        machinesByGroup.map(group => (
-                          <CCard key={group.group_id}>
-                            <CCardHeader>
-                              <h5>{group.group_name}</h5>
-                            </CCardHeader>
-                            <CCardBody>
-                              <CRow>
-                                {Object.keys(group.machines).map(machineId => (
-                                  <CCol md={2} key={machineId} style={{ marginBottom: '20px' }}>
-                                    <CFormCheck
-                                      id={machineId}
-                                      label={`${group.machines[machineId].machine_name} - ${machineId}`}
-                                      checked={selectedMachines[machineId]}
-                                      onChange={handleMachineChange}
-                                      style={{ marginBottom: '10px' }}
-                                    />
-                                  </CCol>
-                                ))}
-                              </CRow>
-                            </CCardBody>
-                          </CCard>
-                        ))
-                      ) : (
-                        <CCol md={12}>
-                          <p>No machines available</p>
-                        </CCol>
-                      )}
+                    {machinesByGroup.length > 0 ? (
+  machinesByGroup.map(group => (
+    <CCard key={group.group_id}>
+      <CCardHeader>
+        <h5>{group.group_name}</h5>
+      </CCardHeader>
+      <CCardBody>
+        <CRow>
+          {group.machines.map(machine => (
+            <CCol md={2} key={machine.machine_id} style={{ marginBottom: '20px' }}>
+              <CFormCheck
+                id={machine.machine_id}
+                label={`${machine.machine_name} - ${machine.machine_id}`}
+                checked={selectedMachines[machine.machine_id]}
+                onChange={handleMachineChange}
+                style={{ marginBottom: '10px' }}
+              />
+            </CCol>
+          ))}
+        </CRow>
+      </CCardBody>
+    </CCard>
+  ))
+) : (
+  <CCol md={12}>
+    <p>No machines available</p>
+  </CCol>
+)}
                     </CCardBody>
                   </CCard>
                 </CCol>
