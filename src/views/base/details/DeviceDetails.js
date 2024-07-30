@@ -23,7 +23,8 @@ import {
   CForm,
   CFormInput,
   CFormLabel,
-  CFormSelect 
+  CFormSelect,
+  CFormText
 } from '@coreui/react';
 import BaseURL from 'src/assets/contants/BaseURL';
 
@@ -33,11 +34,21 @@ const DeviceDetails = () => {
   const [deviceList, setDeviceList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('');
-  const [selectedDevice, setSelectedDevice] = useState(null);
+  const [selectedDevice, setSelectedDevice] = useState({
+    device_name: '',
+    device_token: '',
+    hardware_version: '',
+    software_version: '',
+    protocol: '',
+    pub_topic: '',
+    sub_topic: '',
+    api_path: '',
+  });
+  const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const protocolOptions = ['HTTP','MQTT',]; 
+  const protocolOptions = ['HTTP', 'MQTT'];
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
@@ -54,7 +65,7 @@ const DeviceDetails = () => {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-      const sortedData = data.reverse(); 
+      const sortedData = data.reverse();
       setDeviceList(sortedData);
     } catch (error) {
       console.error('Error fetching devices:', error);
@@ -67,7 +78,17 @@ const DeviceDetails = () => {
 
   const toggleModal = (mode = '', device = null) => {
     setModalMode(mode);
-    setSelectedDevice(device);
+    setSelectedDevice(device || {
+      device_name: '',
+      device_token: '',
+      hardware_version: '',
+      software_version: '',
+      protocol: '',
+      pub_topic: '',
+      sub_topic: '',
+      api_path: '',
+    });
+    setErrors({});
     setShowModal(!showModal);
   };
 
@@ -92,7 +113,7 @@ const DeviceDetails = () => {
       }
       setDeviceList(deviceList.filter(device => device.id !== deviceId));
       setSuccessMessage('Device deleted successfully');
-      setTimeout(() => setSuccessMessage(''), 3000); 
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error('Error deleting device:', error);
     }
@@ -102,35 +123,46 @@ const DeviceDetails = () => {
     const { id, value } = e.target;
     setSelectedDevice(prevDevice => ({
       ...prevDevice,
-      [id]: id === 'protocol' ? value.toLowerCase() : value 
+      [id]: id === 'protocol' ? value.toLowerCase() : value
     }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!selectedDevice.device_name) newErrors.device_name = 'Device Name is required';
+    if (!selectedDevice.device_token) newErrors.device_token = 'Device Token is required';
+    if (!selectedDevice.hardware_version) newErrors.hardware_version = 'Hardware Version is required';
+    if (!selectedDevice.software_version) newErrors.software_version = 'Software Version is required';
+    if (!selectedDevice.protocol) newErrors.protocol = 'Protocol is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     try {
       const { api_path, protocol, ...deviceData } = selectedDevice;
-  
+
       const requestOptions = {
         method: modalMode === 'add' ? 'POST' : 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({ ...deviceData, protocol: protocol.toLowerCase(), api_path: api_path || '' }),
       };
-  
+
       const response = await fetch(modalMode === 'add' ? url : `${url}${selectedDevice.id}/`, requestOptions);
-  
-      
+
       const responseText = await response.text();
       console.log('Response text:', responseText);
-  
+
       if (!response.ok) {
-        
         throw new Error('Network response was not ok');
       }
-  
-      
+
       const updatedDevice = JSON.parse(responseText);
-  
+
       if (modalMode === 'add') {
         setDeviceList([updatedDevice, ...deviceList]);
         setSuccessMessage('Device added successfully');
@@ -138,16 +170,16 @@ const DeviceDetails = () => {
         setDeviceList([updatedDevice, ...deviceList.filter(device => device.id !== updatedDevice.id)]);
         setSuccessMessage('Device updated successfully');
       }
-  
+
       setTimeout(() => setSuccessMessage(''), 3000);
       toggleModal();
     } catch (error) {
       console.error('Error saving device:', error);
-      setErrorMessage('Error saving device'); 
+      setErrorMessage('Error saving device');
       setTimeout(() => setErrorMessage(''), 3000);
     }
   };
-  
+
   return (
     <div className="page">
       {successMessage && <div className="alert alert-success">{successMessage}</div>}
@@ -222,51 +254,60 @@ const DeviceDetails = () => {
           <CModalBody>
             <CRow className="g-3">
               <CCol md={3}>
-                <CFormLabel htmlFor="device_name">Device Name</CFormLabel>
+                <CFormLabel htmlFor="device_name">Device Name <span className="text-danger">*</span></CFormLabel>
                 <CFormInput
                   type="text"
                   id="device_name"
                   placeholder="Enter Device Name"
-                  value={selectedDevice?.device_name || ''}
+                  value={selectedDevice.device_name}
                   onChange={handleFormData}
+                  isInvalid={!!errors.device_name}
                 />
+                {errors.device_name && <CFormText className="text-danger">{errors.device_name}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="device_token">Device Token</CFormLabel>
+                <CFormLabel htmlFor="device_token">Device Token <span className="text-danger">*</span></CFormLabel>
                 <CFormInput
                   type="text"
                   id="device_token"
                   placeholder="Enter Device Token"
-                  value={selectedDevice?.device_token || ''}
+                  value={selectedDevice.device_token}
                   onChange={handleFormData}
+                  isInvalid={!!errors.device_token}
                 />
+                {errors.device_token && <CFormText className="text-danger">{errors.device_token}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="hardware_version">Hardware Version</CFormLabel>
+                <CFormLabel htmlFor="hardware_version">Hardware Version <span className="text-danger">*</span></CFormLabel>
                 <CFormInput
                   type="text"
                   id="hardware_version"
                   placeholder="Enter Hardware Version"
-                  value={selectedDevice?.hardware_version || ''}
+                  value={selectedDevice.hardware_version}
                   onChange={handleFormData}
+                  isInvalid={!!errors.hardware_version}
                 />
+                {errors.hardware_version && <CFormText className="text-danger">{errors.hardware_version}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="software_version">Software Version</CFormLabel>
+                <CFormLabel htmlFor="software_version">Software Version <span className="text-danger">*</span></CFormLabel>
                 <CFormInput
                   type="text"
                   id="software_version"
                   placeholder="Enter Software Version"
-                  value={selectedDevice?.software_version || ''}
+                  value={selectedDevice.software_version}
                   onChange={handleFormData}
+                  isInvalid={!!errors.software_version}
                 />
+                {errors.software_version && <CFormText className="text-danger">{errors.software_version}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="protocol">Protocol</CFormLabel>
+                <CFormLabel htmlFor="protocol">Protocol <span className="text-danger">*</span></CFormLabel>
                 <CFormSelect
                   id="protocol"
-                  value={selectedDevice?.protocol || ''}
+                  value={selectedDevice.protocol}
                   onChange={handleFormData}
+                  isInvalid={!!errors.protocol}
                 >
                   <option value="">Select Protocol</option>
                   {protocolOptions.map((protocol) => (
@@ -275,6 +316,7 @@ const DeviceDetails = () => {
                     </option>
                   ))}
                 </CFormSelect>
+                {errors.protocol && <CFormText className="text-danger">{errors.protocol}</CFormText>}
               </CCol>
               <CCol md={3}>
                 <CFormLabel htmlFor="pub_topic">Pub Topic</CFormLabel>
@@ -282,7 +324,7 @@ const DeviceDetails = () => {
                   type="text"
                   id="pub_topic"
                   placeholder="Enter Pub Topic"
-                  value={selectedDevice?.pub_topic || ''}
+                  value={selectedDevice.pub_topic}
                   onChange={handleFormData}
                 />
               </CCol>
@@ -292,7 +334,7 @@ const DeviceDetails = () => {
                   type="text"
                   id="sub_topic"
                   placeholder="Enter Sub Topic"
-                  value={selectedDevice?.sub_topic || ''}
+                  value={selectedDevice.sub_topic}
                   onChange={handleFormData}
                 />
               </CCol>
@@ -302,7 +344,7 @@ const DeviceDetails = () => {
                   type="text"
                   id="api_path"
                   placeholder="Enter API Path (Optional)"
-                  value={selectedDevice?.api_path || ''}
+                  value={selectedDevice.api_path}
                   onChange={handleFormData}
                 />
               </CCol>
