@@ -23,6 +23,7 @@ import {
   CFormInput,
   CFormLabel,
   CFormSelect,
+  CFormText,
   CAlert
 } from '@coreui/react';
 import axios from 'axios';
@@ -50,7 +51,8 @@ class MachineDetails extends React.Component {
       deviceList: [],
       machineList: [],
       selectedMachine: null,
-      successMessage: ''
+      successMessage: '',
+      errors: {} // Added errors state
     };
   }
 
@@ -87,6 +89,7 @@ class MachineDetails extends React.Component {
       line: '',
       hmiID: '',
       selectedMachine: null,
+      errors: {} // Clear errors on form close
     });
   }
 
@@ -95,7 +98,7 @@ class MachineDetails extends React.Component {
   }
 
   closeAddModal = () => {
-    this.setState({ showAddModal: false });
+    this.setState({ showAddModal: false }, this.clearState);
   }
 
   openUpdateModal = () => {
@@ -131,7 +134,45 @@ class MachineDetails extends React.Component {
     setTimeout(() => this.setState({ successMessage: '' }), 3000);
   }
 
+  validateForm = () => {
+    const { machineID, name, manufacture, line, hmiID } = this.state;
+    let errors = {};
+    let isValid = true;
+
+    if (!machineID) {
+      errors.machineID = "Machine ID is required";
+      isValid = false;
+    }
+
+    if (!name) {
+      errors.name = "Name is required";
+      isValid = false;
+    }
+
+    if (!manufacture) {
+      errors.manufacture = "Manufacture is required";
+      isValid = false;
+    }
+
+    if (!line) {
+      errors.line = "Line is required";
+      isValid = false;
+    }
+
+    if (!hmiID) {
+      errors.hmiID = "Device is required";
+      isValid = false;
+    }
+
+    this.setState({ errors });
+    return isValid;
+  }
+
   machinePostData = async () => {
+    if (!this.validateForm()) {
+      return;
+    }
+
     const { machineID, name, manufacture, line, hmiID } = this.state;
     try {
       const response = await axios.post(`${BaseURL}devices/machine/`, {
@@ -146,14 +187,19 @@ class MachineDetails extends React.Component {
       this.setState((prevState) => ({
         machineList: [newMachine, ...prevState.machineList], // New machine added to the top
       }));
-      this.closeAddModal();
+      this.closeAddModal(); // Close the modal on success
     } catch (error) {
       console.error("There was an error adding the machine!", error);
-      this.closeAddModal();
+      this.setState({ errors: { submit: "There was an error adding the machine" } });
+      this.closeAddModal(); // Close the modal on error
     }
   }
 
   machineUpdateData = async () => {
+    if (!this.validateForm()) {
+      return;
+    }
+
     const { selectedMachine, machineID, name, manufacture, line, hmiID } = this.state;
 
     if (!selectedMachine) {
@@ -170,11 +216,12 @@ class MachineDetails extends React.Component {
         device: hmiID,
       }, { headers: getAuthHeaders() });
       this.displaySuccessMessage("Machine updated successfully!");
-      this.closeUpdateModal();
+      this.closeUpdateModal(); // Close the modal on success
       this.fetchMachineList();
     } catch (error) {
       console.error("There was an error updating the machine!", error);
-      this.closeUpdateModal();
+      this.setState({ errors: { submit: "There was an error updating the machine" } });
+      this.closeUpdateModal(); // Close the modal on error
     }
   }
 
@@ -195,7 +242,7 @@ class MachineDetails extends React.Component {
   }
 
   render() {
-    const { machineList, deviceList, showAddModal, showUpdateModal, machineID, name, manufacture, line, hmiID, successMessage } = this.state;
+    const { machineList, deviceList, showAddModal, showUpdateModal, machineID, name, manufacture, line, hmiID, successMessage, errors } = this.state;
 
     return (
       <div className="page">
@@ -203,6 +250,11 @@ class MachineDetails extends React.Component {
           {successMessage && (
             <CAlert color="success" dismissible onClose={() => this.setState({ successMessage: '' })}>
               {successMessage}
+            </CAlert>
+          )}
+          {errors.submit && (
+            <CAlert color="danger" dismissible onClose={() => this.setState({ errors: { submit: '' } })}>
+              {errors.submit}
             </CAlert>
           )}
           <CCol xs={12}>
@@ -227,7 +279,7 @@ class MachineDetails extends React.Component {
                     <CTableBody>
                       {machineList.length === 0 ? (
                         <CTableRow>
-                          <CTableDataCell colSpan="7" className="text-center">
+                          <CTableDataCell colSpan="6" className="text-center">
                             No data available
                           </CTableDataCell>
                         </CTableRow>
@@ -267,29 +319,34 @@ class MachineDetails extends React.Component {
           <CModalBody>
             <CForm className="row g-3">
               <CCol md={3}>
-                <CFormLabel htmlFor="machineID">Machine ID</CFormLabel>
-                <CFormInput id="machineID" placeholder="eg: MAC5632" value={machineID} onChange={this.handleFormData} />
+                <CFormLabel htmlFor="machineID">Machine ID <span className="text-danger">*</span></CFormLabel>
+                <CFormInput id="machineID" placeholder="eg: MAC5632" value={machineID} onChange={this.handleFormData} isInvalid={!!errors.machineID} />
+                {errors.machineID && <CFormText className="text-danger">{errors.machineID}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="name">Name</CFormLabel>
-                <CFormInput id="name" placeholder="" value={name} onChange={this.handleFormData} />
+                <CFormLabel htmlFor="name">Name <span className="text-danger">*</span></CFormLabel>
+                <CFormInput id="name" placeholder="" value={name} onChange={this.handleFormData} isInvalid={!!errors.name} />
+                {errors.name && <CFormText className="text-danger">{errors.name}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="manufacture">Manufacture</CFormLabel>
-                <CFormInput id="manufacture" placeholder="" value={manufacture} onChange={this.handleFormData} />
+                <CFormLabel htmlFor="manufacture">Manufacture <span className="text-danger">*</span></CFormLabel>
+                <CFormInput id="manufacture" placeholder="" value={manufacture} onChange={this.handleFormData} isInvalid={!!errors.manufacture} />
+                {errors.manufacture && <CFormText className="text-danger">{errors.manufacture}</CFormText>}
               </CCol>
               <CCol xs={3}>
-                <CFormLabel htmlFor="line">Line</CFormLabel>
-                <CFormInput id="line" placeholder="eg: 1, 2, 3" value={line} onChange={this.handleFormData} />
+                <CFormLabel htmlFor="line">Line <span className="text-danger">*</span></CFormLabel>
+                <CFormInput id="line" placeholder="eg: 1, 2, 3" value={line} onChange={this.handleFormData} isInvalid={!!errors.line} />
+                {errors.line && <CFormText className="text-danger">{errors.line}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="Device">Device</CFormLabel>
-                <CFormSelect id="Device" value={hmiID} onChange={this.changeDropdown}>
+                <CFormLabel htmlFor="Device">Device <span className="text-danger">*</span></CFormLabel>
+                <CFormSelect id="Device" value={hmiID} onChange={this.changeDropdown} isInvalid={!!errors.hmiID}>
                   <option value="">Select Device</option>
                   {deviceList.map((device) => (
                     <option key={device.id} value={device.id}>{device.device_name}</option>
                   ))}
                 </CFormSelect>
+                {errors.hmiID && <CFormText className="text-danger">{errors.hmiID}</CFormText>}
               </CCol>
             </CForm>
           </CModalBody>
@@ -306,29 +363,34 @@ class MachineDetails extends React.Component {
           <CModalBody>
             <CForm className="row g-3">
               <CCol md={3}>
-                <CFormLabel htmlFor="machineID">Machine ID</CFormLabel>
-                <CFormInput id="machineID" placeholder="eg: MAC5632" value={machineID} onChange={this.handleFormData} />
+                <CFormLabel htmlFor="machineID">Machine ID <span className="text-danger">*</span></CFormLabel>
+                <CFormInput id="machineID" placeholder="eg: MAC5632" value={machineID} onChange={this.handleFormData} isInvalid={!!errors.machineID} />
+                {errors.machineID && <CFormText className="text-danger">{errors.machineID}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="name">Name</CFormLabel>
-                <CFormInput id="name" placeholder="" value={name} onChange={this.handleFormData} />
+                <CFormLabel htmlFor="name">Name <span className="text-danger">*</span></CFormLabel>
+                <CFormInput id="name" placeholder="" value={name} onChange={this.handleFormData} isInvalid={!!errors.name} />
+                {errors.name && <CFormText className="text-danger">{errors.name}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="manufacture">Manufacture</CFormLabel>
-                <CFormInput id="manufacture" placeholder="" value={manufacture} onChange={this.handleFormData} />
+                <CFormLabel htmlFor="manufacture">Manufacture <span className="text-danger">*</span></CFormLabel>
+                <CFormInput id="manufacture" placeholder="" value={manufacture} onChange={this.handleFormData} isInvalid={!!errors.manufacture} />
+                {errors.manufacture && <CFormText className="text-danger">{errors.manufacture}</CFormText>}
               </CCol>
               <CCol xs={3}>
-                <CFormLabel htmlFor="line">Line</CFormLabel>
-                <CFormInput id="line" placeholder="eg: 1, 2, 3" value={line} onChange={this.handleFormData} />
+                <CFormLabel htmlFor="line">Line <span className="text-danger">*</span></CFormLabel>
+                <CFormInput id="line" placeholder="eg: 1, 2, 3" value={line} onChange={this.handleFormData} isInvalid={!!errors.line} />
+                {errors.line && <CFormText className="text-danger">{errors.line}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="Device">Device</CFormLabel>
-                <CFormSelect id="Device" value={hmiID} onChange={this.changeDropdown}>
+                <CFormLabel htmlFor="Device">Device <span className="text-danger">*</span></CFormLabel>
+                <CFormSelect id="Device" value={hmiID} onChange={this.changeDropdown} isInvalid={!!errors.hmiID}>
                   <option value="">Select Device</option>
                   {deviceList.map((device) => (
                     <option key={device.id} value={device.id}>{device.device_name}</option>
                   ))}
                 </CFormSelect>
+                {errors.hmiID && <CFormText className="text-danger">{errors.hmiID}</CFormText>}
               </CCol>
             </CForm>
           </CModalBody>
