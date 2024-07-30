@@ -104,44 +104,71 @@ const ProductionMonitor = () => {
     </div>
   );
 
-  const renderTable = (group) => (
-    <div key={group.group_name}>
-      <h5>{group.group_name}</h5>
-      <CCard className="mb-4">
-        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-          <CCardBody>
-            <CTable striped hover>
-              <CTableHead color="dark">
-                <CTableRow>
-                  <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">WORK CENTER</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">SHIFTS</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {group.machines.map((machine, index) => (
-                  <CTableRow key={machine.machine_id}>
-                    <CTableDataCell>{index + 1}</CTableDataCell>
-                    <CTableDataCell>{machine.machine_name}</CTableDataCell>
-                    <CTableDataCell>
-                      {machine.shifts.length > 0 ? (
-                        machine.shifts.map((shift, idx) => (
-                          <div key={idx}>{`Shift ${idx + 1}: ${shift}`}</div>
-                        ))
-                      ) : (
-                        'No shifts available'
-                      )}
-                    </CTableDataCell>
+  const renderTable = (group) => {
+    
+    const shiftInfo = group.machines.flatMap(machine =>
+      machine.shifts.map(shift => ({
+        shift_name: shift.shift_name,
+      }))
+    );
+  
+    
+    const shiftMap = shiftInfo.reduce((acc, shift) => {
+      if (!acc[shift.shift_name]) {
+        acc[shift.shift_name] = { target_count: shift.target_count, production_count: shift.production_count };
+      } else {
+        acc[shift.shift_name].target_count += shift.target_count; 
+        acc[shift.shift_name].production_count += shift.production_count; 
+      }
+      return acc;
+    }, {});
+  
+    const uniqueShiftNames = Object.keys(shiftMap);
+  
+    return (
+      <div key={group.group_name}>
+        <h5>{group.group_name}</h5>
+        <CCard className="mb-4">
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <CCardBody>
+              <CTable striped hover>
+                <CTableHead color="dark">
+                  <CTableRow>
+                    <CTableHeaderCell rowSpan="2" scope="col">Si.No</CTableHeaderCell>
+                    <CTableHeaderCell rowSpan="2" scope="col">WORK CENTER</CTableHeaderCell>
+                    {uniqueShiftNames.map((shiftName, index) => (
+                      <CTableHeaderCell key={index} colSpan="1" scope="col">
+                        {shiftName}
+                      </CTableHeaderCell>
+                    ))}
                   </CTableRow>
-                ))}
-              </CTableBody>
-            </CTable>
-          </CCardBody>
-        </div>
-      </CCard>
-    </div>
-  );
-
+                </CTableHead>
+                <CTableBody>
+                  {group.machines.map((machine, index) => (
+                    <CTableRow key={machine.machine_id}>
+                      <CTableDataCell>{index + 1}</CTableDataCell>
+                      <CTableDataCell>{machine.machine_name}</CTableDataCell>
+                      {uniqueShiftNames.map((shiftName, idx) => {
+                        const shift = machine.shifts.find(s => s.shift_name === shiftName);
+                        return (
+                          <CTableDataCell key={`combined-cell-${idx}`}>
+                            {shift ? `${shift.target_production}/${shift.production_count}` : 'No data'}
+                          </CTableDataCell>
+                        );
+                      })}
+                    </CTableRow>
+                  ))}
+                </CTableBody>
+              </CTable>
+            </CCardBody>
+          </div>
+        </CCard>
+      </div>
+    );
+  };
+  
+  
+  
   return (
     <div className="page">
       <CRow className="mb-5">
@@ -170,7 +197,9 @@ const ProductionMonitor = () => {
       {showTable ? (
         <CRow>
           <CCol xs={12}>
-            {filteredData.map((group) => renderTable(group))}
+            {filteredData
+              .filter(group => group.machines.some(machine => machine.shifts.length > 0)) 
+              .map(group => renderTable(group))}
           </CCol>
         </CRow>
       ) : (
@@ -182,6 +211,6 @@ const ProductionMonitor = () => {
       )}
     </div>
   );
-};
-
+  };
+  
 export default ProductionMonitor;
