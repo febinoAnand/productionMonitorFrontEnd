@@ -20,7 +20,9 @@ const Dashboard = () => {
         headers: getAuthHeaders()
       });
       const sortedData = response.data.reverse(); 
-      setData(sortedData);
+      setTimeout(() => {
+        setData(sortedData);
+      }, 3000);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
