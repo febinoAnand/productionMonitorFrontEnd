@@ -32,26 +32,30 @@ const Download = () => {
   const [startDate4, setStartDate4] = useState(new Date());
   const [endDate4, setEndDate4] = useState(new Date());
   const [selectedMachines, setSelectedMachines] = useState({});
-  const [machines, setMachines] = useState([]);
+  const [machinesByGroup, setMachinesByGroup] = useState([]);
   const [apiData, setApiData] = useState(null);
 
   useEffect(() => {
     const fetchMachines = async () => {
       try {
-        const response = await axios.get(`${BaseURL}/devices/machine/`, { headers: getAuthHeaders() });
+        const response = await axios.get(`${BaseURL}/devices/machinegroup/`, { headers: getAuthHeaders() });
         console.log('API Response:', response.data); 
-        const machinesData = response.data;
+        const data = response.data;
 
-        if (Array.isArray(machinesData)) {
+        if (Array.isArray(data)) {
           const initialSelectedMachines = {};
-          machinesData.forEach(machine => {
-            initialSelectedMachines[machine.machine_id] = false;
-          });
+          const machinesGrouped = data.map(group => ({
+            ...group,
+            machines: group.machines.reduce((acc, machine) => {
+              acc[machine.machine_id] = false;
+              return acc;
+            }, {})
+          }));
 
-          setMachines(machinesData);
+          setMachinesByGroup(machinesGrouped);
           setSelectedMachines(initialSelectedMachines);
         } else {
-          console.error('Unexpected API response format:', machinesData);
+          console.error('Unexpected API response format:', data);
         }
       } catch (error) {
         console.error('Error fetching machine data:', error);
@@ -281,25 +285,34 @@ const Download = () => {
                       <h4>Available Machines</h4>
                     </CCardHeader>
                     <CCardBody>
-                      <CRow>
-                        {machines.length > 0 ? (
-                          machines.map(machine => (
-                            <CCol md={2} key={machine.machine_id} style={{ marginBottom: '20px' }}>
-                              <CFormCheck
-                                id={machine.machine_id}
-                                label={`${machine.machine_name} - ${machine.machine_id}`}
-                                checked={selectedMachines[machine.machine_id]}
-                                onChange={handleMachineChange}
-                                style={{ marginBottom: '10px' }}
-                              />
-                            </CCol>
-                          ))
-                        ) : (
-                          <CCol md={12}>
-                            <p>No machines available</p>
-                          </CCol>
-                        )}
-                      </CRow>
+                      {machinesByGroup.length > 0 ? (
+                        machinesByGroup.map(group => (
+                          <CCard key={group.group_id}>
+                            <CCardHeader>
+                              <h5>{group.group_name}</h5>
+                            </CCardHeader>
+                            <CCardBody>
+                              <CRow>
+                                {Object.keys(group.machines).map(machineId => (
+                                  <CCol md={2} key={machineId} style={{ marginBottom: '20px' }}>
+                                    <CFormCheck
+                                      id={machineId}
+                                      label={`${group.machines[machineId].machine_name} - ${machineId}`}
+                                      checked={selectedMachines[machineId]}
+                                      onChange={handleMachineChange}
+                                      style={{ marginBottom: '10px' }}
+                                    />
+                                  </CCol>
+                                ))}
+                              </CRow>
+                            </CCardBody>
+                          </CCard>
+                        ))
+                      ) : (
+                        <CCol md={12}>
+                          <p>No machines available</p>
+                        </CCol>
+                      )}
                     </CCardBody>
                   </CCard>
                 </CCol>
