@@ -105,11 +105,15 @@ const DeviceDetails = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Extract api_path separately
+      const { api_path, ...deviceData } = selectedDevice; 
+
       if (modalMode === 'add') {
+        // For adding a new device, include api_path or send as empty string if not provided
         const response = await fetch(url, {
           method: 'POST',
           headers: getAuthHeaders(),
-          body: JSON.stringify(selectedDevice),
+          body: JSON.stringify({ ...deviceData, api_path: api_path || '' }),
         });
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -119,10 +123,11 @@ const DeviceDetails = () => {
         setSuccessMessage('Device added successfully');
         setTimeout(() => setSuccessMessage(''), 3000); // Hide message after 3 seconds
       } else if (modalMode === 'update') {
+       
         const response = await fetch(`${url}${selectedDevice.id}/`, {
           method: 'PUT',
           headers: getAuthHeaders(),
-          body: JSON.stringify(selectedDevice),
+          body: JSON.stringify({ ...deviceData, api_path: api_path || '' }), // Ensure api_path is included
         });
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -130,7 +135,7 @@ const DeviceDetails = () => {
         const updatedDevice = await response.json();
         setDeviceList([updatedDevice, ...deviceList.filter(device => device.id !== updatedDevice.id)]); 
         setSuccessMessage('Device updated successfully');
-        setTimeout(() => setSuccessMessage(''), 3000); // Hide message after 3 seconds
+        setTimeout(() => setSuccessMessage(''), 3000); 
       }
       toggleModal();
     } catch (error) {
@@ -144,13 +149,13 @@ const DeviceDetails = () => {
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
-              <CCardHeader>
-                <strong>Device Details</strong>
-                <CButton className="float-end"  size="sm" color="success" variant='outline' onClick={() => toggleModal('add')}>
-                  Add Device
-                </CButton>
-              </CCardHeader>
-              <CCardBody>
+            <CCardHeader>
+              <strong>Device Details</strong>
+              <CButton className="float-end" size="sm" color="success" variant='outline' onClick={() => toggleModal('add')}>
+                Add Device
+              </CButton>
+            </CCardHeader>
+            <CCardBody>
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <CTable striped hover>
                   <CTableHead color='dark'>
@@ -197,8 +202,8 @@ const DeviceDetails = () => {
                     ))}
                   </CTableBody>
                 </CTable>
-                </div>
-              </CCardBody>
+              </div>
+            </CCardBody>
           </CCard>
         </CCol>
       </CRow>
