@@ -30,7 +30,6 @@ import axios from 'axios';
 import CIcon from '@coreui/icons-react';
 import BaseURL from 'src/assets/contants/BaseURL';
 
-
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token'); 
     return {
@@ -40,7 +39,6 @@ const getAuthHeaders = () => {
 
 const Groups = () => {
     const [groupData, setGroupData] = useState([]);
-    const [machineData, setMachineData] = useState([]);
     const [filteredGroupData, setFilteredGroupData] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -61,19 +59,9 @@ const Groups = () => {
         }
     }, []);
 
-    const fetchMachineData = useCallback(async () => {
-        try {
-            const response = await axios.get(BaseURL + "devices/machine/", { headers: getAuthHeaders() });
-            setMachineData(response.data);
-        } catch (error) {
-            console.error('Error fetching machine data:', error);
-        }
-    }, []);
-
     useEffect(() => {
         fetchGroupData();
-        fetchMachineData();
-    }, [fetchGroupData, fetchMachineData]);
+    }, [fetchGroupData]);
 
     const handleSearch = useCallback(() => {
         if (!searchQuery) {
@@ -83,11 +71,8 @@ const Groups = () => {
 
         const filteredData = groupData.filter(group => {
             const name = group.group_name?.toLowerCase() || '';
-            const machineNames = group.machine_list
-                .map(machineId => {
-                    const machine = machineData.find(m => m.id === machineId);
-                    return machine ? machine.machine_name.toLowerCase() : '';
-                })
+            const machineNames = group.machines
+                .map(machine => machine.machine_name.toLowerCase())
                 .join(' ');
 
             return (
@@ -96,10 +81,10 @@ const Groups = () => {
             );
         });
         setFilteredGroupData(filteredData);
-    }, [groupData, searchQuery, machineData]);
+    }, [groupData, searchQuery]);
 
     const handleGroupSelect = (group) => {
-        setSelectedGroup(group ? { ...group } : { group_name: '', machine_list: [] });
+        setSelectedGroup(group ? { ...group } : { group_name: '', machines: [] });
         setModalVisible(true);
     };
 
@@ -108,12 +93,15 @@ const Groups = () => {
         const selectedMachines = [];
         for (let i = 0; i < options.length; i++) {
             if (options[i].selected) {
-                selectedMachines.push(parseInt(options[i].value, 10));
+                selectedMachines.push({
+                    machine_id: options[i].value,
+                    machine_name: options[i].text
+                });
             }
         }
         setSelectedGroup(prevGroup => ({
             ...prevGroup,
-            machine_list: selectedMachines
+            machines: selectedMachines
         }));
     };
 
@@ -122,7 +110,10 @@ const Groups = () => {
         const selectedMachines = [];
         for (let i = 0; i < options.length; i++) {
             if (options[i].selected) {
-                selectedMachines.push(parseInt(options[i].value, 10));
+                selectedMachines.push({
+                    machine_id: options[i].value,
+                    machine_name: options[i].text
+                });
             }
         }
         setNewGroupMachines(selectedMachines);
@@ -130,13 +121,13 @@ const Groups = () => {
 
     const handleUpdateGroup = async () => {
         try {
-            if (selectedGroup.id) {
+            if (selectedGroup.group_id) {
                 const updatedGroup = {
                     group_name: selectedGroup.group_name,
-                    machine_list: selectedGroup.machine_list
+                    machines: selectedGroup.machines
                 };
 
-                await axios.put(`${BaseURL}devices/machinegroup/${selectedGroup.id}/`, updatedGroup, { headers: getAuthHeaders() });
+                await axios.put(`${BaseURL}devices/machinegroup/${selectedGroup.group_id}/`, updatedGroup, { headers: getAuthHeaders() });
                 fetchGroupData();
                 setModalVisible(false);
                 setSuccessMessage('Group updated successfully!');
@@ -150,7 +141,7 @@ const Groups = () => {
         try {
             const newGroup = {
                 group_name: newGroupName,
-                machine_list: newGroupMachines
+                machines: newGroupMachines
             };
 
             await axios.post(BaseURL + "devices/machinegroup/", newGroup, { headers: getAuthHeaders() });
@@ -234,14 +225,11 @@ const Groups = () => {
                                         </CTableRow>
                                     ) : (
                                         filteredGroupData.map((group, index) => (
-                                            <CTableRow key={group.id}>
+                                            <CTableRow key={group.group_id}>
                                                 <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                                                 <CTableDataCell>{group.group_name}</CTableDataCell>
                                                 <CTableDataCell>
-                                                    {group.machine_list.map(machineId => {
-                                                        const machine = machineData.find(m => m.id === machineId);
-                                                        return machine ? machine.machine_name : 'Unknown';
-                                                    }).filter(name => name).join(', ')}
+                                                    {group.machines.map(machine => machine.machine_name).join(', ')}
                                                 </CTableDataCell>
                                                 <CTableDataCell>
                                                     <div className="d-flex gap-2">
@@ -251,7 +239,7 @@ const Groups = () => {
                                                             </CButton>
                                                         </CTooltip>
                                                         <CTooltip content="Delete Group">
-                                                            <CButton color="primary" size='sm' onClick={() => handleDeleteGroup(group.id)}>
+                                                            <CButton color="primary" size='sm' onClick={() => handleDeleteGroup(group.group_id)}>
                                                                 <CIcon icon={cilTrash} />
                                                             </CButton>
                                                         </CTooltip>
@@ -288,11 +276,11 @@ const Groups = () => {
                                 <CFormSelect
                                     id="machineList"
                                     multiple
-                                    value={selectedGroup?.machine_list || []}
+                                    value={selectedGroup?.machines.map(machine => machine.machine_id) || []}
                                     onChange={handleMachineListChange}
                                 >
-                                    {machineData.map(machine => (
-                                        <option key={machine.id} value={machine.id}>{machine.machine_name}</option>
+                                    {filteredGroupData.flatMap(group => group.machines).map(machine => (
+                                        <option key={machine.machine_id} value={machine.machine_id}>{machine.machine_name}</option>
                                     ))}
                                 </CFormSelect>
                             </CCol>
@@ -324,11 +312,11 @@ const Groups = () => {
                                 <CFormSelect
                                     id="newMachineList"
                                     multiple
-                                    value={newGroupMachines}
+                                    value={newGroupMachines.map(machine => machine.machine_id)}
                                     onChange={handleNewGroupMachinesChange}
                                 >
-                                    {machineData.map(machine => (
-                                        <option key={machine.id} value={machine.id}>{machine.machine_name}</option>
+                                    {filteredGroupData.flatMap(group => group.machines).map(machine => (
+                                        <option key={machine.machine_id} value={machine.machine_id}>{machine.machine_name}</option>
                                     ))}
                                 </CFormSelect>
                             </CCol>
