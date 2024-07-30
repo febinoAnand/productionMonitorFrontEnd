@@ -41,18 +41,16 @@ const Download = () => {
         const response = await axios.get(`${BaseURL}/devices/machinegroup/`, { headers: getAuthHeaders() });
         console.log('API Response:', response.data); 
         const data = response.data;
-
+  
         if (Array.isArray(data)) {
-          const initialSelectedMachines = {};
-          const machinesGrouped = data.map(group => ({
-            ...group,
-            machines: group.machines.reduce((acc, machine) => {
+          const initialSelectedMachines = data.reduce((acc, group) => {
+            group.machines.forEach(machine => {
               acc[machine.machine_id] = false;
-              return acc;
-            }, {})
-          }));
-
-          setMachinesByGroup(machinesGrouped);
+            });
+            return acc;
+          }, {});
+  
+          setMachinesByGroup(data);
           setSelectedMachines(initialSelectedMachines);
         } else {
           console.error('Unexpected API response format:', data);
@@ -61,13 +59,16 @@ const Download = () => {
         console.error('Error fetching machine data:', error);
       }
     };
-
+  
     fetchMachines();
   }, []);
+  
 
   const handleMachineChange = (e) => {
-    setSelectedMachines({ ...selectedMachines, [e.target.id]: e.target.checked });
+    const { id, checked } = e.target;
+    setSelectedMachines(prevState => ({ ...prevState, [id]: checked }));
   };
+  
 
   const formatDate = (date) => {
     const day = date.getDate().toString().padStart(2, '0');
@@ -287,7 +288,7 @@ const Download = () => {
                     <CCardBody>
                     {machinesByGroup.length > 0 ? (
   machinesByGroup.map(group => (
-    <CCard key={group.group_id}>
+    <CCard key={group.group_id}style={{ marginBottom: '20px' }}>
       <CCardHeader>
         <h5>{group.group_name}</h5>
       </CCardHeader>
@@ -298,7 +299,7 @@ const Download = () => {
               <CFormCheck
                 id={machine.machine_id}
                 label={`${machine.machine_name} - ${machine.machine_id}`}
-                checked={selectedMachines[machine.machine_id]}
+                checked={selectedMachines[machine.machine_id] || false}
                 onChange={handleMachineChange}
                 style={{ marginBottom: '10px' }}
               />
@@ -313,7 +314,11 @@ const Download = () => {
     <p>No machines available</p>
   </CCol>
 )}
-                    </CCardBody>
+        
+</CCardBody>
+
+
+
                   </CCard>
                 </CCol>
               </CRow>
