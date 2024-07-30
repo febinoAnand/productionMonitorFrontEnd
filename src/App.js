@@ -1,6 +1,7 @@
 import React, { Component, Suspense } from 'react'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
+import { HashRouter, Route, Routes, Navigate } from 'react-router-dom'
 import './scss/style.scss'
+
 
 const loading = (
   <div className="pt-3 text-center">
@@ -22,7 +23,7 @@ const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 class App extends Component {
   render() {
     return (
-      <Router>
+      <HashRouter>
         <Suspense fallback={loading}>
           <Routes>
             <Route exact path="/" element={<Navigate to="/login" />} />
@@ -35,7 +36,7 @@ class App extends Component {
             <Route path="*" name="Home" element={<DefaultLayout />} />
           </Routes>
         </Suspense>
-      </Router>
+      </HashRouter>
     )
   }
 }
