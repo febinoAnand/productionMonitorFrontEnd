@@ -134,6 +134,9 @@ const DeviceDetails = () => {
     if (!selectedDevice.hardware_version) newErrors.hardware_version = 'Hardware Version is required';
     if (!selectedDevice.software_version) newErrors.software_version = 'Software Version is required';
     if (!selectedDevice.protocol) newErrors.protocol = 'Protocol is required';
+    if (!selectedDevice.pub_topic) newErrors.pub_topic = 'pub topic is required';
+    if (!selectedDevice.sub_topic) newErrors.sub_topic = 'sub topic is required';
+
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -319,25 +322,29 @@ const DeviceDetails = () => {
                 {errors.protocol && <CFormText className="text-danger">{errors.protocol}</CFormText>}
               </CCol>
               <CCol md={3}>
-                <CFormLabel htmlFor="pub_topic">Pub Topic</CFormLabel>
-                <CFormInput
-                  type="text"
-                  id="pub_topic"
-                  placeholder="Enter Pub Topic"
-                  value={selectedDevice.pub_topic}
-                  onChange={handleFormData}
-                />
-              </CCol>
-              <CCol md={3}>
-                <CFormLabel htmlFor="sub_topic">Sub Topic</CFormLabel>
-                <CFormInput
-                  type="text"
-                  id="sub_topic"
-                  placeholder="Enter Sub Topic"
-                  value={selectedDevice.sub_topic}
-                  onChange={handleFormData}
-                />
-              </CCol>
+  <CFormLabel htmlFor="pub_topic">Pub Topic <span className="text-danger">*</span></CFormLabel>
+  <CFormInput
+    type="text"
+    id="pub_topic"
+    placeholder="Enter Pub Topic"
+    value={selectedDevice.pub_topic}
+    onChange={handleFormData}
+    isInvalid={!!errors.pub_topic}
+  />
+  {errors.pub_topic && <CFormText className="text-danger">{errors.pub_topic}</CFormText>}
+</CCol>
+<CCol md={3}>
+  <CFormLabel htmlFor="sub_topic">Sub Topic <span className="text-danger">*</span></CFormLabel>
+  <CFormInput
+    type="text"
+    id="sub_topic"
+    placeholder="Enter Sub Topic"
+    value={selectedDevice.sub_topic}
+    onChange={handleFormData}
+    isInvalid={!!errors.sub_topic}
+  />
+  {errors.sub_topic && <CFormText className="text-danger">{errors.sub_topic}</CFormText>}
+</CCol>
               <CCol md={3}>
                 <CFormLabel htmlFor="api_path">API Path</CFormLabel>
                 <CFormInput
