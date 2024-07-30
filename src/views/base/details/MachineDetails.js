@@ -218,8 +218,7 @@ class MachineDetails extends React.Component {
                       <CTableRow color="dark">
                         <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Device ID</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Name</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Device Name</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Manufacture</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Line</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Action</CTableHeaderCell>
@@ -237,7 +236,6 @@ class MachineDetails extends React.Component {
                           <CTableRow key={machine.id}>
                             <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                             <CTableDataCell>{machine.machine_id}</CTableDataCell>
-                            <CTableDataCell>{machine.device}</CTableDataCell>
                             <CTableDataCell>{machine.machine_name}</CTableDataCell>
                             <CTableDataCell>{machine.manufacture}</CTableDataCell>
                             <CTableDataCell>{machine.line}</CTableDataCell>

@@ -22,7 +22,8 @@ import {
   CModalTitle,
   CForm,
   CFormInput,
-  CFormLabel
+  CFormLabel,
+  CFormSelect 
 } from '@coreui/react';
 import BaseURL from 'src/assets/contants/BaseURL';
 
@@ -34,6 +35,9 @@ const DeviceDetails = () => {
   const [modalMode, setModalMode] = useState('');
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const protocolOptions = ['HTTP','MQTT',]; 
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
@@ -88,7 +92,7 @@ const DeviceDetails = () => {
       }
       setDeviceList(deviceList.filter(device => device.id !== deviceId));
       setSuccessMessage('Device deleted successfully');
-      setTimeout(() => setSuccessMessage(''), 3000); // Hide message after 3 seconds
+      setTimeout(() => setSuccessMessage(''), 3000); 
     } catch (error) {
       console.error('Error deleting device:', error);
     }
@@ -98,54 +102,56 @@ const DeviceDetails = () => {
     const { id, value } = e.target;
     setSelectedDevice(prevDevice => ({
       ...prevDevice,
-      [id]: value
+      [id]: id === 'protocol' ? value.toLowerCase() : value 
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Extract api_path separately
-      const { api_path, ...deviceData } = selectedDevice; 
-
-      if (modalMode === 'add') {
-        // For adding a new device, include api_path or send as empty string if not provided
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ ...deviceData, api_path: api_path || '' }),
-        });
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const newDevice = await response.json();
-        setDeviceList([newDevice, ...deviceList]); 
-        setSuccessMessage('Device added successfully');
-        setTimeout(() => setSuccessMessage(''), 3000); // Hide message after 3 seconds
-      } else if (modalMode === 'update') {
-       
-        const response = await fetch(`${url}${selectedDevice.id}/`, {
-          method: 'PUT',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ ...deviceData, api_path: api_path || '' }), // Ensure api_path is included
-        });
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const updatedDevice = await response.json();
-        setDeviceList([updatedDevice, ...deviceList.filter(device => device.id !== updatedDevice.id)]); 
-        setSuccessMessage('Device updated successfully');
-        setTimeout(() => setSuccessMessage(''), 3000); 
+      const { api_path, protocol, ...deviceData } = selectedDevice;
+  
+      const requestOptions = {
+        method: modalMode === 'add' ? 'POST' : 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ ...deviceData, protocol: protocol.toLowerCase(), api_path: api_path || '' }),
+      };
+  
+      const response = await fetch(modalMode === 'add' ? url : `${url}${selectedDevice.id}/`, requestOptions);
+  
+      
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+  
+      if (!response.ok) {
+        
+        throw new Error('Network response was not ok');
       }
+  
+      
+      const updatedDevice = JSON.parse(responseText);
+  
+      if (modalMode === 'add') {
+        setDeviceList([updatedDevice, ...deviceList]);
+        setSuccessMessage('Device added successfully');
+      } else if (modalMode === 'update') {
+        setDeviceList([updatedDevice, ...deviceList.filter(device => device.id !== updatedDevice.id)]);
+        setSuccessMessage('Device updated successfully');
+      }
+  
+      setTimeout(() => setSuccessMessage(''), 3000);
       toggleModal();
     } catch (error) {
       console.error('Error saving device:', error);
+      setErrorMessage('Error saving device'); 
+      setTimeout(() => setErrorMessage(''), 3000);
     }
   };
-
+  
   return (
     <div className="page">
       {successMessage && <div className="alert alert-success">{successMessage}</div>}
+      {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
@@ -257,13 +263,18 @@ const DeviceDetails = () => {
               </CCol>
               <CCol md={3}>
                 <CFormLabel htmlFor="protocol">Protocol</CFormLabel>
-                <CFormInput
-                  type="text"
+                <CFormSelect
                   id="protocol"
-                  placeholder="Enter Protocol"
                   value={selectedDevice?.protocol || ''}
                   onChange={handleFormData}
-                />
+                >
+                  <option value="">Select Protocol</option>
+                  {protocolOptions.map((protocol) => (
+                    <option key={protocol} value={protocol.toLowerCase()}>
+                      {protocol}
+                    </option>
+                  ))}
+                </CFormSelect>
               </CCol>
               <CCol md={3}>
                 <CFormLabel htmlFor="pub_topic">Pub Topic</CFormLabel>
@@ -290,7 +301,7 @@ const DeviceDetails = () => {
                 <CFormInput
                   type="text"
                   id="api_path"
-                  placeholder="Enter API Path"
+                  placeholder="Enter API Path (Optional)"
                   value={selectedDevice?.api_path || ''}
                   onChange={handleFormData}
                 />
