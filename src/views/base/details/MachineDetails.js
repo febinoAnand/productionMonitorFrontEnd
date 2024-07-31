@@ -46,6 +46,7 @@ class MachineDetails extends React.Component {
       manufacture: '',
       line: '',
       hmiID: '',
+      productionPerHour: '',
       showAddModal: false,
       showUpdateModal: false,
       deviceList: [],
@@ -88,6 +89,7 @@ class MachineDetails extends React.Component {
       manufacture: '',
       line: '',
       hmiID: '',
+      productionPerHour: '',
       selectedMachine: null,
       errors: {} 
     });
@@ -125,6 +127,7 @@ class MachineDetails extends React.Component {
       manufacture: machine.manufacture,
       line: machine.line,
       hmiID: machine.device,
+      productionPerHour: machine.production_per_hour,
     });
     this.openUpdateModal();
   }
@@ -135,7 +138,7 @@ class MachineDetails extends React.Component {
   }
 
   validateForm = () => {
-    const { machineID, name, manufacture, line, hmiID } = this.state;
+    const { machineID, name, manufacture, line, hmiID,productionPerHour } = this.state;
     let errors = {};
     let isValid = true;
 
@@ -163,6 +166,10 @@ class MachineDetails extends React.Component {
       errors.hmiID = "Device is required";
       isValid = false;
     }
+    if (!productionPerHour) {
+      errors.productionPerHour = "Production per hour is required";
+      isValid = false;
+    }
 
     this.setState({ errors });
     return isValid;
@@ -173,7 +180,7 @@ class MachineDetails extends React.Component {
       return;
     }
 
-    const { machineID, name, manufacture, line, hmiID } = this.state;
+    const { machineID, name, manufacture, line, hmiID,productionPerHour } = this.state;
     try {
       const response = await axios.post(`${BaseURL}devices/machine/`, {
         machine_id: machineID,
@@ -181,6 +188,7 @@ class MachineDetails extends React.Component {
         manufacture: manufacture,
         line: line,
         device: hmiID,
+        production_per_hour: productionPerHour,
       }, { headers: getAuthHeaders() });
       const newMachine = response.data;
       this.displaySuccessMessage("Machine added successfully!");
@@ -200,7 +208,7 @@ class MachineDetails extends React.Component {
       return;
     }
 
-    const { selectedMachine, machineID, name, manufacture, line, hmiID } = this.state;
+    const { selectedMachine, machineID, name, manufacture, line, hmiID,productionPerHour } = this.state;
 
     if (!selectedMachine) {
       console.error("Selected machine data is missing!");
@@ -214,6 +222,7 @@ class MachineDetails extends React.Component {
         manufacture: manufacture,
         line: line,
         device: hmiID,
+        production_per_hour: productionPerHour,
       }, { headers: getAuthHeaders() });
       this.displaySuccessMessage("Machine updated successfully!");
       this.closeUpdateModal(); 
@@ -242,7 +251,7 @@ class MachineDetails extends React.Component {
   }
 
   render() {
-    const { machineList, deviceList, showAddModal, showUpdateModal, machineID, name, manufacture, line, hmiID, successMessage, errors } = this.state;
+    const { machineList, deviceList, showAddModal, showUpdateModal, machineID, name, manufacture, line, hmiID, successMessage, errors,productionPerHour } = this.state;
 
     return (
       <div className="page">
@@ -273,6 +282,7 @@ class MachineDetails extends React.Component {
                         <CTableHeaderCell scope="col">Device Name</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Manufacture</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Line</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">production PerHour</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Action</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
@@ -291,7 +301,8 @@ class MachineDetails extends React.Component {
                             <CTableDataCell>{machine.machine_name}</CTableDataCell>
                             <CTableDataCell>{machine.manufacture}</CTableDataCell>
                             <CTableDataCell>{machine.line}</CTableDataCell>
-                            <CTableDataCell>
+                            <CTableDataCell>{machine.production_per_hour}</CTableDataCell>
+                           <CTableDataCell>
                               <div className="d-flex gap-2">
                                 <CButton color="primary" size='sm' onClick={() => this.getRowData(machine)}>
                                   <CIcon icon={cilPen} />
@@ -348,6 +359,11 @@ class MachineDetails extends React.Component {
                 </CFormSelect>
                 {errors.hmiID && <CFormText className="text-danger">{errors.hmiID}</CFormText>}
               </CCol>
+              <CCol md={3}>
+  <CFormLabel htmlFor="productionPerHour">Production Per Hour <span className="text-danger">*</span></CFormLabel>
+  <CFormInput id="productionPerHour" placeholder="eg: 100 units" value={productionPerHour} onChange={this.handleFormData} isInvalid={!!errors.productionPerHead} />
+  {errors.productionPerHead && <CFormText className="text-danger">{errors.productionPerHour}</CFormText>}
+</CCol>
             </CForm>
           </CModalBody>
           <CModalFooter>
@@ -392,6 +408,11 @@ class MachineDetails extends React.Component {
                 </CFormSelect>
                 {errors.hmiID && <CFormText className="text-danger">{errors.hmiID}</CFormText>}
               </CCol>
+              <CCol md={3}>
+  <CFormLabel htmlFor="productionPerHour">Production Per Hour <span className="text-danger">*</span></CFormLabel>
+  <CFormInput id="productionPerHour" placeholder="eg: 100 units" value={productionPerHour} onChange={this.handleFormData} isInvalid={!!errors.productionPerHead} />
+  {errors.productionPerHead && <CFormText className="text-danger">{errors.productionPerHour}</CFormText>}
+</CCol>
             </CForm>
           </CModalBody>
           <CModalFooter>
