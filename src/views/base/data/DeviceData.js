@@ -32,6 +32,7 @@ class DeviceData extends React.Component {
     deviceDataList: [],
     searchQuery: '',
     filteredData: [],
+    selectedRows: new Set(),
   };
 
   componentDidMount() {
@@ -72,16 +73,68 @@ class DeviceData extends React.Component {
     this.setState({ filteredData });
   }
 
+  handleSelectAll = (event) => {
+    const { filteredData } = this.state;
+    if (event.target.checked) {
+      this.setState({ selectedRows: new Set(filteredData.map(device => device.id)) });
+    } else {
+      this.setState({ selectedRows: new Set() });
+    }
+  }
+
+  handleSelectRow = (deviceId) => {
+    const { selectedRows } = this.state;
+    const updatedSelection = new Set(selectedRows);
+    if (updatedSelection.has(deviceId)) {
+      updatedSelection.delete(deviceId);
+    } else {
+      updatedSelection.add(deviceId);
+    }
+    this.setState({ selectedRows: updatedSelection });
+  }
+
+  handleDeleteSelected = () => {
+    const { selectedRows, deviceDataList } = this.state;
+    const idsToDelete = Array.from(selectedRows);
+    if (idsToDelete.length === 0) {
+      alert('No rows selected for deletion');
+      return;
+    }
+    axios.delete(BaseURL + 'data/devicedata/', {
+      headers: getAuthHeaders(),
+      data: { ids: idsToDelete }
+    })
+      .then(() => {
+        const updatedData = deviceDataList.filter(device => !idsToDelete.includes(device.id));
+        this.setState({ 
+          deviceDataList: updatedData,
+          filteredData: updatedData,
+          selectedRows: new Set()
+        });
+        alert('Selected rows deleted successfully');
+      })
+      .catch(error => {
+        console.error("There was an error deleting the device data!", error);
+      });
+  }
+
   render() {
-    const { searchQuery, filteredData } = this.state;
+    const { searchQuery, filteredData, selectedRows } = this.state;
 
     return (
       <div className="page">
         <CRow>
           <CCol xs={12}>
             <CCard className="mb-4">
-              <CCardHeader>
-                <strong>Device Data</strong>
+            <CCardHeader className="d-flex justify-content-between align-items-center">
+                <strong>Machine Data</strong>
+                <CButton
+                  type="button"
+                  color="primary"
+                  onClick={this.handleDeleteSelected}
+                >
+                  Delete Selected
+                </CButton>
               </CCardHeader>
               <CCardBody>
                 <CCol md={4}>
@@ -105,6 +158,13 @@ class DeviceData extends React.Component {
                 <CTable striped hover>
                   <CTableHead color='dark'>
                     <CTableRow>
+                      <CTableHeaderCell>
+                        <input
+                          type="checkbox"
+                          onChange={this.handleSelectAll}
+                          checked={filteredData.length > 0 && filteredData.every(device => selectedRows.has(device.id))}
+                        />
+                      </CTableHeaderCell>
                       <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Date</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Time</CTableHeaderCell>
@@ -119,6 +179,13 @@ class DeviceData extends React.Component {
                     {filteredData.length > 0 ? (
                       filteredData.map((device, index) => (
                         <CTableRow key={device.id}>
+                          <CTableDataCell>
+                            <input
+                              type="checkbox"
+                              checked={selectedRows.has(device.id)}
+                              onChange={() => this.handleSelectRow(device.id)}
+                            />
+                          </CTableDataCell>
                           <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                           <CTableDataCell>{device.date}</CTableDataCell>
                           <CTableDataCell>{device.time}</CTableDataCell>
@@ -131,7 +198,7 @@ class DeviceData extends React.Component {
                       ))
                     ) : (
                       <CTableRow>
-                        <CTableDataCell colSpan="8" className="text-center">
+                        <CTableDataCell colSpan="9" className="text-center">
                           No data available
                         </CTableDataCell>
                       </CTableRow>

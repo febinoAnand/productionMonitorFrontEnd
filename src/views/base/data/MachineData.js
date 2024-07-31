@@ -18,9 +18,8 @@ import {
   CTableRow,
 } from '@coreui/react';
 
-
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token'); 
+  const token = localStorage.getItem('token');
   return {
     'Authorization': `Token ${token}`,
     'Content-Type': 'application/json'
@@ -32,6 +31,8 @@ class MachineData extends React.Component {
     machineDataList: [],
     searchQuery: '',
     filteredData: [],
+    selectedMachineIds: [],  
+    selectAll: false,        
   };
 
   componentDidMount() {
@@ -54,7 +55,7 @@ class MachineData extends React.Component {
   handleSearch = () => {
     const { searchQuery, machineDataList } = this.state;
     if (searchQuery.trim() === '') {
-      this.setState({ filteredData: machineDataList });
+      this.setState({ filteredData: machineDataList }, this.updateSelectAll);
       return;
     }
     const filteredData = machineDataList.filter(machine => {
@@ -68,20 +69,79 @@ class MachineData extends React.Component {
         (String(machine.data_id).toLowerCase().includes(query))
       );
     });
-    this.setState({ filteredData });
+    this.setState({ filteredData }, this.updateSelectAll);
+  }
+
+  updateSelectAll = () => {
+    const { filteredData, selectedMachineIds } = this.state;
+    const allSelected = filteredData.length > 0 && filteredData.every(machine => selectedMachineIds.includes(machine.machine_id));
+    this.setState({ selectAll: allSelected });
+  }
+
+  handleCheckboxChange = (event, machineId) => {
+    const { checked } = event.target;
+    this.setState(prevState => {
+      const selectedMachineIds = checked
+        ? [...prevState.selectedMachineIds, machineId]
+        : prevState.selectedMachineIds.filter(id => id !== machineId);
+      return {
+        selectedMachineIds,
+      };
+    }, this.updateSelectAll);
+  }
+
+  handleSelectAllChange = (event) => {
+    const { checked } = event.target;
+    this.setState(prevState => ({
+      selectAll: checked,
+      selectedMachineIds: checked ? prevState.filteredData.map(machine => machine.machine_id) : [],
+    }));
+  }
+
+  handleDeleteSelected = () => {
+    const { selectedMachineIds } = this.state;
+    if (selectedMachineIds.length === 0) {
+      alert("No machines selected for deletion.");
+      return;
+    }
+    axios.delete(`${BaseURL}data/machinedata/`, {
+      headers: getAuthHeaders(),
+      data: { ids: selectedMachineIds }
+    })
+      .then(() => {
+        
+        this.setState(prevState => ({
+          machineDataList: prevState.machineDataList.filter(machine => !selectedMachineIds.includes(machine.machine_id)),
+          filteredData: prevState.filteredData.filter(machine => !selectedMachineIds.includes(machine.machine_id)),
+          selectedMachineIds: [],  
+          selectAll: false,        
+        }));
+        alert("Selected machines deleted successfully.");
+      })
+      .catch(error => {
+        console.error("There was an error deleting the machines!", error);
+      });
   }
 
   render() {
-    const { searchQuery, filteredData } = this.state;
+    const { searchQuery, filteredData, selectedMachineIds, selectAll } = this.state;
 
     return (
       <div className="page">
         <CRow>
           <CCol xs={12}>
             <CCard className="mb-4">
-              <CCardHeader>
+              <CCardHeader className="d-flex justify-content-between align-items-center">
                 <strong>Machine Data</strong>
+                <CButton
+                  type="button"
+                  color="primary"
+                  onClick={this.handleDeleteSelected}
+                >
+                  Delete Selected
+                </CButton>
               </CCardHeader>
+
               <CCardBody>
                 <CCol md={4}>
                   <CInputGroup className="flex-nowrap mt-3">
@@ -100,41 +160,54 @@ class MachineData extends React.Component {
 
                 <CCol className='mb-4'></CCol>
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-
-                <CTable striped hover>
-                  <CTableHead color='dark'>
-                    <CTableRow>
-                      <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Date</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Data</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Device ID</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Data ID</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    {filteredData.length > 0 ? (
-                      filteredData.map((machine, index) => (
-                        <CTableRow key={machine.id}>
-                          <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
-                          <CTableDataCell>{machine.date}</CTableDataCell>
-                          <CTableDataCell>{machine.time}</CTableDataCell>
-                          <CTableDataCell>{machine.machine_id}</CTableDataCell>
-                          <CTableDataCell>{JSON.stringify(machine.data)}</CTableDataCell>
-                          <CTableDataCell>{machine.device_id}</CTableDataCell>
-                          <CTableDataCell>{machine.data_id}</CTableDataCell>
-                        </CTableRow>
-                      ))
-                    ) : (
+                  <CTable striped hover>
+                    <CTableHead color='dark'>
                       <CTableRow>
-                        <CTableDataCell colSpan="7" className="text-center">
-                          No data available
-                        </CTableDataCell>
+                        <CTableHeaderCell scope="col">
+                          <input
+                            type="checkbox"
+                            checked={selectAll}
+                            onChange={this.handleSelectAllChange}
+                          />
+                        </CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Date</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Data</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Device ID</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Data ID</CTableHeaderCell>
                       </CTableRow>
-                    )}
-                  </CTableBody>
-                </CTable>
+                    </CTableHead>
+                    <CTableBody>
+                      {filteredData.length > 0 ? (
+                        filteredData.map((machine, index) => (
+                          <CTableRow key={machine.machine_id}>
+                            <CTableDataCell>
+                              <input
+                                type="checkbox"
+                                checked={selectedMachineIds.includes(machine.machine_id)}
+                                onChange={(e) => this.handleCheckboxChange(e, machine.machine_id)}
+                              />
+                            </CTableDataCell>
+                            <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                            <CTableDataCell>{machine.date}</CTableDataCell>
+                            <CTableDataCell>{machine.time}</CTableDataCell>
+                            <CTableDataCell>{machine.machine_id}</CTableDataCell>
+                            <CTableDataCell>{JSON.stringify(machine.data)}</CTableDataCell>
+                            <CTableDataCell>{machine.device_id}</CTableDataCell>
+                            <CTableDataCell>{machine.data_id}</CTableDataCell>
+                          </CTableRow>
+                        ))
+                      ) : (
+                        <CTableRow>
+                          <CTableDataCell colSpan="8" className="text-center">
+                            No data available
+                          </CTableDataCell>
+                        </CTableRow>
+                      )}
+                    </CTableBody>
+                  </CTable>
                 </div>
               </CCardBody>
             </CCard>
