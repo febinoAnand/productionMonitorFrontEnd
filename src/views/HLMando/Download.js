@@ -34,6 +34,7 @@ const Download = () => {
   const [selectedMachines, setSelectedMachines] = useState({});
   const [machinesByGroup, setMachinesByGroup] = useState([]);
   const [apiData, setApiData] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const fetchMachines = async () => {
@@ -214,6 +215,12 @@ const Download = () => {
   
 
   const handleSearch = async () => {
+     if (endDate4 < startDate4) {
+      setErrorMessage('pls select the date correctly');
+      return;
+    }
+    setErrorMessage('');
+
     const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
     const data = {
       machine_ids: selectedMachineIds,
@@ -230,10 +237,27 @@ const Download = () => {
       console.error('Error posting data:', error);
     }
   };
+  const handleStartDateChange = (date) => {
+    setStartDate4(date);
+    if (endDate4 >= date) {
+      setErrorMessage(''); 
+    }
+  };
+
+  const handleEndDateChange = (date) => {
+    setEndDate4(date);
+    if (date >= startDate4) {
+      setErrorMessage(''); 
+    }
+  };
 
   return (
+    
     <div className="page">
       <CRow className="mb-3">
+      {errorMessage && (
+                      <div style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</div>
+                    )}
         <CCol xs={12}>
           <CCard>
             <CCardHeader>
@@ -247,7 +271,7 @@ const Download = () => {
                     <CInputGroup>
                       <DatePicker
                         selected={startDate4}
-                        onChange={(date) => setStartDate4(date)}
+                        onChange={handleStartDateChange}
                         customInput={<CustomInput />}
                         dateFormat="dd/MM/yyyy"
                         popperPlacement="bottom-end"
@@ -261,7 +285,7 @@ const Download = () => {
                     <CInputGroup>
                       <DatePicker
                         selected={endDate4}
-                        onChange={(date) => setEndDate4(date)}
+                        onChange={handleEndDateChange}
                         customInput={<CustomInput />}
                         dateFormat="dd/MM/yyyy"
                         popperPlacement="bottom-end"
