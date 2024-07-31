@@ -1,33 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CCard,
   CCardBody,
-  CCol,
-  CRow,
   CTable,
   CTableBody,
   CTableDataCell,
   CTableHead,
   CTableHeaderCell,
   CTableRow,
-  CButton,
-  CInputGroup
 } from '@coreui/react';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
-import CIcon from '@coreui/icons-react';
-import { cilCalendar, cilSearch } from '@coreui/icons';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-
-
-const formatDate = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); 
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token'); 
@@ -40,79 +23,48 @@ const getAuthHeaders = () => {
 const ProductionMonitor = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [startDate, setStartDate] = useState(null);
   const [filteredData, setFilteredData] = useState([]);
-  const [showTable, setShowTable] = useState(false);
 
-  const fetchData = async (date) => {
+  // Fetch data when component mounts
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      
-      const formattedDate = formatDate(date);
-
-      console.log('Formatted date for fetching data:', formattedDate);
-
-      const response = await axios.post(`${BaseURL}data/group-wise-machine-data/`, {
-        date: formattedDate
-      }, {
-        headers: getAuthHeaders() 
+      const response = await axios.get(`${BaseURL}data/group-machine-data/`, {
+        headers: getAuthHeaders()
       });
 
       const result = response.data;
 
-     
       const reversedGroups = (result.groups || []).reverse().map(group => ({
         ...group,
         machines: group.machines.reverse()
       }));
 
       setFilteredData(reversedGroups);
-      setShowTable(true);
     } catch (error) {
       setError(error);
-      setShowTable(false);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSearchClick = () => {
-    if (startDate) {
-      fetchData(startDate);
     }
   };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
-  const CustomInput = ({ value, onClick }) => (
-    <div className="input-group" style={{ height: '38px', borderRadius: '0px' }}>
-      <input
-        type="text"
-        className="form-control"
-        value={value}
-        onClick={onClick}
-        readOnly
-        style={{ paddingRight: '30px', height: '38px', borderRadius: '0px' }}
-      />
-      <div className="input-group-append" style={{ borderRadius: '0px' }}>
-        <CButton type="button" color="secondary" onClick={onClick} style={{ height: '38px', borderRadius: '0px' }}>
-          <CIcon icon={cilCalendar} />
-        </CButton>
-      </div>
-    </div>
-  );
-
   const renderTable = (group) => {
-    
     const shiftInfo = group.machines.flatMap(machine =>
       machine.shifts.map(shift => ({
         shift_name: shift.shift_name,
+        target_count: shift.target_count || 0,
+        production_count: shift.production_count || 0
       }))
     );
-  
-    
+
     const shiftMap = shiftInfo.reduce((acc, shift) => {
       if (!acc[shift.shift_name]) {
         acc[shift.shift_name] = { target_count: shift.target_count, production_count: shift.production_count };
@@ -122,9 +74,9 @@ const ProductionMonitor = () => {
       }
       return acc;
     }, {});
-  
+
     const uniqueShiftNames = Object.keys(shiftMap);
-  
+
     return (
       <div key={group.group_name}>
         <h5>{group.group_name}</h5>
@@ -166,51 +118,12 @@ const ProductionMonitor = () => {
       </div>
     );
   };
-  
-  
-  
+
   return (
-    <div className="page">
-      <CRow className="mb-5">
-        <CCol xs={12}>
-          <CInputGroup className="flex-nowrap mt-3 mb-4">
-            <DatePicker
-              selected={startDate}
-              onChange={(date) => setStartDate(date)}
-              customInput={<CustomInput />}
-              dateFormat="yyyy-MM-dd"
-              popperPlacement="bottom-end"
-            />
-            <CButton
-              type="button"
-              color="secondary"
-              className="ms-2"
-              style={{ height: '38px', borderRadius: '0px' }}
-              onClick={handleSearchClick}
-              disabled={!startDate}
-            >
-              <CIcon icon={cilSearch} />
-            </CButton>
-          </CInputGroup>
-        </CCol>
-      </CRow>
-      {showTable ? (
-        <CRow>
-          <CCol xs={12}>
-            {filteredData
-              .filter(group => group.machines.some(machine => machine.shifts.length > 0)) 
-              .map(group => renderTable(group))}
-          </CCol>
-        </CRow>
-      ) : (
-        <CRow>
-          <CCol xs={12}>
-            <div>No data available</div>
-          </CCol>
-        </CRow>
-      )}
+    <div>
+      {filteredData.map(group => renderTable(group))}
     </div>
   );
-  };
-  
+};
+
 export default ProductionMonitor;
