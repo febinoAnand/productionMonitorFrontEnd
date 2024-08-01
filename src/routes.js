@@ -118,6 +118,7 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 //Dashboard
 const Dashboard=React.lazy(()=>import('./views/HLMando/Dashboard'))
 
+
 //Production Monitor
 const Productionmonitor = React.lazy(() => import('./views/HLMando/Productionmonitor'))
 
@@ -129,6 +130,8 @@ const Listachievement = React.lazy(() => import('./views/HLMando/Listachievement
 const Listemployee = React.lazy(() => import('./views/HLMando/Listemployee'))
 //Download
 const Download = React.lazy(() => import('./views/HLMando/Download'))
+//individualMachine
+const Machine=React.lazy(()=> import('./views/HLMando/IndividualMachine'))
 
 
 
@@ -247,6 +250,9 @@ const routes = [
 { path: '/HLMando/Listemployee', name: 'Listemployee', element: Listemployee },
 //Download
 { path: '/HLMando/Download', name: 'Download', element: Download },
+//individualmachine
+{ path: '/HLMando/IndividualMachine', name: 'Machine', element: Machine },
+
 
 ]
 export default routes

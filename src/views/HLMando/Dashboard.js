@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { CRow, CCol, CCard, CCardHeader, CCardBody, CWidgetStatsA } from '@coreui/react';
+import { useNavigate } from 'react-router-dom';
 import BaseURL from 'src/assets/contants/BaseURL';
 
 const Dashboard = () => {
   const [data, setData] = useState([]);
+  const navigate = useNavigate(); // Hook for navigation
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token'); 
@@ -56,7 +58,12 @@ const Dashboard = () => {
   const zoomOutStyle = {
     transform: 'scale(0.8)', 
     transformOrigin: 'top left',
-    width:'125%',
+    width: '125%',
+  };
+
+  // Function to handle widget click
+  const handleClick = (groupName, machine) => {
+    navigate('/HLMando/IndividualMachine', { state: { groupName, machine } });
   };
 
   return (
@@ -85,8 +92,10 @@ const Dashboard = () => {
                           className="mb-4"
                           style={{
                             ...widgetStyles,
-                            backgroundColor: colors[index % colors.length]
+                            backgroundColor: colors[index % colors.length],
+                            cursor: 'pointer' // Add cursor pointer for clickability
                           }}
+                          onClick={() => handleClick(group.group_name, machine)} // Attach click handler
                           value={
                             <span style={{
                               display: 'block',
