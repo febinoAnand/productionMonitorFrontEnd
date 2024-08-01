@@ -79,7 +79,7 @@ const AppSidebar = () => {
       onVisibleChange={(visible) => {
         dispatch({ type: 'set', sidebarShow: visible })
       }}
-      style={{ overflowY: 'auto', backgroundColor: '#42a5f5', color: 'white' }} 
+      style={{ overflowY: 'auto', backgroundColor:  '#55B0E2', color: 'white' }} 
     >
       <CSidebarBrand
         to="/"
@@ -87,7 +87,7 @@ const AppSidebar = () => {
           display: 'flex',
           alignItems: 'center',
           padding: '10px',
-          backgroundColor: '#42a5f5', 
+          backgroundColor: ' #55B0E2', 
         }}
       >
         <img
@@ -104,7 +104,7 @@ const AppSidebar = () => {
       <CSidebarToggler
         className="d-none d-lg-flex"
         onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
-        style={{ backgroundColor: '#42a5f5', color: 'white' }} 
+        style={{ backgroundColor: ' #55B0E2', color: 'white' }} 
       />
     </CSidebar>
   )

@@ -80,12 +80,11 @@ const Login = () => {
             />
           </CCol>
           <CCol md={3}>
-            <CCard className="p-4" style={{ height: '60vh', backgroundColor: '#1E90FF', borderRadius: 0, marginTop: '10px' }}>
+            <CCard className="p-4" style={{ height: '60vh', backgroundColor:  '#55B0E2', borderRadius: 0, marginTop: '10px' }}>
               <CCardBody style={{ height: '100%', overflowY: 'auto' }}>
                 <CForm onSubmit={handleLogin}>
                   <h1 style={{ color: '#FFFFFF' }}>Login</h1>
-                  <p className="text-medium-emphasis" style={{ color: '#FFFFFF' }}>Sign In to your account</p>
-                  <CInputGroup className="mb-3">
+                  <CInputGroup className="mb-3" style={{ marginTop: '40px' }}>
                     <CInputGroupText>
                       <CIcon icon={cilUser} />
                     </CInputGroupText>
