@@ -80,7 +80,7 @@ const Login = () => {
             />
           </CCol>
           <CCol md={3}>
-            <CCard className="p-4" style={{ height: '60vh', backgroundColor:  '#55B0E2', borderRadius: 0, marginTop: '10px' }}>
+            <CCard className="p-4" style={{ height: '60vh', backgroundColor:  '#047BC4', borderRadius: 0, marginTop: '10px' }}>
               <CCardBody style={{ height: '100%', overflowY: 'auto' }}>
                 <CForm onSubmit={handleLogin}>
                   <h1 style={{ color: '#FFFFFF' }}>Login</h1>
