@@ -1,14 +1,14 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
-  cilCursor,
+  //cilCursor,
   cilMonitor,
   // cilNotes,
   cilPuzzle,
   // cilSpeedometer,
   // cilLightbulb,
-  cilUsb,
-  cilEqualizer,
+  //cilUsb,
+  //cilEqualizer,
   // cilSitemap,
   // cilTouchApp,
   // cilBug,
@@ -18,21 +18,21 @@ import {
   // cilAccountLogout,
   // cilClock,
 
-  cilGroup,
+  //cilGroup,
   cilCloud,
   // cilListRich,
   // cilObjectGroup,
-  cilBraille,
-   cilCheckCircle,
-   cilDiamond,
+  //cilBraille,
+   //cilCheckCircle,
+   //cilDiamond,
   // cilEnvelopeLetter,
   cilArrowCircleBottom,
    //cilSettings,
    //cilSearch,
-   cilSwapHorizontal,
+   //cilSwapHorizontal,
   //  cilVoiceOverRecord,
-   cilShieldAlt,
-   cilPrint,
+   //cilShieldAlt,
+   //cilPrint,
   //  cilLan,
   //cilBoltCircle,
    //cilBellExclamation,
@@ -42,57 +42,53 @@ import {
    //cilColumns,
   // cilInputHdmi,
   // cilInput,
-  cibKeycdn,
+  //cibKeycdn,
   cilHome,
   cilUserX,
-  cilCog
+  //cilCog
 } from '@coreui/icons'
-import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+//import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import {CNavItem, CNavTitle } from '@coreui/react'
+
 
 
 const _nav = [
   {
     component: CNavTitle,
-    name: 'APPLICATIONS',
-    style: {color: '#FFFFFF' },
+    name: 'Production Monitor',
+    style: { color: '#FFFFFF' },
   },
   {
-    component: CNavGroup,
-    name: 'Production Monitor',
-    icon: <CIcon icon={cilCog} customClassName="nav-icon" />,
-    items:[
-      {
-        component: CNavItem,
-        name: 'Dashboard',
-        to: '/HLMando/dashboard',
-        icon: <CIcon icon={cilCloud} customClassName="nav-icon" />,
-      },
-        {
-        component: CNavItem,
-        name: 'Production',
-        to: '/HLMando/Productionmonitor',
-        icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
-        },
-          {
-          component: CNavItem,
-          name: 'Shift Report ',
-          to: '/HLMando/Shiftreport',
-          icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-        },
-          {
-          component: CNavItem,
-          name: 'Download ',
-          to: '/HLMando/Download',
-          icon: <CIcon icon={cilArrowCircleBottom} customClassName="nav-icon" />,
-        },
-        //   {
-        //   component: CNavItem,
-        //   name: 'List Achievement',
-        //   to: '/HLMando/Listachievement',
-        //   icon: <CIcon icon={cilClock} customClassName="nav-icon" />,
-        // },
-    ]
+    component: CNavItem,
+    name: <span style={{ color: 'white' }}>Dashboard</span>,
+    to: '/HLMando/dashboard',
+    icon: <CIcon icon={cilCloud}  customClassName="nav-icon" />,
   },
+  {
+    component: CNavItem,
+    name: <span style={{ color: 'white' }}>Production</span>,
+    to: '/HLMando/Productionmonitor',
+    icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: <span style={{ color: 'white' }}>Shiftreport</span>,
+    to: '/HLMando/Shiftreport',
+    icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: <span style={{ color: 'white' }}>Download</span>,
+    to: '/HLMando/Download',
+    icon: <CIcon icon={cilArrowCircleBottom} customClassName="nav-icon" />,
+  },
+  // {
+  //   component: CNavItem,
+  //   name: 'List Achievement',
+  //   to: '/HLMando/Listachievement',
+  //   icon: <CIcon icon={cilClock} customClassName="nav-icon" />,
+  // },
+
 
 
     //{
@@ -169,35 +165,35 @@ const _nav = [
 //       icon: <CIcon icon={cilBug} customClassName="nav-icon" />,
 //     },
 
-{
-  component: CNavTitle,
-  name: 'DATA',
-  style: { color: '#FFFFFF' },
-},
-{
-  component: CNavItem,
-  name: 'Log Data',
-  to: '/data/logdata',
-  icon: <CIcon icon={cilBraille} customClassName="nav-icon" />,
-},
-{
-  component: CNavItem,
-  name: 'Machine Data',
-  to: '/data/machinedata',
-  icon: <CIcon icon={cilCheckCircle} customClassName="nav-icon" />,
-},
-{
-  component: CNavItem,
-  name: 'Device Data',
-  to: '/data/devicedata',
-  icon: <CIcon icon={cilDiamond} customClassName="nav-icon" />,
-},
-{
-  component: CNavItem,
-  name: 'Production Data',
-  to: '/data/productiondata',
-  icon: <CIcon icon={cibKeycdn} customClassName="nav-icon" />,
-},
+//{
+  //component: CNavTitle,
+  //name: 'DATA',
+  //style: { color: '#FFFFFF' },
+//},
+//{
+  //component: CNavItem,
+  //name: 'Log Data',
+  //to: '/data/logdata',
+  //icon: <CIcon icon={cilBraille} customClassName="nav-icon" />,
+//},
+//{
+  //component: CNavItem,
+  //name: 'Machine Data',
+  //to: '/data/machinedata',
+  //icon: <CIcon icon={cilCheckCircle} customClassName="nav-icon" />,
+//},
+//{
+  //component: CNavItem,
+  //name: 'Device Data',
+  //to: '/data/devicedata',
+  //icon: <CIcon icon={cilDiamond} customClassName="nav-icon" />,
+//},
+//{
+  //component: CNavItem,
+  //name: 'Production Data',
+  //to: '/data/productiondata',
+  //icon: <CIcon icon={cibKeycdn} customClassName="nav-icon" />,
+//},
 //{
 //  component: CNavItem,
 //  name: 'Active Problem',
@@ -270,30 +266,30 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Machine',
+    name: <span style={{ color: 'white' }}>Machine</span>,
     to: '/details/machinedetails',
     icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
     
   },
-  {
-    component: CNavItem,
-    name: 'Shift Timing',
-    to: '/details/shifttiming',
-    icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
+  //{
+    //component: CNavItem,
+    //name: 'Shift Timing',
+    //to: '/details/shifttiming',
+    //icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
     
-  },
+  //},
   {
     component: CNavItem,
-    name: 'Machine Groups',
+    name: <span style={{ color: 'white' }}>Machinegroup</span>,
     to: '/details/machinegroup',
     icon: <CIcon icon={cilMonitor} customClassName="nav-icon" />,
     
   },
-  {
-    component: CNavItem,
-    name: 'Device',
-    to: '/details/devdetails',
-    icon: <CIcon icon={cilCursor} customClassName="nav-icon" />,
+  //{
+    //component: CNavItem,
+    //name: 'Device',
+    //to: '/details/devdetails',
+    //icon: <CIcon icon={cilCursor} customClassName="nav-icon" />,
 
     // items:[
     //   {
@@ -312,7 +308,7 @@ const _nav = [
     //   },
     // ]
     
-  },
+  //},
   // {
   //   component: CNavItem,
   //   name: 'Unregister Device',
@@ -320,12 +316,12 @@ const _nav = [
   //   icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
   
   // },
-  {
-    component: CNavTitle,
-    name: 'Configurations',
-    style: {color: '#FFFFFF' },
+  //{
+    //component: CNavTitle,
+    //name: 'Configurations',
+    //style: {color: '#FFFFFF' },
 
-  },
+  //},
   //{
     //component: CNavItem,
     //name: 'UART',
@@ -333,20 +329,20 @@ const _nav = [
     //icon: <CIcon icon={cilUsb} customClassName="nav-icon" />,
 
   //},
-  {
-    component: CNavItem,
-    name: 'HTTP',
-    to:'/config/http',
-    icon: <CIcon icon={cilUsb} customClassName="nav-icon" />,
+  //{
+    //component: CNavItem,
+    //name: 'HTTP',
+    //to:'/config/http',
+    //icon: <CIcon icon={cilUsb} customClassName="nav-icon" />,
 
-  },
-  {
-    component: CNavItem,
-    name: 'MQTT',
-    to: '/config/mqtt',
-    icon: <CIcon icon={cilEqualizer} customClassName="nav-icon" />,
+  //},
+  //{
+    //component: CNavItem,
+    //name: 'MQTT',
+    //to: '/config/mqtt',
+    //icon: <CIcon icon={cilEqualizer} customClassName="nav-icon" />,
   
-  },
+  //},
   {
     component: CNavTitle,
      name: 'User Management',
@@ -355,18 +351,18 @@ const _nav = [
    },
    {
      component: CNavItem,
-     name: 'Users',
+     name: <span style={{ color: 'white' }}>Employees</span>,
      to: '/users/users',
      icon: <CIcon icon={cilUserX} customClassName="nav-icon" />,
      
    },
-   {
-     component: CNavItem,
-     name: 'Groups',
-     to: '/users/groups',
-     icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
+   //{
+    // component: CNavItem,
+     //name: 'Groups',
+     //to: '/users/groups',
+     //icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
      
-   },
+   //},
   // {
   //   component: CNavTitle,
   //   name: 'Setting',
@@ -377,17 +373,17 @@ const _nav = [
   //   to:'/setting/settings',
   //   icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
   // }
-  {
-    component: CNavTitle,
-    name: 'ACTIONS',
-    style: { color: '#FFFFFF' },
-  },
-  {
-            component: CNavItem,
-            name: 'Notify Report',
-            to: '/pushnotification/sendreport',
-            icon: <CIcon icon={cilSwapHorizontal} customClassName="nav-icon" />,
-          },
+  //{
+    //component: CNavTitle,
+    //name: 'ACTIONS',
+    //style: { color: '#FFFFFF' },
+  //},
+  //{
+            //component: CNavItem,
+            //name: 'Notify Report',
+            //to: '/pushnotification/sendreport',
+            //icon: <CIcon icon={cilSwapHorizontal} customClassName="nav-icon" />,
+          //},
           //  {
           //    component: CNavItem,
           //    name: 'User Identifier',
@@ -400,12 +396,12 @@ const _nav = [
           //   to: '/pushnotification/setting',
           //   icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
           // },
-            {
-              component: CNavItem,
-              name: 'SMS Report',
-              to: '/smsgateway/sendreport',
-              icon: <CIcon icon={cilPrint} customClassName="nav-icon" />,
-            },
+            //{
+              //component: CNavItem,
+              //name: 'SMS Report',
+              //to: '/smsgateway/sendreport',
+              //icon: <CIcon icon={cilPrint} customClassName="nav-icon" />,
+            //},
             // {
             //   component: CNavItem,
             //   name: 'Settings',

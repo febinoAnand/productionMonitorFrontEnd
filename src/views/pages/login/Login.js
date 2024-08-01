@@ -84,7 +84,7 @@ const Login = () => {
               <CCardBody style={{ height: '100%', overflowY: 'auto' }}>
                 <CForm onSubmit={handleLogin}>
                   <h1 style={{ color: '#FFFFFF' }}>Login</h1>
-                  <p className="text-medium-emphasis" style={{ color: '#1E90FF' }}>Sign In to your account</p>
+                  <p className="text-medium-emphasis" style={{ color: '#FFFFFF' }}>Sign In to your account</p>
                   <CInputGroup className="mb-3">
                     <CInputGroupText>
                       <CIcon icon={cilUser} />
