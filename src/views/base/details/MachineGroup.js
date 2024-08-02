@@ -40,6 +40,7 @@ const getAuthHeaders = () => {
 const Groups = () => {
     const [groupData, setGroupData] = useState([]);
     const [filteredGroupData, setFilteredGroupData] = useState([]);
+    const [machineData, setMachineData] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
@@ -47,6 +48,7 @@ const Groups = () => {
     const [newGroupName, setNewGroupName] = useState('');
     const [newGroupMachines, setNewGroupMachines] = useState([]);
     const [successMessage, setSuccessMessage] = useState('');
+    const [deleteMessage, setDeleteMessage] = useState('');
 
     const fetchGroupData = useCallback(async () => {
         try {
@@ -59,9 +61,19 @@ const Groups = () => {
         }
     }, []);
 
+    const fetchMachineData = useCallback(async () => {
+        try {
+            const response = await axios.get(BaseURL + "devices/machine/", { headers: getAuthHeaders() });
+            setMachineData(response.data);
+        } catch (error) {
+            console.error('Error fetching machine data:', error);
+        }
+    }, []);
+    
     useEffect(() => {
         fetchGroupData();
-    }, [fetchGroupData]);
+        fetchMachineData();
+    }, [fetchGroupData, fetchMachineData]);
 
     const handleSearch = useCallback(() => {
         if (!searchQuery) {
@@ -84,7 +96,14 @@ const Groups = () => {
     }, [groupData, searchQuery]);
 
     const handleGroupSelect = (group) => {
-        setSelectedGroup(group ? { ...group } : { group_name: '', machines: [] });
+        setSelectedGroup({
+            group_id: group.group_id,
+            group_name: group.group_name,
+            machines: group.machines.map(machine => ({
+                machine_id: machine.machine_id,
+                machine_name: machine.machine_name
+            }))
+        });
         setModalVisible(true);
     };
 
@@ -94,7 +113,7 @@ const Groups = () => {
         for (let i = 0; i < options.length; i++) {
             if (options[i].selected) {
                 selectedMachines.push({
-                    machine_id: options[i].value,
+                    machine_id: parseInt(options[i].value, 10),
                     machine_name: options[i].text
                 });
             }
@@ -111,37 +130,40 @@ const Groups = () => {
         for (let i = 0; i < options.length; i++) {
             if (options[i].selected) {
                 selectedMachines.push({
-                    machine_id: options[i].value,
+                    id: parseInt(options[i].value, 10), // Ensure ID is parsed as an integer
                     machine_name: options[i].text
                 });
             }
         }
         setNewGroupMachines(selectedMachines);
     };
-
+    
     const handleUpdateGroup = async () => {
         try {
-            if (selectedGroup.group_id) {
-                const updatedGroup = {
-                    group_name: selectedGroup.group_name,
-                    machines: selectedGroup.machines
-                };
-
-                await axios.put(`${BaseURL}devices/machinegroup/${selectedGroup.group_id}/`, updatedGroup, { headers: getAuthHeaders() });
-                fetchGroupData();
-                setModalVisible(false);
-                setSuccessMessage('Group updated successfully!');
-            }
+            const machineIds = selectedGroup.machines.map(machine => machine.machine_id);
+    
+            const updatedGroup = {
+                group_name: selectedGroup.group_name,
+                machine_list: machineIds
+            };
+    
+            await axios.put(`${BaseURL}devices/machinegroup/${selectedGroup.group_id}/`, updatedGroup, { headers: getAuthHeaders() });
+            
+            fetchGroupData();
+            setModalVisible(false);
+            setSuccessMessage('Group updated successfully!');
         } catch (error) {
-            console.error('Error updating group:', error);
+            console.error('Error updating group:', error.response?.data || error.message);
         }
     };
-
+    
     const handleCreateNewGroup = async () => {
         try {
+            const machineIds = newGroupMachines.map(machine => machine.id);
+
             const newGroup = {
                 group_name: newGroupName,
-                machines: newGroupMachines
+                machine_list: machineIds
             };
 
             await axios.post(BaseURL + "devices/machinegroup/", newGroup, { headers: getAuthHeaders() });
@@ -151,7 +173,7 @@ const Groups = () => {
             setNewGroupMachines([]);
             setSuccessMessage('Group created successfully!');
         } catch (error) {
-            console.error('Error creating new group:', error);
+            console.error('Error creating new group:', error.response?.data || error.message);
         }
     };
 
@@ -165,7 +187,7 @@ const Groups = () => {
         try {
             await axios.delete(`${BaseURL}devices/machinegroup/${groupId}/`, { headers: getAuthHeaders() });
             fetchGroupData();
-            setSuccessMessage('Group deleted successfully!');
+            setDeleteMessage('Group deleted successfully!');
         } catch (error) {
             console.error('Error deleting group:', error);
         }
@@ -173,12 +195,19 @@ const Groups = () => {
 
     return (
         <div className="page">
-            {successMessage && (
+            {(successMessage || deleteMessage) && (
                 <CRow>
                     <CCol>
-                        <CAlert color="success" onClose={() => setSuccessMessage('')}>
-                            {successMessage}
-                        </CAlert>
+                        {successMessage && (
+                            <CAlert color="success" onClose={() => setSuccessMessage('')}>
+                                {successMessage}
+                            </CAlert>
+                        )}
+                        {deleteMessage && (
+                            <CAlert color="danger" onClose={() => setDeleteMessage('')}>
+                                {deleteMessage}
+                            </CAlert>
+                        )}
                     </CCol>
                 </CRow>
             )}
@@ -209,122 +238,128 @@ const Groups = () => {
                                 </CInputGroup>
                             </CCol>
                             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                            <CTable striped hover>
-                                <CTableHead>
-                                    <CTableRow color="dark">
-                                        <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-                                        <CTableHeaderCell scope="col">Group</CTableHeaderCell>
-                                        <CTableHeaderCell scope="col">Machines</CTableHeaderCell>
-                                        <CTableHeaderCell scope="col">Action</CTableHeaderCell>
-                                    </CTableRow>
-                                </CTableHead>
-                                <CTableBody>
-                                    {filteredGroupData.length === 0 ? (
-                                        <CTableRow>
-                                            <CTableDataCell colSpan="4" className="text-center">No data available</CTableDataCell>
+                                <CTable striped hover>
+                                    <CTableHead>
+                                        <CTableRow color="dark">
+                                            <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
+                                            <CTableHeaderCell scope="col">Group</CTableHeaderCell>
+                                            <CTableHeaderCell scope="col">Machines</CTableHeaderCell>
+                                            <CTableHeaderCell scope="col">Action</CTableHeaderCell>
                                         </CTableRow>
-                                    ) : (
-                                        filteredGroupData.map((group, index) => (
-                                            <CTableRow key={group.group_id}>
-                                                <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
-                                                <CTableDataCell>{group.group_name}</CTableDataCell>
-                                                <CTableDataCell>
-                                                    {group.machines.map(machine => machine.machine_name).join(', ')}
-                                                </CTableDataCell>
-                                                <CTableDataCell>
-                                                    <div className="d-flex gap-2">
-                                                        <CTooltip content="Edit Group">
-                                                            <CButton color="primary" size='sm' onClick={() => handleGroupSelect(group)}>
-                                                                <CIcon icon={cilPen} />
-                                                            </CButton>
-                                                        </CTooltip>
-                                                        <CTooltip content="Delete Group">
-                                                            <CButton color="primary" size='sm' onClick={() => handleDeleteGroup(group.group_id)}>
-                                                                <CIcon icon={cilTrash} />
-                                                            </CButton>
-                                                        </CTooltip>
-                                                    </div>
-                                                </CTableDataCell>
+                                    </CTableHead>
+                                    <CTableBody>
+                                        {filteredGroupData.length === 0 ? (
+                                            <CTableRow>
+                                                <CTableDataCell colSpan="4" className="text-center">No data available</CTableDataCell>
                                             </CTableRow>
-                                        ))
-                                    )}
-                                </CTableBody>
-                            </CTable>
+                                        ) : (
+                                            filteredGroupData.map((group, index) => (
+                                                <CTableRow key={group.group_id}>
+                                                    <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                                                    <CTableDataCell>{group.group_name}</CTableDataCell>
+                                                    <CTableDataCell>
+                                                        {group.machines.map(machine => machine.machine_name).join(', ')}
+                                                    </CTableDataCell>
+                                                    <CTableDataCell>
+                                                        <div className="d-flex gap-2">
+                                                            <CTooltip content="Edit Group">
+                                                                <CButton color="primary" size='sm' onClick={() => handleGroupSelect(group)}>
+                                                                    <CIcon icon={cilPen} />
+                                                                </CButton>
+                                                            </CTooltip>
+                                                            <CTooltip content="Delete Group">
+                                                                <CButton color="primary" size='sm' onClick={() => handleDeleteGroup(group.group_id)}>
+                                                                    <CIcon icon={cilTrash} />
+                                                                </CButton>
+                                                            </CTooltip>
+                                                        </div>
+                                                    </CTableDataCell>
+                                                </CTableRow>
+                                            ))
+                                        )}
+                                    </CTableBody>
+                                </CTable>
                             </div>
                         </CCardBody>
-
                     </CCard>
                 </CCol>
             </CRow>
-            <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
-                <CModalHeader onClose={() => setModalVisible(false)}>
-                    <CModalTitle>Edit Group</CModalTitle>
-                </CModalHeader>
-                <CModalBody>
-                    <CForm>
-                        <CRow>
-                            <CCol xs={12}>
-                                <CFormLabel htmlFor="groupName">Group Name</CFormLabel>
-                                <CFormInput
-                                    id="groupName"
-                                    value={selectedGroup?.group_name || ''}
-                                    onChange={(e) => setSelectedGroup({ ...selectedGroup, group_name: e.target.value })}
-                                />
-                            </CCol>
-                            <CCol xs={12} className="mt-3">
-                                <CFormLabel htmlFor="machineList">Machine List</CFormLabel>
-                                <CFormSelect
-                                    id="machineList"
-                                    multiple
-                                    value={selectedGroup?.machines.map(machine => machine.machine_id) || []}
-                                    onChange={handleMachineListChange}
-                                >
-                                    {filteredGroupData.flatMap(group => group.machines).map(machine => (
-                                        <option key={machine.machine_id} value={machine.machine_id}>{machine.machine_name}</option>
-                                    ))}
-                                </CFormSelect>
-                            </CCol>
-                        </CRow>
-                    </CForm>
-                </CModalBody>
-                <CModalFooter>
+
+            {/* Edit Group Modal */}
+            {selectedGroup && (
+                <CModal
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                >
+                    <CModalHeader>
+                        <CModalTitle>Edit Group</CModalTitle>
+                    </CModalHeader>
+                    <CModalBody>
+                        <CForm>
+                            <CFormLabel htmlFor="groupName">Group Name</CFormLabel>
+                            <CFormInput
+                                id="groupName"
+                                value={selectedGroup.group_name}
+                                onChange={(e) => setSelectedGroup(prevGroup => ({
+                                    ...prevGroup,
+                                    group_name: e.target.value
+                                }))}
+                            />
+                            <CFormLabel htmlFor="machineList" className="mt-3">Select Machines</CFormLabel>
+                            <CFormSelect
+                                id="machineList"
+                                multiple
+                                value={selectedGroup.machines.map(machine => machine.machine_id)}
+                                onChange={handleMachineListChange}
+                            >
+                                {machineData.map(machine => (
+                                    <option key={machine.id} value={machine.id}>
+                                        {machine.machine_name}
+                                    </option>
+                                ))}
+                            </CFormSelect>
+                        </CForm>
+                    </CModalBody>
+                    <CModalFooter>
                     <CButton color="secondary" size='sm' onClick={() => setModalVisible(false)}>Close</CButton>
                     <CButton color="primary" variant='outline' size='sm' onClick={handleUpdateGroup}>Save changes</CButton>
                 </CModalFooter>
-            </CModal>
-            <CModal visible={newGroupModalVisible} onClose={() => setNewGroupModalVisible(false)}>
-                <CModalHeader onClose={() => setNewGroupModalVisible(false)}>
+                </CModal>
+            )}
+
+            {/* New Group Modal */}
+            <CModal
+                visible={newGroupModalVisible}
+                onClose={() => setNewGroupModalVisible(false)}
+            >
+                <CModalHeader>
                     <CModalTitle>Create New Group</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
                     <CForm>
-                        <CRow>
-                            <CCol xs={12}>
-                                <CFormLabel htmlFor="newGroupName">Group Name</CFormLabel>
-                                <CFormInput
-                                    id="newGroupName"
-                                    value={newGroupName}
-                                    onChange={(e) => setNewGroupName(e.target.value)}
-                                />
-                            </CCol>
-                            <CCol xs={12} className="mt-3">
-                                <CFormLabel htmlFor="newMachineList">Machine List</CFormLabel>
-                                <CFormSelect
-                                    id="newMachineList"
-                                    multiple
-                                    value={newGroupMachines.map(machine => machine.machine_id)}
-                                    onChange={handleNewGroupMachinesChange}
-                                >
-                                    {filteredGroupData.flatMap(group => group.machines).map(machine => (
-                                        <option key={machine.machine_id} value={machine.machine_id}>{machine.machine_name}</option>
-                                    ))}
-                                </CFormSelect>
-                            </CCol>
-                        </CRow>
+                        <CFormLabel htmlFor="newGroupName">Group Name</CFormLabel>
+                        <CFormInput
+                            id="newGroupName"
+                            value={newGroupName}
+                            onChange={(e) => setNewGroupName(e.target.value)}
+                        />
+                        <CFormLabel htmlFor="newMachineList" className="mt-3">Select Machines</CFormLabel>
+                        <CFormSelect
+                            id="newMachineList"
+                            multiple
+                            value={newGroupMachines.map(machine => machine.id)}
+                            onChange={handleNewGroupMachinesChange}
+                        >
+                            {machineData.map(machine => (
+                                <option key={machine.id} value={machine.id}>
+                                    {machine.machine_name}
+                                </option>
+                            ))}
+                        </CFormSelect>
                     </CForm>
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" size='sm' onClick={() => setNewGroupModalVisible(false)}>Close</CButton>
+                    <CButton color="primary" size='sm' onClick={() => setNewGroupModalVisible(false)}>Close</CButton>
                     <CButton color="primary" variant='outline' size='sm' onClick={handleCreateNewGroup}>Create Group</CButton>
                 </CModalFooter>
             </CModal>

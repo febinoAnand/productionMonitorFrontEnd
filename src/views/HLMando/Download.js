@@ -19,9 +19,9 @@ import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL'; 
 import 'jspdf-autotable';
 
-// Utility function to get authentication headers
+
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token'); // Adjust based on where you store your token
+  const token = localStorage.getItem('token'); 
   return {
     'Authorization': `Token ${token}`,
     'Content-Type': 'application/json'
@@ -252,12 +252,11 @@ const Download = () => {
   };
 
   return (
-    
     <div className="page">
       <CRow className="mb-3">
-      {errorMessage && (
-                      <div style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</div>
-                    )}
+        {errorMessage && (
+          <div style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</div>
+        )}
         <CCol xs={12}>
           <CCard>
             <CCardHeader>
@@ -267,7 +266,7 @@ const Download = () => {
               <CRow>
                 <CCol md={6} className="text-end">
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '425px' }}>From Date</div>
+                  <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '425px' }}>From Date</div>
                     <CInputGroup>
                       <DatePicker
                         selected={startDate4}
@@ -280,8 +279,8 @@ const Download = () => {
                   </div>
                 </CCol>
                 <CCol md={6} className="text-end">
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '445px' }}>To Date</div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '445px' }}>To Date</div>
                     <CInputGroup>
                       <DatePicker
                         selected={endDate4}
@@ -303,56 +302,13 @@ const Download = () => {
                   </div>
                 </CCol>
               </CRow>
-              <CRow className="mt-4">
-                <CCol md={12}>
-                  <CCard>
-                    <CCardHeader>
-                      <h4>Available Machines</h4>
-                    </CCardHeader>
-                    <CCardBody>
-                    {machinesByGroup.length > 0 ? (
-  machinesByGroup.map(group => (
-    <CCard key={group.group_id}style={{ marginBottom: '20px' }}>
-      <CCardHeader>
-        <h5>{group.group_name}</h5>
-      </CCardHeader>
-      <CCardBody>
-        <CRow>
-          {group.machines.map(machine => (
-            <CCol md={2} key={machine.machine_id} style={{ marginBottom: '20px' }}>
-              <CFormCheck
-                id={machine.machine_id}
-                label={`${machine.machine_name} - ${machine.machine_id}`}
-                checked={selectedMachines[machine.machine_id] || false}
-                onChange={handleMachineChange}
-                style={{ marginBottom: '10px' }}
-              />
-            </CCol>
-          ))}
-        </CRow>
-      </CCardBody>
-    </CCard>
-  ))
-) : (
-  <CCol md={12}>
-    <p>No machines available</p>
-  </CCol>
-)}
-        
-</CCardBody>
-
-
-
-                  </CCard>
-                </CCol>
-              </CRow>
               <CRow className="justify-content-center mt-5">
                 <CCol md={3} className="text-center">
                   <CButton type="button" color="primary" variant='outline' className="mb-3" style={{ width: '100%' }} onClick={generatePDF}>
-                    Download PDF
+                   Summary Report
                   </CButton>
                   <CButton type="button" color="primary" variant='outline' style={{ width: '100%' }} onClick={generateCSV}>
-                    Download CSV
+                  Shiftwise Report
                   </CButton>
                 </CCol>
               </CRow>
