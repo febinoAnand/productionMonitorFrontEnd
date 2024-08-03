@@ -16,7 +16,7 @@ import {
   // cilUser,
   cilDescription,
   // cilAccountLogout,
-  // cilClock,
+  cilClock,
 
   //cilGroup,
   cilCloud,
@@ -82,12 +82,12 @@ const _nav = [
     to: '/HLMando/Download',
     icon: <CIcon icon={cilArrowCircleBottom} customClassName="nav-icon" />,
   },
-  // {
-  //   component: CNavItem,
-  //   name: 'List Achievement',
-  //   to: '/HLMando/Listachievement',
-  //   icon: <CIcon icon={cilClock} customClassName="nav-icon" />,
-  // },
+   {
+     component: CNavItem,
+     name: <span style={{ color: 'white' }}>List Achievement</span>,
+     to: '/HLMando/Listachievement',
+     icon: <CIcon icon={cilClock} customClassName="nav-icon" />,
+   },
 
 
 
