@@ -113,7 +113,7 @@ const Shiftreport = () => {
         style={{ paddingRight: '30px', height: '38px', borderRadius: '0px' }}
       />
       <div className="input-group-append" style={{ borderRadius: '0px' }}>
-        <CButton type="button" color="secondary" onClick={onClick} style={{ height: '38px', borderRadius: '0px' }}>
+        <CButton type="button" color="primary" onClick={onClick} style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}>
           <CIcon icon={cilCalendar} />
         </CButton>
       </div>
@@ -187,9 +187,9 @@ const Shiftreport = () => {
             />
             <CButton
               type="button"
-              color="secondary"
+              color="primary"
               className="ms-2"
-              style={{ height: '38px', borderRadius: '0px' }}
+              style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}
               onClick={handleSearchClick}
               disabled={!selectedMachine || !startDate}
             >
