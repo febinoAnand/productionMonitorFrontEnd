@@ -22,7 +22,6 @@ import {
   CForm,
   CFormInput,
   CFormLabel,
-  CFormSelect,
   CFormText,
   CAlert
 } from '@coreui/react';
@@ -43,13 +42,9 @@ class MachineDetails extends React.Component {
     this.state = {
       machineID: '',
       name: '',
-      manufacture: '',
-      line: '',
-      hmiID: '',
       productionPerHour: '',
       showAddModal: false,
       showUpdateModal: false,
-      deviceList: [],
       machineList: [],
       selectedMachine: null,
       successMessage: '',
@@ -59,7 +54,6 @@ class MachineDetails extends React.Component {
 
   componentDidMount() {
     this.fetchMachineList();
-    this.fetchDeviceList();
   }
 
   fetchMachineList = async () => {
@@ -72,23 +66,10 @@ class MachineDetails extends React.Component {
     }
   }
 
-  fetchDeviceList = async () => {
-    try {
-      const response = await axios.get(`${BaseURL}devices/device/`, { headers: getAuthHeaders() });
-      const sortedData = response.data.reverse(); 
-      this.setState({ deviceList: sortedData });
-    } catch (error) {
-      console.error("There was an error fetching the device list!", error);
-    }
-  }
-
   clearState = () => {
     this.setState({
       machineID: '',
       name: '',
-      manufacture: '',
-      line: '',
-      hmiID: '',
       productionPerHour: '',
       selectedMachine: null,
       errors: {} 
@@ -115,18 +96,11 @@ class MachineDetails extends React.Component {
     this.setState({ [e.target.id]: e.target.value });
   }
 
-  changeDropdown = (e) => {
-    this.setState({ hmiID: e.target.value });
-  }
-
   getRowData = (machine) => {
     this.setState({
       selectedMachine: machine,
       machineID: machine.machine_id,
       name: machine.machine_name,
-      manufacture: machine.manufacture,
-      line: machine.line,
-      hmiID: machine.device,
       productionPerHour: machine.production_per_hour,
     });
     this.openUpdateModal();
@@ -138,7 +112,7 @@ class MachineDetails extends React.Component {
   }
 
   validateForm = () => {
-    const { machineID, name, manufacture, line, hmiID,productionPerHour } = this.state;
+    const { machineID, name, productionPerHour } = this.state;
     let errors = {};
     let isValid = true;
 
@@ -152,20 +126,6 @@ class MachineDetails extends React.Component {
       isValid = false;
     }
 
-    if (!manufacture) {
-      errors.manufacture = "Manufacture is required";
-      isValid = false;
-    }
-
-    if (!line) {
-      errors.line = "Line is required";
-      isValid = false;
-    }
-
-    if (!hmiID) {
-      errors.hmiID = "Device is required";
-      isValid = false;
-    }
     if (!productionPerHour) {
       errors.productionPerHour = "Production per hour is required";
       isValid = false;
@@ -180,14 +140,11 @@ class MachineDetails extends React.Component {
       return;
     }
 
-    const { machineID, name, manufacture, line, hmiID,productionPerHour } = this.state;
+    const { machineID, name, productionPerHour } = this.state;
     try {
       const response = await axios.post(`${BaseURL}devices/machine/`, {
         machine_id: machineID,
         machine_name: name,
-        manufacture: manufacture,
-        line: line,
-        device: hmiID,
         production_per_hour: productionPerHour,
       }, { headers: getAuthHeaders() });
       const newMachine = response.data;
@@ -208,7 +165,7 @@ class MachineDetails extends React.Component {
       return;
     }
 
-    const { selectedMachine, machineID, name, manufacture, line, hmiID,productionPerHour } = this.state;
+    const { selectedMachine, machineID, name, productionPerHour } = this.state;
 
     if (!selectedMachine) {
       console.error("Selected machine data is missing!");
@@ -219,9 +176,6 @@ class MachineDetails extends React.Component {
       await axios.put(`${BaseURL}devices/machine/${selectedMachine.id}/`, {
         machine_id: machineID,
         machine_name: name,
-        manufacture: manufacture,
-        line: line,
-        device: hmiID,
         production_per_hour: productionPerHour,
       }, { headers: getAuthHeaders() });
       this.displaySuccessMessage("Machine updated successfully!");
@@ -251,7 +205,7 @@ class MachineDetails extends React.Component {
   }
 
   render() {
-    const { machineList, deviceList, showAddModal, showUpdateModal, machineID, name, manufacture, line, hmiID, successMessage, errors,productionPerHour } = this.state;
+    const { machineList, showAddModal, showUpdateModal, machineID, name, productionPerHour, successMessage, errors } = this.state;
 
     return (
       <div className="page">
@@ -279,17 +233,15 @@ class MachineDetails extends React.Component {
                       <CTableRow color="dark">
                         <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Device Name</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Manufacture</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Line</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">production PerHour</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Name</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Production Per Hour</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Action</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
                       {machineList.length === 0 ? (
                         <CTableRow>
-                          <CTableDataCell colSpan="6" className="text-center">
+                          <CTableDataCell colSpan="5" className="text-center">
                             No data available
                           </CTableDataCell>
                         </CTableRow>
@@ -299,10 +251,8 @@ class MachineDetails extends React.Component {
                             <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                             <CTableDataCell>{machine.machine_id}</CTableDataCell>
                             <CTableDataCell>{machine.machine_name}</CTableDataCell>
-                            <CTableDataCell>{machine.manufacture}</CTableDataCell>
-                            <CTableDataCell>{machine.line}</CTableDataCell>
                             <CTableDataCell>{machine.production_per_hour}</CTableDataCell>
-                           <CTableDataCell>
+                            <CTableDataCell>
                               <div className="d-flex gap-2">
                                 <CButton color="primary" size='sm' onClick={() => this.getRowData(machine)}>
                                   <CIcon icon={cilPen} />
@@ -323,101 +273,85 @@ class MachineDetails extends React.Component {
           </CCol>
         </CRow>
 
-        <CModal visible={showAddModal} size='lg' onClose={this.closeAddModal}>
+        {/* Add Machine Modal */}
+        <CModal visible={showAddModal} onClose={this.closeAddModal}>
           <CModalHeader>
-            <CModalTitle>Add Machine Details</CModalTitle>
+            <CModalTitle>Add Machine</CModalTitle>
           </CModalHeader>
           <CModalBody>
-            <CForm className="row g-3">
-              <CCol md={3}>
-                <CFormLabel htmlFor="machineID">Machine ID <span className="text-danger">*</span></CFormLabel>
-                <CFormInput id="machineID" placeholder="eg: MAC5632" value={machineID} onChange={this.handleFormData} isInvalid={!!errors.machineID} />
-                {errors.machineID && <CFormText className="text-danger">{errors.machineID}</CFormText>}
-              </CCol>
-              <CCol md={3}>
-                <CFormLabel htmlFor="name">Name <span className="text-danger">*</span></CFormLabel>
-                <CFormInput id="name" placeholder="" value={name} onChange={this.handleFormData} isInvalid={!!errors.name} />
-                {errors.name && <CFormText className="text-danger">{errors.name}</CFormText>}
-              </CCol>
-              <CCol md={3}>
-                <CFormLabel htmlFor="manufacture">Manufacture <span className="text-danger">*</span></CFormLabel>
-                <CFormInput id="manufacture" placeholder="" value={manufacture} onChange={this.handleFormData} isInvalid={!!errors.manufacture} />
-                {errors.manufacture && <CFormText className="text-danger">{errors.manufacture}</CFormText>}
-              </CCol>
-              <CCol xs={3}>
-                <CFormLabel htmlFor="line">Line <span className="text-danger">*</span></CFormLabel>
-                <CFormInput id="line" placeholder="eg: 1, 2, 3" value={line} onChange={this.handleFormData} isInvalid={!!errors.line} />
-                {errors.line && <CFormText className="text-danger">{errors.line}</CFormText>}
-              </CCol>
-              <CCol md={3}>
-                <CFormLabel htmlFor="Device">Device <span className="text-danger">*</span></CFormLabel>
-                <CFormSelect id="Device" value={hmiID} onChange={this.changeDropdown} isInvalid={!!errors.hmiID}>
-                  <option value="">Select Device</option>
-                  {deviceList.map((device) => (
-                    <option key={device.id} value={device.id}>{device.device_name}</option>
-                  ))}
-                </CFormSelect>
-                {errors.hmiID && <CFormText className="text-danger">{errors.hmiID}</CFormText>}
-              </CCol>
-              <CCol md={3}>
-  <CFormLabel htmlFor="productionPerHour">Production Per Hour <span className="text-danger">*</span></CFormLabel>
-  <CFormInput id="productionPerHour" placeholder="eg: 100 units" value={productionPerHour} onChange={this.handleFormData} isInvalid={!!errors.productionPerHead} />
-  {errors.productionPerHead && <CFormText className="text-danger">{errors.productionPerHour}</CFormText>}
-</CCol>
+            <CForm>
+              <CFormLabel htmlFor="machineID">Machine ID <span style={{ color: 'red' }}>*</span></CFormLabel>
+              <CFormInput
+                id="machineID"
+                value={machineID}
+                onChange={this.handleFormData}
+                isInvalid={!!errors.machineID}
+              />
+              <CFormText color="danger">{errors.machineID}</CFormText>
+
+              <CFormLabel htmlFor="name">Name <span style={{ color: 'red' }}>*</span></CFormLabel>
+              <CFormInput
+                id="name"
+                value={name}
+                onChange={this.handleFormData}
+                isInvalid={!!errors.name}
+              />
+              <CFormText color="danger">{errors.name}</CFormText>
+
+              <CFormLabel htmlFor="productionPerHour">Production Per Hour <span style={{ color: 'red' }}>*</span></CFormLabel>
+              <CFormInput
+                id="productionPerHour"
+                value={productionPerHour}
+                onChange={this.handleFormData}
+                isInvalid={!!errors.productionPerHour}
+              />
+              <CFormText color="danger">{errors.productionPerHour}</CFormText>
             </CForm>
           </CModalBody>
           <CModalFooter>
-            <CButton color="secondary" size='sm' onClick={this.closeAddModal}>Close</CButton>
-            <CButton color="primary" variant='outline' size='sm' onClick={this.machinePostData}>Add Machine</CButton>
+            <CButton color="secondary" variant='outline' size='sm'onClick={this.closeAddModal}>Close</CButton>
+            <CButton color="primary" variant='outline' size='sm'onClick={this.machinePostData}>Save</CButton>
           </CModalFooter>
         </CModal>
 
-        <CModal visible={showUpdateModal} size='lg' onClose={this.closeUpdateModal}>
+        {/* Update Machine Modal */}
+        <CModal visible={showUpdateModal} onClose={this.closeUpdateModal}>
           <CModalHeader>
-            <CModalTitle>Update Machine Details</CModalTitle>
+            <CModalTitle>Update Machine</CModalTitle>
           </CModalHeader>
           <CModalBody>
-            <CForm className="row g-3">
-              <CCol md={3}>
-                <CFormLabel htmlFor="machineID">Machine ID <span className="text-danger">*</span></CFormLabel>
-                <CFormInput id="machineID" placeholder="eg: MAC5632" value={machineID} onChange={this.handleFormData} isInvalid={!!errors.machineID} />
-                {errors.machineID && <CFormText className="text-danger">{errors.machineID}</CFormText>}
-              </CCol>
-              <CCol md={3}>
-                <CFormLabel htmlFor="name">Name <span className="text-danger">*</span></CFormLabel>
-                <CFormInput id="name" placeholder="" value={name} onChange={this.handleFormData} isInvalid={!!errors.name} />
-                {errors.name && <CFormText className="text-danger">{errors.name}</CFormText>}
-              </CCol>
-              <CCol md={3}>
-                <CFormLabel htmlFor="manufacture">Manufacture <span className="text-danger">*</span></CFormLabel>
-                <CFormInput id="manufacture" placeholder="" value={manufacture} onChange={this.handleFormData} isInvalid={!!errors.manufacture} />
-                {errors.manufacture && <CFormText className="text-danger">{errors.manufacture}</CFormText>}
-              </CCol>
-              <CCol xs={3}>
-                <CFormLabel htmlFor="line">Line <span className="text-danger">*</span></CFormLabel>
-                <CFormInput id="line" placeholder="eg: 1, 2, 3" value={line} onChange={this.handleFormData} isInvalid={!!errors.line} />
-                {errors.line && <CFormText className="text-danger">{errors.line}</CFormText>}
-              </CCol>
-              <CCol md={3}>
-                <CFormLabel htmlFor="Device">Device <span className="text-danger">*</span></CFormLabel>
-                <CFormSelect id="Device" value={hmiID} onChange={this.changeDropdown} isInvalid={!!errors.hmiID}>
-                  <option value="">Select Device</option>
-                  {deviceList.map((device) => (
-                    <option key={device.id} value={device.id}>{device.device_name}</option>
-                  ))}
-                </CFormSelect>
-                {errors.hmiID && <CFormText className="text-danger">{errors.hmiID}</CFormText>}
-              </CCol>
-              <CCol md={3}>
-  <CFormLabel htmlFor="productionPerHour">Production Per Hour <span className="text-danger">*</span></CFormLabel>
-  <CFormInput id="productionPerHour" placeholder="eg: 100 units" value={productionPerHour} onChange={this.handleFormData} isInvalid={!!errors.productionPerHead} />
-  {errors.productionPerHead && <CFormText className="text-danger">{errors.productionPerHour}</CFormText>}
-</CCol>
+            <CForm>
+              <CFormLabel htmlFor="machineID">Machine ID <span style={{ color: 'red' }}>*</span></CFormLabel>
+              <CFormInput
+                id="machineID"
+                value={machineID}
+                onChange={this.handleFormData}
+                isInvalid={!!errors.machineID}
+              />
+              <CFormText color="danger">{errors.machineID}</CFormText>
+
+              <CFormLabel htmlFor="name">Name <span style={{ color: 'red' }}>*</span></CFormLabel>
+              <CFormInput
+                id="name"
+                value={name}
+                onChange={this.handleFormData}
+                isInvalid={!!errors.name}
+              />
+              <CFormText color="danger">{errors.name}</CFormText>
+
+              <CFormLabel htmlFor="productionPerHour">Production Per Hour <span style={{ color: 'red' }}>*</span></CFormLabel>
+              <CFormInput
+                id="productionPerHour"
+                value={productionPerHour}
+                onChange={this.handleFormData}
+                isInvalid={!!errors.productionPerHour}
+              />
+              <CFormText color="danger">{errors.productionPerHour}</CFormText>
             </CForm>
           </CModalBody>
           <CModalFooter>
-            <CButton color="secondary" size='sm' onClick={this.closeUpdateModal}>Close</CButton>
-            <CButton color="primary" size='sm' onClick={this.machineUpdateData}>Update Machine</CButton>
+            <CButton color="secondary"variant='outline' size='sm' onClick={this.closeUpdateModal}>Close</CButton>
+            <CButton color="primary" variant='outline' size='sm'onClick={this.machineUpdateData}>Save</CButton>
           </CModalFooter>
         </CModal>
       </div>
