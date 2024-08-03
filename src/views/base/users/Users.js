@@ -56,19 +56,26 @@ const Users = () => {
             }
         })
             .then(response => {
-                setUsers(response.data);
-                setFilteredUsers(response.data);
+                // Transform the data to include the `name` field
+                const transformedData = response.data.map(user => ({
+                    ...user,
+                    name: `${user.usermod.first_name} ${user.usermod.last_name}`.trim()
+                }));
+                setUsers(transformedData);
+                setFilteredUsers(transformedData);
             })
             .catch(error => {
                 console.error('Error fetching users:', error);
             });
     };
+    
 
     const handleSearch = () => {
         const query = document.getElementById('searchInput').value.toLowerCase();
         const filtered = users.filter(user => {
             const searchFields = [
                 user.usermod.username,
+                user.name,
                 user.designation,
                 user.mobile_no,
                 user.device_id,
@@ -152,16 +159,16 @@ const Users = () => {
             console.error('Error: No user selected for update.');
             return;
         }
-
+    
         const username = document.getElementById('name').value;
         const designation = document.getElementById('designation').value;
         const mobileno = document.getElementById('mobileno').value;
-
+    
         if (!username || !designation || !mobileno) {
             console.error('Error: Username, designation, or mobile number cannot be empty.');
             return;
         }
-
+    
         const updatedUser = {
             ...selectedUser,
             usermod: {
@@ -172,7 +179,7 @@ const Users = () => {
             mobile_no: mobileno,
             userActive: userActive
         };
-
+    
         const token = localStorage.getItem('token');
         axios.put(`${BaseURL}Userauth/userdetail/${selectedUser.userdetail_id}/`, updatedUser, {
             headers: {
@@ -189,7 +196,7 @@ const Users = () => {
                 console.error('Error updating user:', error);
             });
     };
-
+    
     const handleUpdatePassword = () => {
         if (!selectedUser || !selectedUser.userdetail_id) {
             console.error('Error: No user selected for password update.');
@@ -256,7 +263,7 @@ const Users = () => {
                     <CCard className="mb-4">
                         <CCardHeader>
                             <div className="d-flex align-items-center justify-content-between">
-                                <strong>USER LIST</strong>
+                                <strong> EMPLOYEES LIST</strong>
                                 <CButton type="button" color="success" variant='outline' size='sm' onClick={handleDeleteSelectedUsers}>
                                     Delete Selected
                                 </CButton>
@@ -266,12 +273,12 @@ const Users = () => {
                             <CCol md={4}>
                                 <CInputGroup className="flex-nowrap mt-3 mb-4">
                                     <CFormInput
-                                        placeholder="Search by Ext user, Designation, Mobile no or Device ID"
+                                        placeholder="Search by Email , Designation, Mobile no or Device ID"
                                         aria-label="Search"
                                         aria-describedby="addon-wrapping"
                                         id="searchInput"
                                     />
-                                    <CButton type="button" color="secondary" onClick={handleSearch} id="button-addon2">
+                                    <CButton type="button" color="secondary" style={{ backgroundColor: '#047BC4', borderColor: '#047BC4', color: '#fff' }} onClick={handleSearch} id="button-addon2">
                                         Search
                                     </CButton>
                                 </CInputGroup>
@@ -287,12 +294,11 @@ const Users = () => {
                                             />
                                         </CTableHeaderCell>
                                         <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-                                        <CTableHeaderCell scope="col">Ext User</CTableHeaderCell>
+                                        <CTableHeaderCell scope="col">Name</CTableHeaderCell>
+                                        <CTableHeaderCell scope="col">Email</CTableHeaderCell>
                                         <CTableHeaderCell scope="col">Designation</CTableHeaderCell>
                                         <CTableHeaderCell scope="col">Mobile No</CTableHeaderCell>
-                                        <CTableHeaderCell scope="col">Device ID</CTableHeaderCell>
                                         <CTableHeaderCell scope="col">Active Status</CTableHeaderCell>
-                                        <CTableHeaderCell scope="col">Expiry Time</CTableHeaderCell>
                                         <CTableHeaderCell scope="col">Action</CTableHeaderCell>
                                     </CTableRow>
                                 </CTableHead>
@@ -314,16 +320,15 @@ const Users = () => {
                                                     />
                                                 </CTableDataCell>
                                                 <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                                                <CTableDataCell>{user.name}</CTableDataCell>
                                                 <CTableDataCell>{user.usermod.username}</CTableDataCell>
                                                 <CTableDataCell>{user.designation}</CTableDataCell>
                                                 <CTableDataCell>{user.mobile_no}</CTableDataCell>
-                                                <CTableDataCell>{user.device_id}</CTableDataCell>
                                                 <CTableDataCell>
                                                     <span style={{ fontWeight: user.userActive ? 'bold' : 'bold', color: user.userActive ? 'green' : 'red' }}>
                                                         {user.userActive ? 'Active' : 'Inactive'}
                                                     </span>
                                                 </CTableDataCell>
-                                                <CTableDataCell>{user.expiry_time}</CTableDataCell>
                                                 <CTableDataCell>
                                                     <div className="d-flex gap-2">
                                                         <CButton className="button-green" size='sm' onClick={() => handleTableRowClick(user)}>
@@ -358,6 +363,8 @@ const Users = () => {
                                 <CCol md={4}>
                                     <CFormInput type="text" id="name" name="name" defaultValue={selectedUser.usermod.username} readOnly />
                                 </CCol>
+                                <CFormInput type="text" id="name" name="name" defaultValue={selectedUser.name} readOnly />
+
                                 <CFormLabel htmlFor="email" className="col-sm-2 col-form-label">Email Address</CFormLabel>
                                 <CCol md={4}>
                                     <CFormInput type="text" id="email" name="email" defaultValue={selectedUser.usermod.email} readOnly />
