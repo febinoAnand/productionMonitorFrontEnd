@@ -5,8 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import BaseURL from 'src/assets/contants/BaseURL';
 
 const Dashboard = () => {
-  const [data, setData] = useState([]);
-  const navigate = useNavigate(); // Hook for navigation
+  const [dashboardData, setDashboardData] = useState([]); 
+  const [machineGroupData, setMachineGroupData] = useState([]); 
+  const [loading, setLoading] = useState(true); 
+  const navigate = useNavigate(); 
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token'); 
@@ -18,21 +20,27 @@ const Dashboard = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await axios.get(BaseURL + 'data/dashboard/', {
-        headers: getAuthHeaders()
-      });
-      const sortedData = response.data.reverse(); 
-      setTimeout(() => {
-        setData(sortedData);
-      }, 3000);
+      const [response1, response2] = await Promise.all([
+        axios.get(BaseURL + 'data/dashboard/', { headers: getAuthHeaders() }),
+        axios.get(BaseURL + 'devices/machinegroup/', { headers: getAuthHeaders() })
+      ]);
+
+      setDashboardData(response1.data);
+      setMachineGroupData(response2.data);
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false); 
     }
   }, []);
 
   useEffect(() => {
-    fetchData();
-    const intervalId = setInterval(fetchData, 3000);
+    fetchData(); 
+
+    const intervalId = setInterval(() => {
+      fetchData(); 
+    }, 3000);
+
     return () => clearInterval(intervalId);
   }, [fetchData]);
 
@@ -61,16 +69,24 @@ const Dashboard = () => {
     width: '125%',
   };
 
-  // Function to handle widget click
   const handleClick = (groupName, machine) => {
     navigate('/HLMando/IndividualMachine', { state: { groupName, machine } });
   };
 
+  if (loading) {
+    return <div>Loading...</div>; 
+  }
+
+  if (!dashboardData.length && !machineGroupData.length) {
+    return <div>No data available.</div>; 
+  }
+
   return (
     <div className="page" style={zoomOutStyle}>
       <CRow className="mb-3">
-        {data.map(group => (
-          group.machine_count > 0 && (
+        {/* Render widgets based on reversed dashboardData */}
+        {dashboardData.slice().reverse().map((group) => (
+          group.machines.length > 0 && (
             <CCol xs={12} key={group.group_id} style={{ marginBottom: '20px' }}>
               <CCard>
                 <CCardHeader style={{
@@ -93,9 +109,9 @@ const Dashboard = () => {
                           style={{
                             ...widgetStyles,
                             backgroundColor: colors[index % colors.length],
-                            cursor: 'pointer' // Add cursor pointer for clickability
+                            cursor: 'pointer' 
                           }}
-                          onClick={() => handleClick(group.group_name, machine)} // Attach click handler
+                          onClick={() => handleClick(group.group_name, machine)} 
                           value={
                             <span style={{
                               display: 'block',
@@ -104,7 +120,66 @@ const Dashboard = () => {
                               lineHeight: '1.2',
                               color: '#fff'
                             }}>
-                              {`${machine.production_count} / ${machine.target_production}`}
+                              {`${machine.production_count || 0} / ${machine.target_production || 0}`} 
+                            </span>
+                          }
+                          title={
+                            <span style={{
+                              fontSize: '18px',
+                              fontWeight: '600',
+                              lineHeight: '1.2',
+                              color: '#fff'
+                            }}>
+                              {machine.machine_name}
+                            </span>
+                          }
+                        />
+                      </CCol>
+                    ))}
+                  </CRow>
+                </CCardBody>
+              </CCard>
+            </CCol>
+          )
+        ))}
+
+        {/* Render widgets based on reversed machineGroupData */}
+        {machineGroupData.slice().reverse().map((group) => (
+          group.machines.length > 0 && (
+            <CCol xs={12} key={group.group_id} style={{ marginBottom: '20px' }}>
+              <CCard>
+                <CCardHeader style={{
+                  backgroundColor: '#f8f9fa',
+                  color: '#343a40',
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  padding: '10px 20px',
+                  borderBottom: '2px solid #e9ecef',
+                  fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
+                }}>
+                  <h4 style={{ margin: 0 }}>{group.group_name}</h4>
+                </CCardHeader>
+                <CCardBody>
+                  <CRow>
+                    {group.machines.map((machine, index) => (
+                      <CCol xs={12} md={3} key={machine.machine_id}>
+                        <CWidgetStatsA
+                          className="mb-4"
+                          style={{
+                            ...widgetStyles,
+                            backgroundColor: colors[index % colors.length],
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => handleClick(group.group_name, machine)} 
+                          value={
+                            <span style={{
+                              display: 'block',
+                              fontSize: '18px',
+                              fontWeight: 'bold',
+                              lineHeight: '1.2',
+                              color: '#fff'
+                            }}>
+                              {`${machine.production_count || 0} / ${machine.target_production || 0}`} 
                             </span>
                           }
                           title={
