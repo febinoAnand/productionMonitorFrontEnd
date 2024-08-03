@@ -8,7 +8,7 @@ import {
   CCard,
   CCardHeader,
   CCardBody,
-  CFormCheck
+  //CFormCheck
 } from '@coreui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -65,10 +65,10 @@ const Download = () => {
   }, []);
   
 
-  const handleMachineChange = (e) => {
-    const { id, checked } = e.target;
-    setSelectedMachines(prevState => ({ ...prevState, [id]: checked }));
-  };
+  //const handleMachineChange = (e) => {
+    //const { id, checked } = e.target;
+    //setSelectedMachines(prevState => ({ ...prevState, [id]: checked }));
+  //};
   
 
   const formatDate = (date) => {
@@ -291,9 +291,9 @@ const Download = () => {
                       />
                       <CButton
                         type="button"
-                        color="secondary"
+                        color="primary"
                         className="ms-2"
-                        style={{ height: '38px', borderRadius: '0px' }}
+                        style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}
                         onClick={handleSearch}
                       >
                         <CIcon icon={cilSearch} />
@@ -329,12 +329,16 @@ const CustomInput = forwardRef((props, ref) => (
       ref={ref}
       style={{ paddingRight: '30px', height: '38px', borderRadius: '0px' }}
     />
-    <CButton type="button" color="secondary" onClick={props.onClick}>
-      <CIcon icon={cilCalendar} />
+     <CButton 
+      type="button" 
+      color="secondary" 
+      onClick={props.onClick}
+      style={{ backgroundColor: '#047BC4', borderColor: '#047BC4' }}
+    >
+      <CIcon icon={cilCalendar} style={{ color: '#FFFFFF' }} />
     </CButton>
   </CInputGroup>
 ));
-
 CustomInput.displayName = 'CustomInput';
 
 export default Download;
