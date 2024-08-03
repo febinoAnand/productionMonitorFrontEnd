@@ -7,6 +7,7 @@ import { cilCalendar, cilSearch } from '@coreui/icons';
 import {
   CCard,
   CCardBody,
+  CCardHeader,
   CCol,
   CRow,
   CTable,
@@ -35,13 +36,11 @@ const Shiftreport = () => {
   const [filteredShiftData, setFilteredShiftData] = useState([]);
   const [machineOptions, setMachineOptions] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState('');
-  const [searchClicked, setSearchClicked] = useState(false);
   const [highlightedDates, setHighlightedDates] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        
         const response = await fetch(`${BaseURL}data/production-monitor/`, { headers: getAuthHeaders() });
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -50,8 +49,8 @@ const Shiftreport = () => {
 
         const shiftData = data.shift_wise_data || [];
         setShiftData(shiftData);
+        setFilteredShiftData(shiftData); // Show all data initially
 
-      
         const machineResponse = await fetch(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
         if (!machineResponse.ok) {
           throw new Error(`HTTP error! Status: ${machineResponse.status}`);
@@ -60,25 +59,36 @@ const Shiftreport = () => {
 
         const machineNames = Array.from(new Set(machineData.map(machine => machine.machine_name)));
         setMachineOptions(machineNames);
-
-        
-        const datesWithData = Array.from(new Set(
-          shiftData
-            .flatMap(shift => shift.groups.flatMap(group => group.machines))
-            .filter(machine => machine.machine_name === selectedMachine)
-            .map(machine => shiftData.find(shift => shift.groups.some(group => group.machines.includes(machine))).shift_date.split('T')[0])
-        ));
-        setHighlightedDates(datesWithData.map(date => new Date(date)));
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, [selectedMachine]);
+  }, []);
+
+  useEffect(() => {
+    if (selectedMachine) {
+      const datesWithData = Array.from(new Set(
+        shiftData
+          .flatMap(shift => shift.groups.flatMap(group => group.machines))
+          .filter(machine => machine.machine_name === selectedMachine)
+          .map(machine => shiftData.find(shift => shift.groups.some(group => group.machines.includes(machine))).shift_date.split('T')[0])
+      ));
+      setHighlightedDates(datesWithData.map(date => new Date(date)));
+    } else {
+      setHighlightedDates([]);
+    }
+  }, [selectedMachine, shiftData]);
+
+  useEffect(() => {
+    if (!selectedMachine && !startDate) {
+      setFilteredShiftData(shiftData); // Show all data if no machine or date is selected
+    }
+  }, [selectedMachine, startDate, shiftData]);
 
   const handleSearchClick = () => {
-    if (!startDate) return;
+    if (!startDate || !selectedMachine) return;
 
     const formattedDate = format(startDate, 'yyyy-MM-dd');
 
@@ -99,7 +109,6 @@ const Shiftreport = () => {
     }));
 
     setFilteredShiftData(filteredData);
-    setSearchClicked(true);
   };
 
   const CustomInput = ({ value, onClick }) => (
@@ -110,6 +119,7 @@ const Shiftreport = () => {
         value={value}
         onClick={onClick}
         readOnly
+        placeholder="Select date"
         style={{ paddingRight: '30px', height: '38px', borderRadius: '0px' }}
       />
       <div className="input-group-append" style={{ borderRadius: '0px' }}>
@@ -120,36 +130,44 @@ const Shiftreport = () => {
     </div>
   );
 
-  const renderShiftTable = (shift) => (
-    <CCard className="mb-4" key={shift.shift_id}>
-      <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-        <CCardBody>
-          <CTable striped hover>
-            <CTableHead color="dark">
-              <CTableRow>
-                <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-                <CTableHeaderCell scope="col">GroupName</CTableHeaderCell>
-                <CTableHeaderCell scope="col">StartTime</CTableHeaderCell>
-                <CTableHeaderCell scope="col">EndTime</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {shift.groups.map((group, index) => (
-                <CTableRow key={group.group_id}>
-                  <CTableDataCell>{index + 1}</CTableDataCell>
-                  <CTableDataCell>{group.group_name}</CTableDataCell>
-                  <CTableDataCell>{shift.shift_start_time}</CTableDataCell>
-                  <CTableDataCell>{shift.shift_end_time}</CTableDataCell>
-                  <CTableDataCell>{group.total_production_count_by_group}</CTableDataCell>
+  const renderShiftTable = (shift) => {
+    // Create the shift label with prefix
+    const shiftLabel = shift.shift_number !== null ? `Shift ${shift.shift_number}` : 'Shift N/A';
+
+    return (
+      <CCard className="mb-4" key={shift.shift_id}>
+        <CCardHeader>
+          <h5>{shift.shift_name ? shift.shift_name : shiftLabel}</h5>
+        </CCardHeader>
+        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+          <CCardBody>
+            <CTable striped hover>
+              <CTableHead color="dark">
+                <CTableRow>
+                  <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">GroupName</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">StartTime</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">EndTime</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
                 </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </div>
-    </CCard>
-  );
+              </CTableHead>
+              <CTableBody>
+                {shift.groups.map((group, index) => (
+                  <CTableRow key={group.group_id}>
+                    <CTableDataCell>{index + 1}</CTableDataCell>
+                    <CTableDataCell>{group.group_name}</CTableDataCell>
+                    <CTableDataCell>{shift.shift_start_time}</CTableDataCell>
+                    <CTableDataCell>{shift.shift_end_time}</CTableDataCell>
+                    <CTableDataCell>{group.total_production_count_by_group}</CTableDataCell>
+                  </CTableRow>
+                ))}
+              </CTableBody>
+            </CTable>
+          </CCardBody>
+        </div>
+      </CCard>
+    );
+  };
 
   return (
     <div className="page">
@@ -201,19 +219,14 @@ const Shiftreport = () => {
 
       <CRow>
         <CCol xs={12}>
-          {searchClicked ? (
-            filteredShiftData.length > 0 ? (
-              filteredShiftData.map(shift => (
-                <div key={shift.shift_id}>
-                  <h5>{shift.shift_name}</h5>
-                  {renderShiftTable(shift)}
-                </div>
-              ))
-            ) : (
-              <p>No data available for the selected machine and date.</p>
-            )
+          {filteredShiftData.length > 0 ? (
+            filteredShiftData.map(shift => (
+              <div key={shift.shift_id}>
+                {renderShiftTable(shift)}
+              </div>
+            ))
           ) : (
-            <p>Please select a machine and date to view the data.</p>
+            <p>No data available for the selected machine and date.</p>
           )}
         </CCol>
       </CRow>
