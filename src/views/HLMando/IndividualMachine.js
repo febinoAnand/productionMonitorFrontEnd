@@ -29,7 +29,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 const Machine = () => {
   const location = useLocation();
   const { state } = location;
-  const { machine, groupName } = state || { machine: null, groupName: '' };
+  const { machine } = state || { machine: null, groupName: '' };
 
   useEffect(() => {
     const headerCells = document.querySelectorAll('.custom-table-header th');
@@ -84,7 +84,7 @@ const Machine = () => {
       >
         <CCard style={{ maxWidth: '600px', width: '100%' }}>
           <CCardBody>
-            <h3>{groupName}</h3>
+            <h3>Machine Details</h3>
             <CTable striped hover style={{ fontSize: '0.9rem' }}>
               <tbody>
                 <tr>
@@ -96,8 +96,16 @@ const Machine = () => {
                   <td>{machine.machine_id || 'N/A'}</td>
                 </tr>
                 <tr>
-                  <td style={{ fontWeight: 'bold' }}>Device</td>
-                  <td>{machine.device || 'N/A'}</td>
+                  <td style={{ fontWeight: 'bold' }}>Line</td>
+                  <td>{machine.line || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Manufacture</td>
+                  <td>{machine.manufacture || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Year</td>
+                  <td>{machine.year || 'N/A'}</td>
                 </tr>
                 <tr>
                   <td style={{ fontWeight: 'bold' }}>Production per hour</td>
@@ -107,48 +115,32 @@ const Machine = () => {
             </CTable>
           </CCardBody>
         </CCard>
+        <CCard style={{ maxWidth: '600px', width: '100%', marginLeft: '50px' }}>
+          <CCardBody>
+            <h3>Production Data</h3>
+            <CTable striped hover style={{ fontSize: '0.9rem' }}>
+              <tbody>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Date</td>
+                  <td>{machine.date}</td>
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Time</td>
+                  <td>{machine.time || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Todays Count</td>
+                  <td>{machine.today_count || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Actual Reading</td>
+                  <td>{machine.actual_count || 'N/A'}</td>
+                </tr>
+              </tbody>
+            </CTable>
+          </CCardBody>
+        </CCard>
       </div>
-
-      <div style={{ width: '100%' }}>
-        <CRow>
-          <CCol xs={12}>
-            <CCard className="mb-4">
-              <CCardHeader>
-                <strong>Production Data</strong>
-              </CCardHeader>
-              <CCardBody>
-                <CTable striped hover>
-                  <CTableHead className="custom-table-header">
-                    <CTableRow>
-                      <CTableHeaderCell scope="col">
-                        Start Time
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col">
-                        End Time
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col">
-                        Total Production Count
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col">
-                        Current Production Count
-                      </CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    <CTableRow>
-                      <CTableDataCell></CTableDataCell>
-                      <CTableDataCell></CTableDataCell>
-                      <CTableDataCell></CTableDataCell>
-                      <CTableDataCell></CTableDataCell>
-                    </CTableRow>
-                  </CTableBody>
-                </CTable>
-              </CCardBody>
-            </CCard>
-          </CCol>
-        </CRow>
-      </div>
-
       <div style={{ width: '100%', marginBottom: '30px' }}>
         <CCard className="mb-4">
           <CCardHeader>
@@ -171,33 +163,15 @@ const Machine = () => {
                 <CTable striped hover>
                   <CTableHead className="custom-table-header">
                     <CTableRow>
-                      <CTableHeaderCell scope="col">
-                        Si.No
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col">
-                        Date
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col">
-                        Time
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col">
-                        Machine ID
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col">
-                        Data
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col">
-                        Device ID
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col">
-                        Data ID
-                      </CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Date</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
+                      <CTableHeaderCell scope="col"> Data</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     <CTableRow>
-                      <CTableDataCell></CTableDataCell>
-                      <CTableDataCell></CTableDataCell>
                       <CTableDataCell></CTableDataCell>
                       <CTableDataCell></CTableDataCell>
                       <CTableDataCell></CTableDataCell>
