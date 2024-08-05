@@ -90,25 +90,29 @@ const Shiftreport = () => {
   const handleSearchClick = () => {
     if (!startDate || !selectedMachine) return;
 
-    const formattedDate = format(startDate, 'yyyy-MM-dd');
+    try {
+      const formattedDate = format(startDate, 'yyyy-MM-dd');
 
-    const filteredData = shiftData.filter(shift => {
-      const shiftDate = shift.shift_date.split('T')[0];
-      const matchDate = shiftDate === formattedDate;
+      const filteredData = shiftData.filter(shift => {
+        const shiftDate = shift.shift_date.split('T')[0];
+        const matchDate = shiftDate === formattedDate;
 
-      const filteredGroups = shift.groups.filter(group => 
-        group.machines.some(machine => machine.machine_name === selectedMachine)
-      );
+        const filteredGroups = shift.groups.filter(group => 
+          group.machines.some(machine => machine.machine_name === selectedMachine)
+        );
 
-      return matchDate && filteredGroups.length > 0;
-    }).map(shift => ({
-      ...shift,
-      groups: shift.groups.filter(group => 
-        group.machines.some(machine => machine.machine_name === selectedMachine)
-      )
-    }));
+        return matchDate && filteredGroups.length > 0;
+      }).map(shift => ({
+        ...shift,
+        groups: shift.groups.filter(group => 
+          group.machines.some(machine => machine.machine_name === selectedMachine)
+        )
+      }));
 
-    setFilteredShiftData(filteredData);
+      setFilteredShiftData(filteredData);
+    } catch (error) {
+      console.error("Error filtering data:", error);
+    }
   };
 
   const CustomInput = ({ value, onClick }) => (
@@ -116,7 +120,7 @@ const Shiftreport = () => {
       <input
         type="text"
         className="form-control"
-        value={value}
+        value={value || ""}
         onClick={onClick}
         readOnly
         placeholder="Select date"
@@ -167,11 +171,7 @@ const Shiftreport = () => {
 
   const renderShiftTable = (shift) => {
     const shiftLabel = shift.shift_number !== null ? `Shift ${shift.shift_number}` : 'Shift N/A';
-
-    // Calculate the total production count for this shift
     const totalProductionCount = shift.groups.reduce((total, group) => total + group.total_production_count_by_group, 0);
-
-    // Get the time ranges for this shift
     const timeRanges = shiftTimeRanges[shift.shift_number] || [];
 
     return (
@@ -237,13 +237,16 @@ const Shiftreport = () => {
         <CCol md={4} className="text-end">
           <CInputGroup className="flex-nowrap mt-3 mb-4">
             <DatePicker
-              selected={startDate}
+              selected={startDate ? new Date(startDate) : null}
               onChange={(date) => setStartDate(date)}
               customInput={<CustomInput />}
               dateFormat="yyyy-MM-dd"
               popperPlacement="bottom-end"
               highlightDates={highlightedDates}
-              onChangeRaw={(e) => setStartDate(new Date(e.target.value))}
+              onChangeRaw={(e) => {
+                const rawDate = new Date(e.target.value);
+                setStartDate(isNaN(rawDate.getTime()) ? null : rawDate);
+              }}
             />
             <CButton
               type="button"
