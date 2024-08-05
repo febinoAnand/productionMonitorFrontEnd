@@ -32,39 +32,57 @@ const ProductionMonitor = () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch machine groups
-        const groupsResponse = await axios.get(`${BaseURL}devices/machinegroup/`, {
+        // Fetch production data
+        const response = await axios.get(`${BaseURL}data/production/`, {
           headers: getAuthHeaders()
         });
-        const groupsData = groupsResponse.data;
+        const { group_data } = response.data;
 
-        // Fetch shift timings
-        const shiftsResponse = await axios.get(`${BaseURL}devices/shifttimings/`, {
-          headers: getAuthHeaders()
-        });
-        const shiftsData = shiftsResponse.data;
+        // Check if group_data is valid
+        if (!Array.isArray(group_data)) {
+          throw new Error('Invalid data format');
+        }
 
         // Prepare shift names mapping and filter out shift_number 0
-        const shiftNamesMap = shiftsData.reduce((acc, shift) => {
-          if (shift.shift_number !== 0) { // Exclude shift_number 0
-            const shiftName = shift.shift_name || `Shift ${shift.shift_number}`;
-            const shiftNumber = shift.shift_number !== null ? shift.shift_number : shiftName;
-            acc[shiftNumber] = shiftName;
+        const shiftNamesMap = {};
+        const shiftNumbers = new Set(); // Using Set to collect unique shift numbers
+
+        group_data.forEach(group => {
+          if (group.machines) {
+            group.machines.forEach(machine => {
+              if (machine.shifts) {
+                Object.keys(machine.shifts).forEach(shiftNumber => {
+                  const shift = machine.shifts[shiftNumber];
+                  if (shift.shift_number !== 0) { // Exclude shift_number 0
+                    const shiftName = shift.shift_name || `Shift ${shiftNumber}`;
+                    shiftNamesMap[shiftNumber] = shiftName;
+                    shiftNumbers.add(Number(shiftNumber));
+                  }
+                });
+              }
+            });
           }
-          return acc;
-        }, {});
+        });
 
-        // Sort shift numbers and filter out shift_number 0
-        const shiftNumbers = Object.keys(shiftNamesMap).map(Number).sort((a, b) => a - b);
+        // Convert Set to sorted array
+        const sortedShiftNumbers = Array.from(shiftNumbers).sort((a, b) => a - b);
 
-        // Reverse the order of groups and machines to display the last fetched data first
-        const reversedGroupsData = groupsData.reverse().map(group => ({
+        // Reverse group_data to display the last fetched data first
+        const reversedGroupData = group_data.reverse().map(group => ({
           ...group,
-          machines: (group.machines || []).reverse() // Reverse machines within each group
+          machines: (group.machines || []).map(machine => ({
+            ...machine,
+            shifts: Object.keys(machine.shifts || {}).reduce((acc, key) => {
+              if (key !== "0") { // Exclude shift_number 0
+                acc[key] = machine.shifts[key];
+              }
+              return acc;
+            }, {})
+          }))
         }));
 
-        setFilteredData(reversedGroupsData);
-        setShiftData({ names: shiftNamesMap, numbers: shiftNumbers });
+        setFilteredData(reversedGroupData);
+        setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
       } catch (error) {
         setError(error);
       } finally {
@@ -94,7 +112,7 @@ const ProductionMonitor = () => {
                 <h5>{group.group_name}</h5>
               </CCardHeader>
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-              <CCardBody style={{ marginTop: '10px' }}> 
+                <CCardBody style={{ marginTop: '10px' }}> 
                   <CTable striped hover>
                     <CTableHead color="dark">
                       <CTableRow>
@@ -112,16 +130,13 @@ const ProductionMonitor = () => {
                         // Initialize machine totals
                         const machineTotals = shiftNumbers.map(() => 0);
 
-                        // Dummy data for shifts as it's missing from the provided response
-                        const shifts = machine.shifts || []; // Replace with actual shifts if available
-
                         // Calculate totals based on shifts
-                        shifts.forEach(shift => {
-                          const shiftNumber = shift.shift_number !== null ? shift.shift_number : 0;
+                        Object.values(machine.shifts || {}).forEach(shift => {
+                          const shiftNumber = shift.shift_number;
                           if (shiftNumber !== 0) { // Exclude shift_number 0
                             const shiftIndex = shiftNumbers.indexOf(shiftNumber);
                             if (shiftIndex >= 0) {
-                              machineTotals[shiftIndex] = (shift.target_count || 0) + (shift.production_count || 0);
+                              machineTotals[shiftIndex] =(shift.production_count || 0);
                             }
                           }
                         });

@@ -321,7 +321,7 @@ const Users = () => {
                                                 </CTableDataCell>
                                                 <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                                                 <CTableDataCell>{user.name}</CTableDataCell>
-                                                <CTableDataCell>{user.usermod.username}</CTableDataCell>
+                                                <CTableDataCell>{user.usermod.email}</CTableDataCell>
                                                 <CTableDataCell>{user.designation}</CTableDataCell>
                                                 <CTableDataCell>{user.mobile_no}</CTableDataCell>
                                                 <CTableDataCell>
@@ -361,9 +361,8 @@ const Users = () => {
                             <CRow className="mb-3">
                                 <CFormLabel htmlFor="name" className="col-sm-2 col-form-label">User Name</CFormLabel>
                                 <CCol md={4}>
-                                    <CFormInput type="text" id="name" name="name" defaultValue={selectedUser.usermod.username} readOnly />
+                                    <CFormInput type="text" id="name" name="name" defaultValue={selectedUser.name} readOnly />
                                 </CCol>
-                                <CFormInput type="text" id="name" name="name" defaultValue={selectedUser.name} readOnly />
 
                                 <CFormLabel htmlFor="email" className="col-sm-2 col-form-label">Email Address</CFormLabel>
                                 <CCol md={4}>

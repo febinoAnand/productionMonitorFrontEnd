@@ -179,7 +179,6 @@ const Shiftreport = () => {
         <CCardHeader>
           <h5>{shift.shift_name ? shift.shift_name : shiftLabel}</h5>
         </CCardHeader>
-        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
         <CCardBody style={{ marginTop: '10px' }}> 
             <CTable striped hover>
               <CTableHead color="dark">
@@ -206,7 +205,6 @@ const Shiftreport = () => {
               </CTableBody>
             </CTable>
           </CCardBody>
-        </div>
       </CCard>
     );
   };

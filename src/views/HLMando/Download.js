@@ -8,249 +8,219 @@ import {
   CCard,
   CCardHeader,
   CCardBody,
-  //CFormCheck
+  CFormSelect,
 } from '@coreui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import CIcon from '@coreui/icons-react';
 import { cilCalendar, cilSearch } from '@coreui/icons';
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import axios from 'axios';
-import BaseURL from 'src/assets/contants/BaseURL'; 
-import 'jspdf-autotable';
-
+import BaseURL from 'src/assets/contants/BaseURL';
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token'); 
+  const token = localStorage.getItem('token');
   return {
     'Authorization': `Token ${token}`,
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   };
 };
 
 const Download = () => {
-  const [startDate4, setStartDate4] = useState(new Date());
-  const [endDate4, setEndDate4] = useState(new Date());
-  const [selectedMachines, setSelectedMachines] = useState({});
-  const [machinesByGroup, setMachinesByGroup] = useState([]);
-  const [apiData, setApiData] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedMachine, setSelectedMachine] = useState('');
+  const [machineOptions, setMachineOptions] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    const fetchMachines = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(`${BaseURL}/devices/machinegroup/`, { headers: getAuthHeaders() });
-        console.log('API Response:', response.data); 
-        const data = response.data;
-  
-        if (Array.isArray(data)) {
-          const initialSelectedMachines = data.reduce((acc, group) => {
-            group.machines.forEach(machine => {
-              acc[machine.machine_id] = false;
-            });
-            return acc;
-          }, {});
-  
-          setMachinesByGroup(data);
-          setSelectedMachines(initialSelectedMachines);
-        } else {
-          console.error('Unexpected API response format:', data);
+        const machineResponse = await fetch(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
+        if (!machineResponse.ok) {
+          throw new Error(`HTTP error! Status: ${machineResponse.status}`);
         }
+        const machineData = await machineResponse.json();
+        const machineNames = Array.from(new Set(machineData.map(machine => ({
+          id: machine.machine_id,
+          name: machine.machine_name,
+        }))));
+        setMachineOptions(machineNames);
       } catch (error) {
-        console.error('Error fetching machine data:', error);
+        console.error('Error fetching data:', error);
       }
     };
-  
-    fetchMachines();
+
+    fetchData();
   }, []);
-  
 
-  //const handleMachineChange = (e) => {
-    //const { id, checked } = e.target;
-    //setSelectedMachines(prevState => ({ ...prevState, [id]: checked }));
-  //};
-  
-
-  const formatDate = (date) => {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${year}-${month}-${day}`;
-  };
-
-  const generatePDF = () => {
-    const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
-    if (selectedMachineIds.length === 0) {
-      alert('Please select at least one machine to generate the PDF.');
-      return;
-    }
-  
-    if (!apiData || !apiData.machines) {
-      console.error('Invalid data for PDF generation:', apiData);
-      return;
-    }
-  
-    const doc = new jsPDF('p', 'mm', 'a4');
-    doc.text('Production Report', 10, 10);
-  
-    apiData.machines.forEach((machine) => {
-      doc.text(`Machine ID : ${machine.machine_id}`, 10, doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : 20);
-  
-      const header = [
-        [{ content: 'Shifts', colSpan: 2 }, { content: 'Date/Time', colSpan: 3 }, { content: `${machine.machine_id}`, colSpan: 3 }],
-        ['', 'Date', 'From Time', 'To Time', 'Count', 'Target', 'Total']
-      ];
-  
-      const dataRows = machine.shifts.map((shift) => [
-        shift.shift_name,
-        shift.date,
-        shift.shift_start_time,
-        shift.shift_end_time,
-        shift.production_count,
-        shift.target_production,
-        shift.total
-      ]);
-  
-      doc.autoTable({
-        head: header,
-        body: dataRows,
-        startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 30 : 30,
-        margin: { top: 30, left: 10, right: 10 },
-        styles: {
-          cellPadding: 2,
-          fontSize: 8,
-          overflow: 'linebreak',
-          cellWidth: 'auto'
-        },
-        columnStyles: {
-          0: { cellWidth: 30 },
-          1: { cellWidth: 25 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 25 },
-          4: { cellWidth: 25 },
-          5: { cellWidth: 25 },
-          6: { cellWidth: 25 }
-        },
-        tableWidth: 'auto',
-        theme: 'striped',
-        pageBreak: 'avoid'
-      });
-    });
-  
-    doc.save('shift_report.pdf');
-  };
-  
-
-  const generateCSV = async () => {
-    const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
-    if (selectedMachineIds.length === 0) {
-      alert('Please select at least one machine to generate the CSV.');
-      return;
-    }
-  
-    const data = {
-      machine_ids: selectedMachineIds,
-      from_date: formatDate(startDate4),
-      to_date: formatDate(endDate4)
-    };
-  
-    try {
-      const response = await axios.post(`${BaseURL}/data/table-report/`, data, { headers: getAuthHeaders() });
-      const apiData = response.data;
-      setApiData(apiData);
-  
-      const header = ['SHIFT', ' ', 'Date/Time', '', ''];
-      const subHeader = ['', 'Date', 'From', 'To'];
-  
-      selectedMachineIds.forEach((machineId) => {
-        header.push(`${machineId}`, '', '');
-        subHeader.push('count', 'target', 'total');
-      });
-  
-      const dataRows = [header.join(','), subHeader.join(',')];
-  
-      apiData.machines.forEach(machine => {
-        machine.shifts.forEach((shift) => {
-          const row = [
-            shift.shift_name,
-            `${shift.date} ${shift.time}`,
-            shift.shift_start_time,
-            shift.shift_end_time,
-          ];
-  
-          selectedMachineIds.forEach((machineId) => {
-            const machineData = apiData.machines.find(m => m.machine_id === machineId);
-            if (machineData) {
-              const shiftData = machineData.shifts.find(s => s.date === shift.date && s.shift_name === shift.shift_name);
-              if (shiftData) {
-                row.push(shiftData.production_count, shiftData.target_production, shiftData.total);
-              } else {
-                row.push('', '', '');
-              }
-            } else {
-              row.push('', '', '');
-            }
-          });
-  
-          dataRows.push(row.join(','));
-        });
-      });
-  
-      const csv = dataRows.join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'Shift_Table.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    } catch (error) {
-      console.error('Error generating CSV:', error);
-    }
-  };
-  
-
-  const handleSearch = async () => {
-     if (endDate4 < startDate4) {
-      setErrorMessage('pls select the date correctly');
-      return;
-    }
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
     setErrorMessage('');
+  };
 
-    const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
-    const data = {
-      machine_ids: selectedMachineIds,
-      from_date: formatDate(startDate4),
-      to_date: formatDate(endDate4)
-    };
-    console.log('Posting data:', data);
+  const handleMachineChange = (e) => {
+    setSelectedMachine(e.target.value);
+  };
 
+  const generateSummaryPDF = async () => {
     try {
-      const response = await axios.post(`${BaseURL}/data/table-report/`, data, { headers: getAuthHeaders() });
-      console.log('API Response -->:', response.data);
-      setApiData(response.data); 
+        const formattedDate = selectedDate.toISOString().split('T')[0];
+  
+        const [machineGroupResponse, shiftTimingsResponse] = await Promise.all([
+            axios.get(`${BaseURL}devices/machinegroup/`, { headers: getAuthHeaders() }),
+            axios.get(`${BaseURL}devices/shifttimings/`, { headers: getAuthHeaders() }),
+        ]);
+  
+        const machineGroups = machineGroupResponse.data;
+        let shiftTimings = shiftTimingsResponse.data;
+  
+        
+        shiftTimings = shiftTimings
+            .filter(timing => timing.production_count !== 0)
+            .sort((a, b) => new Date(b.date) - new Date(a.date)); 
+  
+        const doc = new jsPDF();
+  
+       
+        let grandTotal = 0;
+  
+        const tableData = [];
+  
+        machineGroups.forEach((group) => {
+            group.machines.forEach((machine) => {
+               
+                const machineTimings = shiftTimings.filter(timing => timing.machine_id === machine.machine_id);
+  
+                const cumulativeData = machineTimings.reduce((acc, timing) => {
+                    const shiftIndex = timing.shift - 1; 
+                    acc[`shift${shiftIndex + 1}`] = (acc[`shift${shiftIndex + 1}`] || 0) + timing.production_count;
+                    acc.total += timing.production_count;
+                    return acc;
+                }, { work_center: machine.work_center, shift1: 0, shift2: 0, shift3: 0, total: 0 });
+  
+                // Add to grand total
+                grandTotal += cumulativeData.total;
+  
+                // Add row to table data
+                tableData.push([
+                    cumulativeData.work_center,
+                    cumulativeData.shift1,
+                    cumulativeData.shift2,
+                    cumulativeData.shift3,
+                    cumulativeData.total
+                ]);
+            });
+        });
+  
+      
+        doc.setFontSize(18);
+        doc.text('Summary Report', 14, 20);
+  
+        autoTable(doc, {
+            head: [['WORK CENTER', 'Shift 1', 'Shift 2', 'Shift 3', 'Total']],
+            body: tableData,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 123, 255] },
+            styles: { cellPadding: 5, fontSize: 10 },
+        });
+  
+        
+        doc.setFontSize(14);
+        doc.text(`Total Production Across All Groups: ${grandTotal}`, 14, doc.autoTable.previous.finalY + 10);
+  
+        doc.save('summary_report.pdf');
     } catch (error) {
-      console.error('Error posting data:', error);
+        console.error('Error generating PDF:', error);
+        setErrorMessage('Error generating PDF. Please try again.');
     }
-  };
-  const handleStartDateChange = (date) => {
-    setStartDate4(date);
-    if (endDate4 >= date) {
-      setErrorMessage(''); 
-    }
-  };
+};
 
-  const handleEndDateChange = (date) => {
-    setEndDate4(date);
-    if (date >= startDate4) {
-      setErrorMessage(''); 
+  
+  const generateShiftwisePDF = async () => {
+    try {
+      const formattedDate = selectedDate.toISOString().split('T')[0];
+  
+      // Fetch shift timings
+      const response = await axios.get(`${BaseURL}data/production-monitor/`, {
+        headers: getAuthHeaders(),
+        params: { date: formattedDate, machine: selectedMachine },
+      });
+  
+      // Log the response data
+      console.log('Shift Timings Data:', response.data);
+  
+      const { shift_wise_data } = response.data;
+  
+      // Check if shift_wise_data is an array
+      if (!Array.isArray(shift_wise_data)) {
+        throw new TypeError('Expected shift_wise_data to be an array');
+      }
+  
+      // Log contents of shift_wise_data
+      console.log('Contents of shift_wise_data:', shift_wise_data);
+  
+      // Check data format and log shift values
+      shift_wise_data.forEach(item => {
+        console.log(`Item:`, item, `Shift ID:`, item.shift_id, `Shift Number:`, item.shift_number);
+      });
+  
+      // Filter out shift 0 and prepare data for shifts 1 to 4 using shift_id
+      const shiftData = shift_wise_data.filter(timing => {
+        const shiftValue = parseInt(timing.shift_id); // Use shift_id or shift_number based on your needs
+        return shiftValue > 0 && shiftValue <= 4;
+      });
+  
+      // Log filtered shift data
+      console.log('Filtered Shift Data:', shiftData);
+  
+      // Check if shiftData has entries
+      if (shiftData.length === 0) {
+        throw new Error('No valid shift data found');
+      }
+  
+      const doc = new jsPDF();
+      const shifts = [1, 2, 3, 4];
+  
+      shifts.forEach((shift, index) => {
+        if (index > 0) {
+          doc.addPage();
+        }
+  
+        doc.setFontSize(16);
+        doc.text(`Shift ${shift}`, 14, 20);
+  
+        // Filter data for the current shift
+        const shiftTableData = shiftData
+          .filter(timing => parseInt(timing.shift_id) === shift) // Use shift_id or shift_number
+          .map(timing => [timing.time, timing.production_count]);
+  
+      
+        if (shiftTableData.length === 0) {
+          doc.text('No data available for this shift.', 14, 30);
+        } else {
+          
+          autoTable(doc, {
+            head: [['Time', 'Production Count Actual']],
+            body: shiftTableData,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 123, 255] },
+            styles: { cellPadding: 5, fontSize: 10 },
+          });
+        }
+      });
+  
+      // Save the PDF document
+      doc.save('shiftwise_report.pdf');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setErrorMessage('Error generating PDF. Please try again.');
     }
   };
-
+  
+  
   return (
     <div className="page">
       <CRow className="mb-3">
@@ -264,27 +234,30 @@ const Download = () => {
             </CCardHeader>
             <CCardBody>
               <CRow>
-                <CCol md={6} className="text-end">
+                <CCol md={4} className="text-end">
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '425px' }}>From Date</div>
                     <CInputGroup>
-                      <DatePicker
-                        selected={startDate4}
-                        onChange={handleStartDateChange}
-                        customInput={<CustomInput />}
-                        dateFormat="dd/MM/yyyy"
-                        popperPlacement="bottom-end"
-                      />
+                      <CFormSelect
+                        value={selectedMachine}
+                        onChange={handleMachineChange}
+                        aria-label="Select Machine"
+                      >
+                        <option value="">Select a machine</option>
+                        {machineOptions.map((machine) => (
+                          <option key={machine.id} value={machine.id}>
+                            {machine.name}
+                          </option>
+                        ))}
+                      </CFormSelect>
                     </CInputGroup>
                   </div>
                 </CCol>
                 <CCol md={6} className="text-end">
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '5px', marginRight: '445px' }}>To Date</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                     <CInputGroup>
                       <DatePicker
-                        selected={endDate4}
-                        onChange={handleEndDateChange}
+                        selected={selectedDate}
+                        onChange={handleDateChange}
                         customInput={<CustomInput />}
                         dateFormat="dd/MM/yyyy"
                         popperPlacement="bottom-end"
@@ -294,7 +267,6 @@ const Download = () => {
                         color="primary"
                         className="ms-2"
                         style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}
-                        onClick={handleSearch}
                       >
                         <CIcon icon={cilSearch} />
                       </CButton>
@@ -304,11 +276,27 @@ const Download = () => {
               </CRow>
               <CRow className="justify-content-center mt-5">
                 <CCol md={3} className="text-center">
-                  <CButton type="button" color="primary" variant='outline' className="mb-3" style={{ width: '100%' }} onClick={generatePDF}>
-                   Summary Report
+                  <CButton
+                    type="button"
+                    color="primary"
+                    variant="outline"
+                    className="mb-3"
+                    style={{ width: '100%' }}
+                    onClick={generateSummaryPDF}
+                  >
+                    Summary Report
                   </CButton>
-                  <CButton type="button" color="primary" variant='outline' style={{ width: '100%' }} onClick={generateCSV}>
-                  Shiftwise Report
+                </CCol>
+                <CCol md={3} className="text-center">
+                  <CButton
+                    type="button"
+                    color="primary"
+                    variant="outline"
+                    className="mb-3"
+                    style={{ width: '100%' }}
+                    onClick={generateShiftwisePDF}
+                  >
+                    Shiftwise Report
                   </CButton>
                 </CCol>
               </CRow>
@@ -329,9 +317,9 @@ const CustomInput = forwardRef((props, ref) => (
       ref={ref}
       style={{ paddingRight: '30px', height: '38px', borderRadius: '0px' }}
     />
-     <CButton 
-      type="button" 
-      color="secondary" 
+    <CButton
+      type="button"
+      color="secondary"
       onClick={props.onClick}
       style={{ backgroundColor: '#047BC4', borderColor: '#047BC4' }}
     >
