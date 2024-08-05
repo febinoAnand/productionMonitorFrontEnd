@@ -181,7 +181,7 @@ const Shiftreport = () => {
         </CCardHeader>
         <CCardBody style={{ marginTop: '10px' }}> 
             <CTable striped hover>
-              <CTableHead color="dark">
+             <CTableHead className="custom-table-header">
                 <CTableRow>
                   <CTableHeaderCell scope="col">Time</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
@@ -208,6 +208,18 @@ const Shiftreport = () => {
       </CCard>
     );
   };
+
+  useEffect(() => {
+    const applyHeaderStyles = () => {
+      const headerCells = document.querySelectorAll('.custom-table-header th');
+      headerCells.forEach((cell) => {
+        cell.style.backgroundColor = '#047BC4';
+        cell.style.color = 'white';
+      });
+    };
+
+    applyHeaderStyles();
+  }, [filteredShiftData]);
 
   return (
     <div className="page">

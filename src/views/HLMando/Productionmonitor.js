@@ -93,6 +93,14 @@ const ProductionMonitor = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const headerCells = document.querySelectorAll('.custom-table-header th');
+    headerCells.forEach((cell) => {
+      cell.style.backgroundColor = '#047BC4';
+      cell.style.color = 'white';
+    });
+  }, [filteredData]); // Apply styles after data is loaded
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
@@ -114,7 +122,7 @@ const ProductionMonitor = () => {
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <CCardBody style={{ marginTop: '10px' }}> 
                   <CTable striped hover>
-                    <CTableHead color="dark">
+                    <CTableHead className="custom-table-header">
                       <CTableRow>
                         <CTableHeaderCell rowSpan="2" scope="col">WORK CENTER</CTableHeaderCell>
                         {shiftNumbers.map((shiftNumber, index) => (

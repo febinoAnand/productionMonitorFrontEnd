@@ -54,6 +54,7 @@ class MachineDetails extends React.Component {
 
   componentDidMount() {
     this.fetchMachineList();
+    this.applyHeaderStyles();
   }
 
   fetchMachineList = async () => {
@@ -204,6 +205,13 @@ class MachineDetails extends React.Component {
     }
   }
 
+  applyHeaderStyles = () => {
+    const headerCells = document.querySelectorAll('.custom-table-header th');
+    headerCells.forEach((cell) => {
+      cell.style.backgroundColor = '#047BC4';
+      cell.style.color = 'white';
+    });
+  }
   render() {
     const { machineList, showAddModal, showUpdateModal, machineID, name, productionPerHour, successMessage, errors } = this.state;
 
@@ -226,11 +234,11 @@ class MachineDetails extends React.Component {
                 <strong>Machine List</strong>
                 <CButton color='success' variant='outline' size='sm' className='float-end' onClick={this.openAddModal}>Add Machine</CButton>
               </CCardHeader>
-              <CCardBody>
+              <CCardBody style={{ marginTop: '10px' }}>
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                   <CTable striped hover>
-                    <CTableHead>
-                      <CTableRow color="dark">
+                  <CTableHead className="custom-table-header">
+                      <CTableRow>
                         <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Name</CTableHeaderCell>

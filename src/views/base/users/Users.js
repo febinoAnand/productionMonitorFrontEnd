@@ -48,6 +48,20 @@ const Users = () => {
         handleSearch();
     }, [searchQuery, users]);
 
+    const applyHeaderStyles = () => {
+        const headerCells = document.querySelectorAll('.custom-table-header th');
+        headerCells.forEach((cell) => {
+            cell.style.backgroundColor = '#047BC4';
+            cell.style.color = 'white';
+        });
+    };
+
+    useEffect(() => {
+        applyHeaderStyles();
+    }, []);
+
+
+
     const fetchUsers = () => {
         const token = localStorage.getItem('token');
         axios.get(BaseURL + 'Userauth/userdetail/', {
@@ -284,7 +298,7 @@ const Users = () => {
                                 </CInputGroup>
                             </CCol>
                             <CTable striped hover>
-                                <CTableHead>
+                            <CTableHead className="custom-table-header">
                                     <CTableRow color="dark">
                                         <CTableHeaderCell scope="col">
                                             <input

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CCard,
   CCardBody,
@@ -43,6 +43,14 @@ const Listachievement = () => {
   const [currentItem, setCurrentItem] = useState(null);
   const [formData, setFormData] = useState({});
 
+  useEffect(() => {
+    const headerCells = document.querySelectorAll('.custom-table-header th');
+    headerCells.forEach((cell) => {
+      cell.style.backgroundColor = '#047BC4';
+      cell.style.color = 'white';
+    });
+  }, []);
+
   // Open the edit modal
   const handleEdit = (item) => {
     setCurrentItem(item);
@@ -82,7 +90,7 @@ const Listachievement = () => {
             <CCardHeader><h5>List Achievement</h5></CCardHeader>
             <CCardBody style={{ marginTop: '10px' }}> 
               <CTable striped hover>
-                <CTableHead color='dark'>
+                <CTableHead color='dark' className="custom-table-header">
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Date</CTableHeaderCell>
