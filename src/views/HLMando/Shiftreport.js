@@ -130,23 +130,49 @@ const Shiftreport = () => {
     </div>
   );
 
-  const timeRanges = [
-    { start: '06:30 AM', end: '07:30 AM' },
-    { start: '07:30 AM', end: '08:30 AM' },
-    { start: '08:30 AM', end: '09:30 AM' },
-    { start: '09:30 AM', end: '10:30 AM' },
-    { start: '10:30 AM', end: '11:30 AM' },
-    { start: '11:30 AM', end: '12:30 PM' },
-    { start: '12:30 PM', end: '01:30 PM' },
-    { start: '01:30 PM', end: '02:30 PM' }
-  ];
+  // Time ranges for different shifts
+  const shiftTimeRanges = {
+    1: [
+      { start: '06:30 AM', end: '07:30 AM' },
+      { start: '07:30 AM', end: '08:30 AM' },
+      { start: '08:30 AM', end: '09:30 AM' },
+      { start: '09:30 AM', end: '10:30 AM' },
+      { start: '10:30 AM', end: '11:30 AM' },
+      { start: '11:30 AM', end: '12:30 PM' },
+      { start: '12:30 PM', end: '01:30 PM' },
+      { start: '01:30 PM', end: '02:30 PM' }
+    ],
+    2: [
+      { start: '02:30 PM', end: '03:30 PM' },
+      { start: '03:30 PM', end: '04:30 PM' },
+      { start: '04:30 PM', end: '05:30 PM' },
+      { start: '05:30 PM', end: '06:30 PM' },
+      { start: '06:30 PM', end: '07:30 PM' },
+      { start: '07:30 PM', end: '08:30 PM' },
+      { start: '08:30 PM', end: '09:30 PM' },
+      { start: '09:30 PM', end: '10:30 PM' },
+      { start: '10:30 PM', end: '11:30 PM' }
+    ],
+    3: [
+      { start: '10:30 PM', end: '11:30 PM' },
+      { start: '11:30 PM', end: '12:30 AM' },
+      { start: '12:30 AM', end: '01:30 AM' },
+      { start: '01:30 AM', end: '02:30 AM' },
+      { start: '02:30 AM', end: '03:30 AM' },
+      { start: '03:30 AM', end: '04:30 AM' },
+      { start: '04:30 AM', end: '05:30 AM' },
+      { start: '05:30 AM', end: '06:30 AM' }
+    ]
+  };
 
   const renderShiftTable = (shift) => {
-    // Create the shift label with prefix
     const shiftLabel = shift.shift_number !== null ? `Shift ${shift.shift_number}` : 'Shift N/A';
 
     // Calculate the total production count for this shift
     const totalProductionCount = shift.groups.reduce((total, group) => total + group.total_production_count_by_group, 0);
+
+    // Get the time ranges for this shift
+    const timeRanges = shiftTimeRanges[shift.shift_number] || [];
 
     return (
       <CCard className="mb-4" key={shift.shift_id}>
