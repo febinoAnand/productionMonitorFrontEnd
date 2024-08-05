@@ -44,15 +44,17 @@ const ProductionMonitor = () => {
         });
         const shiftsData = shiftsResponse.data;
 
-        // Prepare shift names mapping
+        // Prepare shift names mapping and filter out shift_number 0
         const shiftNamesMap = shiftsData.reduce((acc, shift) => {
-          const shiftName = shift.shift_name || `Shift ${shift.shift_number}`;
-          const shiftNumber = shift.shift_number !== null ? shift.shift_number : shiftName;
-          acc[shiftNumber] = shiftName;
+          if (shift.shift_number !== 0) { // Exclude shift_number 0
+            const shiftName = shift.shift_name || `Shift ${shift.shift_number}`;
+            const shiftNumber = shift.shift_number !== null ? shift.shift_number : shiftName;
+            acc[shiftNumber] = shiftName;
+          }
           return acc;
         }, {});
 
-        // Sort shift numbers
+        // Sort shift numbers and filter out shift_number 0
         const shiftNumbers = Object.keys(shiftNamesMap).map(Number).sort((a, b) => a - b);
 
         // Reverse the order of groups and machines to display the last fetched data first
@@ -92,7 +94,7 @@ const ProductionMonitor = () => {
                 <h5>{group.group_name}</h5>
               </CCardHeader>
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                <CCardBody>
+              <CCardBody style={{ marginTop: '10px' }}> 
                   <CTable striped hover>
                     <CTableHead color="dark">
                       <CTableRow>
@@ -116,9 +118,11 @@ const ProductionMonitor = () => {
                         // Calculate totals based on shifts
                         shifts.forEach(shift => {
                           const shiftNumber = shift.shift_number !== null ? shift.shift_number : 0;
-                          const shiftIndex = shiftNumbers.indexOf(shiftNumber);
-                          if (shiftIndex >= 0) {
-                            machineTotals[shiftIndex] = (shift.target_count || 0) + (shift.production_count || 0);
+                          if (shiftNumber !== 0) { // Exclude shift_number 0
+                            const shiftIndex = shiftNumbers.indexOf(shiftNumber);
+                            if (shiftIndex >= 0) {
+                              machineTotals[shiftIndex] = (shift.target_count || 0) + (shift.production_count || 0);
+                            }
                           }
                         });
 

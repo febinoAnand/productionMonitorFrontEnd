@@ -47,7 +47,7 @@ const Shiftreport = () => {
         }
         const data = await response.json();
 
-        const shiftData = data.shift_wise_data || [];
+        const shiftData = (data.shift_wise_data || []).filter(shift => shift.shift_number !== 0);
         setShiftData(shiftData);
         setFilteredShiftData(shiftData); // Show all data initially
 
@@ -130,9 +130,23 @@ const Shiftreport = () => {
     </div>
   );
 
+  const timeRanges = [
+    { start: '06:30 AM', end: '07:30 AM' },
+    { start: '07:30 AM', end: '08:30 AM' },
+    { start: '08:30 AM', end: '09:30 AM' },
+    { start: '09:30 AM', end: '10:30 AM' },
+    { start: '10:30 AM', end: '11:30 AM' },
+    { start: '11:30 AM', end: '12:30 PM' },
+    { start: '12:30 PM', end: '01:30 PM' },
+    { start: '01:30 PM', end: '02:30 PM' }
+  ];
+
   const renderShiftTable = (shift) => {
     // Create the shift label with prefix
     const shiftLabel = shift.shift_number !== null ? `Shift ${shift.shift_number}` : 'Shift N/A';
+
+    // Calculate the total production count for this shift
+    const totalProductionCount = shift.groups.reduce((total, group) => total + group.total_production_count_by_group, 0);
 
     return (
       <CCard className="mb-4" key={shift.shift_id}>
@@ -140,27 +154,29 @@ const Shiftreport = () => {
           <h5>{shift.shift_name ? shift.shift_name : shiftLabel}</h5>
         </CCardHeader>
         <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-          <CCardBody>
+        <CCardBody style={{ marginTop: '10px' }}> 
             <CTable striped hover>
               <CTableHead color="dark">
                 <CTableRow>
-                  <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">GroupName</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">StartTime</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">EndTime</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Time</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {shift.groups.map((group, index) => (
-                  <CTableRow key={group.group_id}>
-                    <CTableDataCell>{index + 1}</CTableDataCell>
-                    <CTableDataCell>{group.group_name}</CTableDataCell>
-                    <CTableDataCell>{shift.shift_start_time}</CTableDataCell>
-                    <CTableDataCell>{shift.shift_end_time}</CTableDataCell>
-                    <CTableDataCell>{group.total_production_count_by_group}</CTableDataCell>
+                {timeRanges.map((range, index) => (
+                  <CTableRow key={index}>
+                    <CTableDataCell>{`${range.start} to ${range.end}`}</CTableDataCell>
+                    <CTableDataCell>
+                      {shift.groups
+                        .filter(group => group.time_range === `${range.start} to ${range.end}`)
+                        .reduce((total, group) => total + group.total_production_count_by_group, 0)}
+                    </CTableDataCell>
                   </CTableRow>
                 ))}
+                <CTableRow>
+                  <CTableHeaderCell>Total</CTableHeaderCell>
+                  <CTableHeaderCell>{totalProductionCount}</CTableHeaderCell>
+                </CTableRow>
               </CTableBody>
             </CTable>
           </CCardBody>
@@ -226,7 +242,7 @@ const Shiftreport = () => {
               </div>
             ))
           ) : (
-            <p>No data available for the selected machine and date.</p>
+            <p>No data available for the selected date and machine.</p>
           )}
         </CCol>
       </CRow>

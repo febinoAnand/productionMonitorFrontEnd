@@ -182,7 +182,7 @@ const routes = [
    { path: '/details/unregister', name: 'Unregistered Device', element: UnregisteredDevices}, //details
    { path: '/details/rfid', name: 'RFID', element: RFID}, //details
 
-  { path: '/users/users', name: 'User Management / Users', element: Users}, //users
+  { path: '/users/users', name: 'Employees', element: Users}, //users
   { path: '/users/groups', name: 'User Management / Groups', element: Groups}, //users
   { path: '/users/usersubpage', name: 'UserSubpage', element: UserSubpage}, //users
 
