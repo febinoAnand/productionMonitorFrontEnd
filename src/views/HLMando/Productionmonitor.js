@@ -143,7 +143,7 @@ const ProductionMonitor = () => {
                             if (shiftNumber !== 0) {
                               const shiftIndex = shiftNumbers.indexOf(shiftNumber);
                               if (shiftIndex >= 0) {
-                                machineTotals[shiftIndex] = (shift.production_count || 0);
+                                machineTotals[shiftIndex] = (shift.Production_count || 0);
                               }
                             }
                           });

@@ -24,7 +24,8 @@ import {
     CModalHeader,
     CModalTitle,
     CTooltip,
-    CAlert
+    CAlert,
+    CFormText
 } from '@coreui/react';
 import axios from 'axios';
 import CIcon from '@coreui/icons-react';
@@ -49,6 +50,7 @@ const Groups = () => {
     const [newGroupMachines, setNewGroupMachines] = useState([]);
     const [successMessage, setSuccessMessage] = useState('');
     const [deleteMessage, setDeleteMessage] = useState('');
+    const [errors, setErrors] = useState({});
     const MESSAGE_DISPLAY_DURATION = 3000;
 
     const fetchGroupData = useCallback(async () => {
@@ -154,6 +156,7 @@ const Groups = () => {
             setSuccessMessage('Group updated successfully!');
         } catch (error) {
             console.error('Error updating group:', error.response?.data || error.message);
+            setErrors(error.response?.data || {});
         }
     };
 
@@ -174,6 +177,7 @@ const Groups = () => {
             setSuccessMessage('Group created successfully!');
         } catch (error) {
             console.error('Error creating new group:', error.response?.data || error.message);
+            setErrors(error.response?.data || {});
         }
     };
 
@@ -311,15 +315,18 @@ const Groups = () => {
                         <CForm>
                             <CRow>
                                 <CCol xs={12}>
-                                    <CFormLabel htmlFor="groupName">Group Name</CFormLabel>
+                                <CFormLabel htmlFor="new-group-name">Group Name<span style={{ color: 'red' }}>*</span></CFormLabel>
                                     <CFormInput
                                         id="groupName"
                                         value={selectedGroup.group_name}
                                         onChange={(e) => setSelectedGroup({ ...selectedGroup, group_name: e.target.value })}
                                     />
+                                     {errors.group_name && (
+                                    <CFormText color="danger">{errors.group_name}</CFormText>
+                                )}
                                 </CCol>
                                 <CCol xs={12} className="mt-3">
-                                    <CFormLabel htmlFor="machineList">Machines</CFormLabel>
+                                    <CFormLabel htmlFor="machineList">Machines<span style={{ color: 'red' }}>*</span></CFormLabel>
                                     <CFormSelect
                                         id="machineList"
                                         multiple
@@ -332,6 +339,9 @@ const Groups = () => {
                                             </option>
                                         ))}
                                     </CFormSelect>
+                                    {errors.machines && (
+                                    <CFormText color="danger">{errors.machines}</CFormText>
+                                )}
                                 </CCol>
                             </CRow>
                         </CForm>
@@ -356,15 +366,18 @@ const Groups = () => {
                         <CRow>
                             <CCol xs={12}>
                                 
-                                <CFormLabel htmlFor="newGroupName">Group Name</CFormLabel>
+                            <CFormLabel htmlFor="new-group-name">Group Name<span style={{ color: 'red' }}>*</span></CFormLabel>
                                 <CFormInput
                                     id="newGroupName"
                                     value={newGroupName}
                                     onChange={(e) => setNewGroupName(e.target.value)}
                                 />
+                               {errors.group_name && (
+                                    <CFormText color="danger">{errors.group_name}</CFormText>
+                                )}
                             </CCol>
                             <CCol xs={12} className="mt-3">
-                                <CFormLabel htmlFor="newMachineList">Machines</CFormLabel>
+                            <CFormLabel htmlFor="machineList">Machines<span style={{ color: 'red' }}>*</span></CFormLabel>
                                 <CFormSelect
                                     id="newMachineList"
                                     multiple
@@ -389,6 +402,9 @@ const Groups = () => {
                                         </option>
                                     ))}
                                 </CFormSelect>
+                                {errors.machines && (
+                                    <CFormText color="danger">{errors.machines}</CFormText>
+                                )}
                             </CCol>
                         </CRow>
                     </CForm>
