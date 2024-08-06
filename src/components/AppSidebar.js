@@ -97,7 +97,7 @@ const AppSidebar = () => {
         />
       </CSidebarBrand>
       <CSidebarNav>
-        <SimpleBar style={{ maxHeight: 'calc(100vh - 80px)' }}> 
+        <SimpleBar> 
           <AppSidebarNav items={navigation} />
         </SimpleBar>
       </CSidebarNav>

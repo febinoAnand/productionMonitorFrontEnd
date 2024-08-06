@@ -75,6 +75,19 @@ const Groups = () => {
         fetchMachineData();
     }, [fetchGroupData, fetchMachineData]);
 
+
+    const applyHeaderStyles = () => {
+        const headerCells = document.querySelectorAll('.custom-table-header th');
+        headerCells.forEach((cell) => {
+            cell.style.backgroundColor = '#047BC4';
+            cell.style.color = 'white';
+        });
+    };
+
+    useEffect(() => {
+        applyHeaderStyles();
+    }, []);
+
     const handleSearch = useCallback(() => {
         if (!searchQuery) {
             setFilteredGroupData(groupData);
@@ -193,6 +206,7 @@ const Groups = () => {
         }
     };
 
+
     return (
         <div className="page">
             {(successMessage || deleteMessage) && (
@@ -232,15 +246,15 @@ const Groups = () => {
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
-                                    <CButton type="button" color="secondary" onClick={handleSearch} id="button-addon2">
+                                    <CButton type="button" color="secondary"style={{ backgroundColor: '#047BC4', borderColor: '#047BC4', color: '#fff' }}  onClick={handleSearch} id="button-addon2">
                                         Search
                                     </CButton>
                                 </CInputGroup>
                             </CCol>
                             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                                 <CTable striped hover>
-                                    <CTableHead>
-                                        <CTableRow color="dark">
+                                <CTableHead className="custom-table-header">
+                                        <CTableRow>
                                             <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Group</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Machines</CTableHeaderCell>

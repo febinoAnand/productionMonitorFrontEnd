@@ -47,7 +47,7 @@ const Shiftreport = () => {
         }
         const data = await response.json();
 
-        const shiftData = data.shift_wise_data || [];
+        const shiftData = (data.shift_wise_data || []).filter(shift => shift.shift_number !== 0);
         setShiftData(shiftData);
         setFilteredShiftData(shiftData); // Show all data initially
 
@@ -90,25 +90,29 @@ const Shiftreport = () => {
   const handleSearchClick = () => {
     if (!startDate || !selectedMachine) return;
 
-    const formattedDate = format(startDate, 'yyyy-MM-dd');
+    try {
+      const formattedDate = format(startDate, 'yyyy-MM-dd');
 
-    const filteredData = shiftData.filter(shift => {
-      const shiftDate = shift.shift_date.split('T')[0];
-      const matchDate = shiftDate === formattedDate;
+      const filteredData = shiftData.filter(shift => {
+        const shiftDate = shift.shift_date.split('T')[0];
+        const matchDate = shiftDate === formattedDate;
 
-      const filteredGroups = shift.groups.filter(group => 
-        group.machines.some(machine => machine.machine_name === selectedMachine)
-      );
+        const filteredGroups = shift.groups.filter(group => 
+          group.machines.some(machine => machine.machine_name === selectedMachine)
+        );
 
-      return matchDate && filteredGroups.length > 0;
-    }).map(shift => ({
-      ...shift,
-      groups: shift.groups.filter(group => 
-        group.machines.some(machine => machine.machine_name === selectedMachine)
-      )
-    }));
+        return matchDate && filteredGroups.length > 0;
+      }).map(shift => ({
+        ...shift,
+        groups: shift.groups.filter(group => 
+          group.machines.some(machine => machine.machine_name === selectedMachine)
+        )
+      }));
 
-    setFilteredShiftData(filteredData);
+      setFilteredShiftData(filteredData);
+    } catch (error) {
+      console.error("Error filtering data:", error);
+    }
   };
 
   const CustomInput = ({ value, onClick }) => (
@@ -116,7 +120,7 @@ const Shiftreport = () => {
       <input
         type="text"
         className="form-control"
-        value={value}
+        value={value || ""}
         onClick={onClick}
         readOnly
         placeholder="Select date"
@@ -130,44 +134,92 @@ const Shiftreport = () => {
     </div>
   );
 
+  // Time ranges for different shifts
+  const shiftTimeRanges = {
+    1: [
+      { start: '06:30 AM', end: '07:30 AM' },
+      { start: '07:30 AM', end: '08:30 AM' },
+      { start: '08:30 AM', end: '09:30 AM' },
+      { start: '09:30 AM', end: '10:30 AM' },
+      { start: '10:30 AM', end: '11:30 AM' },
+      { start: '11:30 AM', end: '12:30 PM' },
+      { start: '12:30 PM', end: '01:30 PM' },
+      { start: '01:30 PM', end: '02:30 PM' }
+    ],
+    2: [
+      { start: '02:30 PM', end: '03:30 PM' },
+      { start: '03:30 PM', end: '04:30 PM' },
+      { start: '04:30 PM', end: '05:30 PM' },
+      { start: '05:30 PM', end: '06:30 PM' },
+      { start: '06:30 PM', end: '07:30 PM' },
+      { start: '07:30 PM', end: '08:30 PM' },
+      { start: '08:30 PM', end: '09:30 PM' },
+      { start: '09:30 PM', end: '10:30 PM' },
+      { start: '10:30 PM', end: '11:30 PM' }
+    ],
+    3: [
+      { start: '10:30 PM', end: '11:30 PM' },
+      { start: '11:30 PM', end: '12:30 AM' },
+      { start: '12:30 AM', end: '01:30 AM' },
+      { start: '01:30 AM', end: '02:30 AM' },
+      { start: '02:30 AM', end: '03:30 AM' },
+      { start: '03:30 AM', end: '04:30 AM' },
+      { start: '04:30 AM', end: '05:30 AM' },
+      { start: '05:30 AM', end: '06:30 AM' }
+    ]
+  };
+
   const renderShiftTable = (shift) => {
-    // Create the shift label with prefix
     const shiftLabel = shift.shift_number !== null ? `Shift ${shift.shift_number}` : 'Shift N/A';
+    const totalProductionCount = shift.groups.reduce((total, group) => total + group.total_production_count_by_group, 0);
+    const timeRanges = shiftTimeRanges[shift.shift_number] || [];
 
     return (
       <CCard className="mb-4" key={shift.shift_id}>
         <CCardHeader>
           <h5>{shift.shift_name ? shift.shift_name : shiftLabel}</h5>
         </CCardHeader>
-        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-          <CCardBody>
+        <CCardBody style={{ marginTop: '10px' }}> 
             <CTable striped hover>
-              <CTableHead color="dark">
+             <CTableHead className="custom-table-header">
                 <CTableRow>
-                  <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">GroupName</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">StartTime</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">EndTime</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Time</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {shift.groups.map((group, index) => (
-                  <CTableRow key={group.group_id}>
-                    <CTableDataCell>{index + 1}</CTableDataCell>
-                    <CTableDataCell>{group.group_name}</CTableDataCell>
-                    <CTableDataCell>{shift.shift_start_time}</CTableDataCell>
-                    <CTableDataCell>{shift.shift_end_time}</CTableDataCell>
-                    <CTableDataCell>{group.total_production_count_by_group}</CTableDataCell>
+                {timeRanges.map((range, index) => (
+                  <CTableRow key={index}>
+                    <CTableDataCell>{`${range.start} to ${range.end}`}</CTableDataCell>
+                    <CTableDataCell>
+                      {shift.groups
+                        .filter(group => group.time_range === `${range.start} to ${range.end}`)
+                        .reduce((total, group) => total + group.total_production_count_by_group, 0)}
+                    </CTableDataCell>
                   </CTableRow>
                 ))}
+                <CTableRow>
+                  <CTableHeaderCell>Total</CTableHeaderCell>
+                  <CTableHeaderCell>{totalProductionCount}</CTableHeaderCell>
+                </CTableRow>
               </CTableBody>
             </CTable>
           </CCardBody>
-        </div>
       </CCard>
     );
   };
+
+  useEffect(() => {
+    const applyHeaderStyles = () => {
+      const headerCells = document.querySelectorAll('.custom-table-header th');
+      headerCells.forEach((cell) => {
+        cell.style.backgroundColor = '#047BC4';
+        cell.style.color = 'white';
+      });
+    };
+
+    applyHeaderStyles();
+  }, [filteredShiftData]);
 
   return (
     <div className="page">
@@ -195,13 +247,16 @@ const Shiftreport = () => {
         <CCol md={4} className="text-end">
           <CInputGroup className="flex-nowrap mt-3 mb-4">
             <DatePicker
-              selected={startDate}
+              selected={startDate ? new Date(startDate) : null}
               onChange={(date) => setStartDate(date)}
               customInput={<CustomInput />}
               dateFormat="yyyy-MM-dd"
               popperPlacement="bottom-end"
               highlightDates={highlightedDates}
-              onChangeRaw={(e) => setStartDate(new Date(e.target.value))}
+              onChangeRaw={(e) => {
+                const rawDate = new Date(e.target.value);
+                setStartDate(isNaN(rawDate.getTime()) ? null : rawDate);
+              }}
             />
             <CButton
               type="button"
@@ -226,7 +281,7 @@ const Shiftreport = () => {
               </div>
             ))
           ) : (
-            <p>No data available for the selected machine and date.</p>
+            <p>No data available for the selected date and machine.</p>
           )}
         </CCol>
       </CRow>
