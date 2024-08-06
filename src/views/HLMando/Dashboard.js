@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import BaseURL from 'src/assets/contants/BaseURL';
 
 const Dashboard = () => {
-  const [combinedData, setCombinedData] = useState([]); 
+  const [dashboardData, setDashboardData] = useState([]); 
+  const [machineGroupData, setMachineGroupData] = useState([]); 
   const [loading, setLoading] = useState(true); 
   const navigate = useNavigate(); 
 
@@ -17,25 +18,29 @@ const Dashboard = () => {
     };
   };
 
-  const fetchData = useCallback(async () => {
+  const fetchDashboardData = async () => {
     try {
-      const [response1, response2] = await Promise.all([
-        axios.get(BaseURL + 'data/dashboard/', { headers: getAuthHeaders() }),
-        axios.get(BaseURL + 'devices/machinegroup/', { headers: getAuthHeaders() })
-      ]);
-
-      // Combine data from both sources
-      const allGroups = [...response1.data, ...response2.data];
-
-      // Filter out duplicates based on 'group_id'
-      const uniqueGroups = Array.from(new Map(allGroups.map(group => [group.group_id, group])).values());
-
-      setCombinedData(uniqueGroups);
+      const response = await axios.get(BaseURL + 'data/dashboard/', { headers: getAuthHeaders() });
+      setDashboardData(response.data);
+      console.log(response.data)
     } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false); 
+      console.error('Error fetching dashboard data:', error);
     }
+  };
+
+  const fetchMachineGroupData = async () => {
+    try {
+      const response = await axios.get(BaseURL + 'devices/machinegroup/', { headers: getAuthHeaders() });
+      setMachineGroupData(response.data);
+      console.log(response.data)
+    } catch (error) {
+      console.error('Error fetching machine group data:', error);
+    }
+  };
+
+  const fetchData = useCallback(async () => {
+    await Promise.all([fetchDashboardData(), fetchMachineGroupData()]);
+    setLoading(false); 
   }, []);
 
   useEffect(() => {
@@ -81,9 +86,24 @@ const Dashboard = () => {
     return <div>Loading...</div>; 
   }
 
-  if (!combinedData.length) {
+  if (!dashboardData.length && !machineGroupData.length) {
     return <div>No data available.</div>; 
   }
+
+  const combinedData = machineGroupData.map(group => {
+    const dashboardGroup = dashboardData.find(dg => dg.group_id === group.group_id) || {};
+    return {
+      ...group,
+      ...dashboardGroup,
+      machines: group.machines.map(machine => {
+        const dashboardMachine = dashboardGroup.machines.find(dm => dm.machine_id === machine.machine_id) || {};
+        return {
+          ...machine,
+          ...dashboardMachine
+        };
+      })
+    };
+  });
 
   return (
     <div className="page" style={zoomOutStyle}>

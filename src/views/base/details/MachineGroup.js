@@ -355,6 +355,7 @@ const Groups = () => {
                     <CForm>
                         <CRow>
                             <CCol xs={12}>
+                                
                                 <CFormLabel htmlFor="newGroupName">Group Name</CFormLabel>
                                 <CFormInput
                                     id="newGroupName"

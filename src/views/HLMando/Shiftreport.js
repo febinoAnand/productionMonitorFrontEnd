@@ -171,7 +171,7 @@ const Shiftreport = () => {
 
   const renderShiftTable = (shift) => {
     const shiftLabel = shift.shift_number !== null ? `Shift ${shift.shift_number}` : 'Shift N/A';
-    const totalProductionCount = shift.groups.reduce((total, group) => total + group.total_production_count_by_group, 0);
+    const totalProductionCount = shift.groups.reduce((total) => total, 0);
     const timeRanges = shiftTimeRanges[shift.shift_number] || [];
 
     return (
@@ -194,7 +194,7 @@ const Shiftreport = () => {
                     <CTableDataCell>
                       {shift.groups
                         .filter(group => group.time_range === `${range.start} to ${range.end}`)
-                        .reduce((total, group) => total + group.total_production_count_by_group, 0)}
+                        .reduce((total, group) => total,0)}
                     </CTableDataCell>
                   </CTableRow>
                 ))}

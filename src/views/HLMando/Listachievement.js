@@ -34,8 +34,81 @@ const initialData = [
     shift2: 123,
     shift3: 123,
     total: 369
+  },
+  {
+    id: 2,
+    date: '06-Aug-2024',
+    lineId: 'CRRMI 1',
+    shift1: 98,
+    shift2: 110,
+    shift3: 105,
+    total: 313
+  },
+  {
+    id: 3,
+    date: '06-Aug-2024',
+    lineId: 'MCLM 3',
+    shift1: 115,
+    shift2: 120,
+    shift3: 130,
+    total: 365
+  },
+  {
+    id: 4,
+    date: '06-Aug-2024',
+    lineId: 'MCLM 2',
+    shift1: 142,
+    shift2: 135,
+    shift3: 128,
+    total: 405
+  },
+  {
+    id: 5,
+    date: '06-Aug-2024',
+    lineId: 'MCLM 1',
+    shift1: 110,
+    shift2: 123,
+    shift3: 117,
+    total: 350
+  },
+  {
+    id: 6,
+    date: '06-Aug-2024',
+    lineId: 'CALPI',
+    shift1: 125,
+    shift2: 130,
+    shift3: 140,
+    total: 395
+  },
+  {
+    id: 7,
+    date: '06-Aug-2024',
+    lineId: 'CRRMI',
+    shift1: 98,
+    shift2: 105,
+    shift3: 102,
+    total: 305
+  },
+  {
+    id: 8,
+    date: '06-Aug-2024',
+    lineId: 'HSMGI',
+    shift1: 112,
+    shift2: 119,
+    shift3: 125,
+    total: 356
+  },
+  {
+    id: 9,
+    date: '06-Aug-2024',
+    lineId: 'TEST',
+    shift1: 120,
+    shift2: 126,
+    shift3: 132,
+    total: 378
   }
 ];
+
 
 const Listachievement = () => {
   const [data, setData] = useState(initialData);
