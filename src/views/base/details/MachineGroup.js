@@ -31,7 +31,7 @@ import CIcon from '@coreui/icons-react';
 import BaseURL from 'src/assets/contants/BaseURL';
 
 const getAuthHeaders = () => {
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
     return {
         Authorization: `Token ${token}`,
     };
@@ -49,6 +49,7 @@ const Groups = () => {
     const [newGroupMachines, setNewGroupMachines] = useState([]);
     const [successMessage, setSuccessMessage] = useState('');
     const [deleteMessage, setDeleteMessage] = useState('');
+    const MESSAGE_DISPLAY_DURATION = 3000;
 
     const fetchGroupData = useCallback(async () => {
         try {
@@ -74,7 +75,6 @@ const Groups = () => {
         fetchGroupData();
         fetchMachineData();
     }, [fetchGroupData, fetchMachineData]);
-
 
     const applyHeaderStyles = () => {
         const headerCells = document.querySelectorAll('.custom-table-header th');
@@ -113,6 +113,7 @@ const Groups = () => {
             group_id: group.group_id,
             group_name: group.group_name,
             machines: group.machines.map(machine => ({
+                id: machine.id,
                 machine_id: machine.machine_id,
                 machine_name: machine.machine_name
             }))
@@ -126,7 +127,7 @@ const Groups = () => {
         for (let i = 0; i < options.length; i++) {
             if (options[i].selected) {
                 selectedMachines.push({
-                    machine_id: parseInt(options[i].value, 10),
+                    id: parseInt(options[i].value, 10),
                     machine_name: options[i].text
                 });
             }
@@ -137,29 +138,15 @@ const Groups = () => {
         }));
     };
 
-    const handleNewGroupMachinesChange = (event) => {
-        const options = event.target.options;
-        const selectedMachines = [];
-        for (let i = 0; i < options.length; i++) {
-            if (options[i].selected) {
-                selectedMachines.push({
-                    id: parseInt(options[i].value, 10), // Ensure ID is parsed as an integer
-                    machine_name: options[i].text
-                });
-            }
-        }
-        setNewGroupMachines(selectedMachines);
-    };
-    
     const handleUpdateGroup = async () => {
         try {
-            const machineIds = selectedGroup.machines.map(machine => machine.machine_id);
-    
+            const machineIds = selectedGroup.machines.map(machine => machine.id);
+
             const updatedGroup = {
                 group_name: selectedGroup.group_name,
                 machine_list: machineIds
             };
-    
+
             await axios.put(`${BaseURL}devices/machinegroup/${selectedGroup.group_id}/`, updatedGroup, { headers: getAuthHeaders() });
             
             fetchGroupData();
@@ -169,7 +156,7 @@ const Groups = () => {
             console.error('Error updating group:', error.response?.data || error.message);
         }
     };
-    
+
     const handleCreateNewGroup = async () => {
         try {
             const machineIds = newGroupMachines.map(machine => machine.id);
@@ -196,7 +183,7 @@ const Groups = () => {
         if (!confirmDelete) {
             return;
         }
-    
+
         try {
             await axios.delete(`${BaseURL}devices/machinegroup/${groupId}/`, { headers: getAuthHeaders() });
             fetchGroupData();
@@ -206,6 +193,16 @@ const Groups = () => {
         }
     };
 
+    useEffect(() => {
+        if (successMessage || deleteMessage) {
+            const timer = setTimeout(() => {
+                setSuccessMessage('');
+                setDeleteMessage('');
+            }, MESSAGE_DISPLAY_DURATION);
+
+            return () => clearTimeout(timer);
+        }
+    }, [successMessage, deleteMessage]);
 
     return (
         <div className="page">
@@ -218,7 +215,7 @@ const Groups = () => {
                             </CAlert>
                         )}
                         {deleteMessage && (
-                            <CAlert color="danger" onClose={() => setDeleteMessage('')}>
+                            <CAlert color="success" onClose={() => setDeleteMessage('')}>
                                 {deleteMessage}
                             </CAlert>
                         )}
@@ -246,14 +243,14 @@ const Groups = () => {
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
-                                    <CButton type="button" color="secondary"style={{ backgroundColor: '#047BC4', borderColor: '#047BC4', color: '#fff' }}  onClick={handleSearch} id="button-addon2">
+                                    <CButton type="button" color="secondary" style={{ backgroundColor: '#047BC4', borderColor: '#047BC4', color: '#fff' }} onClick={handleSearch} id="button-addon2">
                                         Search
                                     </CButton>
                                 </CInputGroup>
                             </CCol>
                             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                                 <CTable striped hover>
-                                <CTableHead className="custom-table-header">
+                                    <CTableHead className="custom-table-header">
                                         <CTableRow>
                                             <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Group</CTableHeaderCell>
@@ -275,18 +272,25 @@ const Groups = () => {
                                                         {group.machines.map(machine => machine.machine_name).join(', ')}
                                                     </CTableDataCell>
                                                     <CTableDataCell>
-                                                        <div className="d-flex gap-2">
-                                                            <CTooltip content="Edit Group">
-                                                                <CButton color="primary" size='sm' onClick={() => handleGroupSelect(group)}>
-                                                                    <CIcon icon={cilPen} />
-                                                                </CButton>
-                                                            </CTooltip>
-                                                            <CTooltip content="Delete Group">
-                                                                <CButton color="primary" size='sm' onClick={() => handleDeleteGroup(group.group_id)}>
-                                                                    <CIcon icon={cilTrash} />
-                                                                </CButton>
-                                                            </CTooltip>
-                                                        </div>
+                                                        <CTooltip content="Edit Group">
+                                                            <CButton
+                                                                color="primary"
+                                                                size="sm"
+                                                                onClick={() => handleGroupSelect(group)}
+                                                                className="me-2"
+                                                            >
+                                                                <CIcon icon={cilPen} />
+                                                            </CButton>
+                                                        </CTooltip>
+                                                        <CTooltip content="Delete Group">
+                                                            <CButton
+                                                                color="primary"
+                                                                size="sm"
+                                                                onClick={() => handleDeleteGroup(group.group_id)}
+                                                            >
+                                                                <CIcon icon={cilTrash} />
+                                                            </CButton>
+                                                        </CTooltip>
                                                     </CTableDataCell>
                                                 </CTableRow>
                                             ))
@@ -298,83 +302,103 @@ const Groups = () => {
                     </CCard>
                 </CCol>
             </CRow>
-
-            {/* Edit Group Modal */}
-            {selectedGroup && (
-                <CModal
-                    visible={modalVisible}
-                    onClose={() => setModalVisible(false)}
-                >
-                    <CModalHeader>
-                        <CModalTitle>Edit Group</CModalTitle>
-                    </CModalHeader>
-                    <CModalBody>
+            <CModal visible={modalVisible} onClose={() => setModalVisible(false)} backdrop="static">
+                <CModalHeader onClose={() => setModalVisible(false)}>
+                    <CModalTitle>Edit Group</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    {selectedGroup && (
                         <CForm>
-                            <CFormLabel htmlFor="groupName">Group Name</CFormLabel>
-                            <CFormInput
-                                id="groupName"
-                                value={selectedGroup.group_name}
-                                onChange={(e) => setSelectedGroup(prevGroup => ({
-                                    ...prevGroup,
-                                    group_name: e.target.value
-                                }))}
-                            />
-                            <CFormLabel htmlFor="machineList" className="mt-3">Select Machines</CFormLabel>
-                            <CFormSelect
-                                id="machineList"
-                                multiple
-                                value={selectedGroup.machines.map(machine => machine.machine_id)}
-                                onChange={handleMachineListChange}
-                            >
-                                {machineData.map(machine => (
-                                    <option key={machine.id} value={machine.id}>
-                                        {machine.machine_name}
-                                    </option>
-                                ))}
-                            </CFormSelect>
+                            <CRow>
+                                <CCol xs={12}>
+                                    <CFormLabel htmlFor="groupName">Group Name</CFormLabel>
+                                    <CFormInput
+                                        id="groupName"
+                                        value={selectedGroup.group_name}
+                                        onChange={(e) => setSelectedGroup({ ...selectedGroup, group_name: e.target.value })}
+                                    />
+                                </CCol>
+                                <CCol xs={12} className="mt-3">
+                                    <CFormLabel htmlFor="machineList">Machines</CFormLabel>
+                                    <CFormSelect
+                                        id="machineList"
+                                        multiple
+                                        value={selectedGroup.machines.map(machine => machine.id.toString())}
+                                        onChange={handleMachineListChange}
+                                    >
+                                        {machineData.map(machine => (
+                                            <option key={machine.id} value={machine.id}>
+                                                {machine.machine_name}
+                                            </option>
+                                        ))}
+                                    </CFormSelect>
+                                </CCol>
+                            </CRow>
                         </CForm>
-                    </CModalBody>
-                    <CModalFooter>
-                    <CButton color="secondary" size='sm' onClick={() => setModalVisible(false)}>Close</CButton>
-                    <CButton color="primary" variant='outline' size='sm' onClick={handleUpdateGroup}>Save changes</CButton>
+                    )}
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" size='sm'variant='outline'onClick={() => setModalVisible(false)}>
+                        Close
+                    </CButton>
+                    <CButton color="primary"size='sm' variant='outline' onClick={handleUpdateGroup}>
+                        Save changes
+                    </CButton>
                 </CModalFooter>
-                </CModal>
-            )}
+            </CModal>
 
-            {/* New Group Modal */}
-            <CModal
-                visible={newGroupModalVisible}
-                onClose={() => setNewGroupModalVisible(false)}
-            >
-                <CModalHeader>
+            <CModal visible={newGroupModalVisible} onClose={() => setNewGroupModalVisible(false)} backdrop="static">
+                <CModalHeader onClose={() => setNewGroupModalVisible(false)}>
                     <CModalTitle>Create New Group</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
                     <CForm>
-                        <CFormLabel htmlFor="newGroupName">Group Name</CFormLabel>
-                        <CFormInput
-                            id="newGroupName"
-                            value={newGroupName}
-                            onChange={(e) => setNewGroupName(e.target.value)}
-                        />
-                        <CFormLabel htmlFor="newMachineList" className="mt-3">Select Machines</CFormLabel>
-                        <CFormSelect
-                            id="newMachineList"
-                            multiple
-                            value={newGroupMachines.map(machine => machine.id)}
-                            onChange={handleNewGroupMachinesChange}
-                        >
-                            {machineData.map(machine => (
-                                <option key={machine.id} value={machine.id}>
-                                    {machine.machine_name}
-                                </option>
-                            ))}
-                        </CFormSelect>
+                        <CRow>
+                            <CCol xs={12}>
+                                <CFormLabel htmlFor="newGroupName">Group Name</CFormLabel>
+                                <CFormInput
+                                    id="newGroupName"
+                                    value={newGroupName}
+                                    onChange={(e) => setNewGroupName(e.target.value)}
+                                />
+                            </CCol>
+                            <CCol xs={12} className="mt-3">
+                                <CFormLabel htmlFor="newMachineList">Machines</CFormLabel>
+                                <CFormSelect
+                                    id="newMachineList"
+                                    multiple
+                                    value={newGroupMachines.map(machine => machine.id.toString())}
+                                    onChange={(event) => {
+                                        const options = event.target.options;
+                                        const selectedMachines = [];
+                                        for (let i = 0; i < options.length; i++) {
+                                            if (options[i].selected) {
+                                                selectedMachines.push({
+                                                    id: parseInt(options[i].value, 10),
+                                                    machine_name: options[i].text
+                                                });
+                                            }
+                                        }
+                                        setNewGroupMachines(selectedMachines);
+                                    }}
+                                >
+                                    {machineData.map(machine => (
+                                        <option key={machine.id} value={machine.id}>
+                                            {machine.machine_name}
+                                        </option>
+                                    ))}
+                                </CFormSelect>
+                            </CCol>
+                        </CRow>
                     </CForm>
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="primary" size='sm' onClick={() => setNewGroupModalVisible(false)}>Close</CButton>
-                    <CButton color="primary" variant='outline' size='sm' onClick={handleCreateNewGroup}>Create Group</CButton>
+                    <CButton color="secondary" size='sm'variant='outline' onClick={() => setNewGroupModalVisible(false)}>
+                        Close
+                    </CButton>
+                    <CButton color="primary"  size='sm'variant='outline'onClick={handleCreateNewGroup}>
+                        Save Group
+                    </CButton>
                 </CModalFooter>
             </CModal>
         </div>

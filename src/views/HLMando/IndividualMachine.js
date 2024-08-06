@@ -34,7 +34,7 @@ const Machine = () => {
   useEffect(() => {
     const headerCells = document.querySelectorAll('.custom-table-header th');
     headerCells.forEach((cell) => {
-      cell.style.backgroundColor = 'dodgerblue';
+      cell.style.backgroundColor = '#047BC4';
       cell.style.color = 'white';
     });
   }, []);
