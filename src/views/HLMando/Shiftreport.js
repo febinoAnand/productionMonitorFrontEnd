@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import axios from 'axios';
 import { format } from 'date-fns';
 import CIcon from '@coreui/icons-react';
 import { cilCalendar, cilSearch } from '@coreui/icons';
@@ -20,45 +19,30 @@ import {
   CFormSelect,
   CButton
 } from '@coreui/react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import BaseURL from 'src/assets/contants/BaseURL';
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    'Authorization': `Token ${token}`,
-    'Content-Type': 'application/json'
-  };
-};
 
 const Shiftreport = () => {
   const [startDate, setStartDate] = useState(null);
-  const [shiftData, setShiftData] = useState([]);
-  const [filteredShiftData, setFilteredShiftData] = useState([]);
   const [machineOptions, setMachineOptions] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState('');
-  const [highlightedDates, setHighlightedDates] = useState([]);
+  const [machineHourlyData, setMachineHourlyData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${BaseURL}data/production-monitor/`, { headers: getAuthHeaders() });
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data = await response.json();
-
-        const shiftData = (data.shift_wise_data || []).filter(shift => shift.shift_number !== 0);
-        setShiftData(shiftData);
-        setFilteredShiftData(shiftData); // Show all data initially
-
-        const machineResponse = await fetch(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
-        if (!machineResponse.ok) {
-          throw new Error(`HTTP error! Status: ${machineResponse.status}`);
-        }
-        const machineData = await machineResponse.json();
+        const response = await axios.get(`${BaseURL}devices/machine/`, {
+          headers: {
+            'Authorization': `Token ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        const machineData = response.data;
 
         const machineNames = Array.from(new Set(machineData.map(machine => machine.machine_name)));
-        setMachineOptions(machineNames);
+        const machineIds = Array.from(new Set(machineData.map(machine => machine.machine_id)));
+        setMachineOptions(machineNames.map((name, index) => ({ name, id: machineIds[index] })));
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -68,50 +52,38 @@ const Shiftreport = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedMachine) {
-      const datesWithData = Array.from(new Set(
-        shiftData
-          .flatMap(shift => shift.groups.flatMap(group => group.machines))
-          .filter(machine => machine.machine_name === selectedMachine)
-          .map(machine => shiftData.find(shift => shift.groups.some(group => group.machines.includes(machine))).shift_date.split('T')[0])
-      ));
-      setHighlightedDates(datesWithData.map(date => new Date(date)));
-    } else {
-      setHighlightedDates([]);
-    }
-  }, [selectedMachine, shiftData]);
+    const applyHeaderStyles = () => {
+      const headerCells = document.querySelectorAll('.custom-table-header th');
+      headerCells.forEach((cell) => {
+        cell.style.backgroundColor = '#047BC4';
+        cell.style.color = 'white';
+      });
+    };
 
-  useEffect(() => {
-    if (!selectedMachine && !startDate) {
-      setFilteredShiftData(shiftData); // Show all data if no machine or date is selected
-    }
-  }, [selectedMachine, startDate, shiftData]);
+    applyHeaderStyles(); // Apply styles when the component mounts or updates
 
-  const handleSearchClick = () => {
-    if (!startDate || !selectedMachine) return;
+  }, [machineHourlyData]); // Dependency array includes machineHourlyData
+
+  const handleSearchClick = async () => {
+    if (!selectedMachine || !startDate) return;
 
     try {
+      const machineId = machineOptions.find(machine => machine.name === selectedMachine).id;
       const formattedDate = format(startDate, 'yyyy-MM-dd');
-
-      const filteredData = shiftData.filter(shift => {
-        const shiftDate = shift.shift_date.split('T')[0];
-        const matchDate = shiftDate === formattedDate;
-
-        const filteredGroups = shift.groups.filter(group => 
-          group.machines.some(machine => machine.machine_name === selectedMachine)
-        );
-
-        return matchDate && filteredGroups.length > 0;
-      }).map(shift => ({
-        ...shift,
-        groups: shift.groups.filter(group => 
-          group.machines.some(machine => machine.machine_name === selectedMachine)
-        )
-      }));
-
-      setFilteredShiftData(filteredData);
+      const response = await axios.post(`${BaseURL}data/machine-hourly-data/`, {
+        "machine_id": machineId,
+        "date": formattedDate
+      }, {
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = response.data;
+      // Filter out shifts without hourly data
+      setMachineHourlyData(Object.values(data).filter(shift => shift.hourly_data && Object.keys(shift.hourly_data).length > 0));
     } catch (error) {
-      console.error("Error filtering data:", error);
+      console.error("Error fetching machine hourly data:", error);
     }
   };
 
@@ -134,93 +106,6 @@ const Shiftreport = () => {
     </div>
   );
 
-  // Time ranges for different shifts
-  const shiftTimeRanges = {
-    1: [
-      { start: '06:30 AM', end: '07:30 AM' },
-      { start: '07:30 AM', end: '08:30 AM' },
-      { start: '08:30 AM', end: '09:30 AM' },
-      { start: '09:30 AM', end: '10:30 AM' },
-      { start: '10:30 AM', end: '11:30 AM' },
-      { start: '11:30 AM', end: '12:30 PM' },
-      { start: '12:30 PM', end: '01:30 PM' },
-      { start: '01:30 PM', end: '02:30 PM' }
-    ],
-    2: [
-      { start: '02:30 PM', end: '03:30 PM' },
-      { start: '03:30 PM', end: '04:30 PM' },
-      { start: '04:30 PM', end: '05:30 PM' },
-      { start: '05:30 PM', end: '06:30 PM' },
-      { start: '06:30 PM', end: '07:30 PM' },
-      { start: '07:30 PM', end: '08:30 PM' },
-      { start: '08:30 PM', end: '09:30 PM' },
-      { start: '09:30 PM', end: '10:30 PM' },
-      { start: '10:30 PM', end: '11:30 PM' }
-    ],
-    3: [
-      { start: '10:30 PM', end: '11:30 PM' },
-      { start: '11:30 PM', end: '12:30 AM' },
-      { start: '12:30 AM', end: '01:30 AM' },
-      { start: '01:30 AM', end: '02:30 AM' },
-      { start: '02:30 AM', end: '03:30 AM' },
-      { start: '03:30 AM', end: '04:30 AM' },
-      { start: '04:30 AM', end: '05:30 AM' },
-      { start: '05:30 AM', end: '06:30 AM' }
-    ]
-  };
-
-  const renderShiftTable = (shift) => {
-    const shiftLabel = shift.shift_number !== null ? `Shift ${shift.shift_number}` : 'Shift N/A';
-    const totalProductionCount = shift.groups.reduce((total) => total, 0);
-    const timeRanges = shiftTimeRanges[shift.shift_number] || [];
-
-    return (
-      <CCard className="mb-4" key={shift.shift_id}>
-        <CCardHeader>
-          <h5>{shift.shift_name ? shift.shift_name : shiftLabel}</h5>
-        </CCardHeader>
-        <CCardBody style={{ marginTop: '10px' }}> 
-            <CTable striped hover>
-             <CTableHead className="custom-table-header">
-                <CTableRow>
-                  <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {timeRanges.map((range, index) => (
-                  <CTableRow key={index}>
-                    <CTableDataCell>{`${range.start} to ${range.end}`}</CTableDataCell>
-                    <CTableDataCell>
-                      {shift.groups
-                        .filter(group => group.time_range === `${range.start} to ${range.end}`)
-                        .reduce((total, group) => total,0)}
-                    </CTableDataCell>
-                  </CTableRow>
-                ))}
-                <CTableRow>
-                  <CTableHeaderCell>Total</CTableHeaderCell>
-                  <CTableHeaderCell>{totalProductionCount}</CTableHeaderCell>
-                </CTableRow>
-              </CTableBody>
-            </CTable>
-          </CCardBody>
-      </CCard>
-    );
-  };
-
-  useEffect(() => {
-    const applyHeaderStyles = () => {
-      const headerCells = document.querySelectorAll('.custom-table-header th');
-      headerCells.forEach((cell) => {
-        cell.style.backgroundColor = '#047BC4';
-        cell.style.color = 'white';
-      });
-    };
-
-    applyHeaderStyles();
-  }, [filteredShiftData]);
-
   return (
     <div className="page">
       <CRow className="mb-3">
@@ -234,8 +119,8 @@ const Shiftreport = () => {
               <option value="">Select Machine</option>
               {machineOptions.length > 0 ? (
                 machineOptions.map((machine, index) => (
-                  <option key={index} value={machine}>
-                    {machine}
+                  <option key={index} value={machine.name}>
+                    {machine.name}
                   </option>
                 ))
               ) : (
@@ -252,7 +137,6 @@ const Shiftreport = () => {
               customInput={<CustomInput />}
               dateFormat="yyyy-MM-dd"
               popperPlacement="bottom-end"
-              highlightDates={highlightedDates}
               onChangeRaw={(e) => {
                 const rawDate = new Date(e.target.value);
                 setStartDate(isNaN(rawDate.getTime()) ? null : rawDate);
@@ -274,11 +158,31 @@ const Shiftreport = () => {
 
       <CRow>
         <CCol xs={12}>
-          {filteredShiftData.length > 0 ? (
-            filteredShiftData.map(shift => (
-              <div key={shift.shift_id}>
-                {renderShiftTable(shift)}
-              </div>
+          {machineHourlyData.length > 0 ? (
+            machineHourlyData.map((shift, index) => (
+              <CCard className="mb-4" key={index}>
+                <CCardHeader>
+                  <h5>{shift.shift_name || 'Shift ' + (index + 1)}</h5>
+                </CCardHeader>
+                <CCardBody style={{ marginTop: '10px' }}>
+                  <CTable striped hover>
+                    <CTableHead className="custom-table-header">
+                      <CTableRow>
+                        <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      {Object.entries(shift.hourly_data).map(([timeRange, count], i) => (
+                        <CTableRow key={i}>
+                          <CTableDataCell>{timeRange}</CTableDataCell>
+                          <CTableDataCell>{count}</CTableDataCell>
+                        </CTableRow>
+                      ))}
+                    </CTableBody>
+                  </CTable>
+                </CCardBody>
+              </CCard>
             ))
           ) : (
             <p>No data available for the selected date and machine.</p>
