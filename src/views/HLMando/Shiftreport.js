@@ -23,11 +23,56 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import BaseURL from 'src/assets/contants/BaseURL';
 
+const HARDCORE_SHIFT_DATA = [
+  {
+    shift_name: 'Shift 1',
+    shift_no: 1,
+    timing: {
+      '06:30 AM - 07:30 AM': 0,
+      '07:30 AM - 08:30 AM': 0,
+      '08:30 AM - 09:30 AM': 0,
+      '09:30 AM - 10:30 AM': 0,
+      '10:30 AM - 11:30 AM': 0,
+      '11:30 AM - 12:30 PM': 0,
+      '12:30 PM - 01:30 PM': 0,
+      '01:30 PM - 02:30 PM': 0,
+    }
+  },
+  {
+    shift_name: 'Shift 2',
+    shift_no: 2,
+    timing: {
+      '02:30 PM - 03:30 PM': 0,
+      '03:30 PM - 04:30 PM': 0,
+      '04:30 PM - 05:30 PM': 0,
+      '05:30 PM - 06:30 PM': 0,
+      '06:30 PM - 07:30 PM': 0,
+      '07:30 PM - 08:30 PM': 0,
+      '08:30 PM - 09:30 PM': 0,
+      '09:30 PM - 10:30 PM': 0
+    }
+  },
+  {
+    shift_name: 'Shift 3',
+    shift_no: 3,
+    timing: {
+      '10:30 PM - 11:30 PM': 0,
+      '11:30 PM - 12:30 AM': 0,
+      '12:30 AM - 01:30 AM': 0,
+      '01:30 AM - 02:30 AM': 0,
+      '02:30 AM - 03:30 AM': 0,
+      '03:30 AM - 04:30 AM': 0,
+      '04:30 AM - 05:30 AM': 0,
+      '05:30 AM - 06:30 AM': 0
+    }
+  }
+];
+
 const Shiftreport = () => {
   const [startDate, setStartDate] = useState(null);
   const [machineOptions, setMachineOptions] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState('');
-  const [machineHourlyData, setMachineHourlyData] = useState([]);
+  const [machineHourlyData, setMachineHourlyData] = useState(HARDCORE_SHIFT_DATA);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,9 +105,9 @@ const Shiftreport = () => {
       });
     };
 
-    applyHeaderStyles(); // Apply styles when the component mounts or updates
+    applyHeaderStyles();
 
-  }, [machineHourlyData]); // Dependency array includes machineHourlyData
+  }, [machineHourlyData]);
 
   const handleSearchClick = async () => {
     if (!selectedMachine || !startDate) return;
@@ -70,9 +115,9 @@ const Shiftreport = () => {
     try {
       const machineId = machineOptions.find(machine => machine.name === selectedMachine).id;
       const formattedDate = format(startDate, 'yyyy-MM-dd');
-      const response = await axios.post(`${BaseURL}data/machine-hourly-data/`, {
-        "machine_id": machineId,
-        "date": formattedDate
+      const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
+        "date": formattedDate,
+        "machine_id": machineId
       }, {
         headers: {
           'Authorization': `Token ${localStorage.getItem('token')}`,
@@ -80,11 +125,14 @@ const Shiftreport = () => {
         }
       });
       const data = response.data;
-      // Filter out shifts without hourly data
-      setMachineHourlyData(Object.values(data).filter(shift => shift.hourly_data && Object.keys(shift.hourly_data).length > 0));
+      setMachineHourlyData(data.shifts.filter(shift => shift.timing && Object.keys(shift.timing).length > 0));
     } catch (error) {
       console.error("Error fetching machine hourly data:", error);
     }
+  };
+
+  const calculateTotal = (timing) => {
+    return Object.values(timing).reduce((acc, value) => acc + value, 0);
   };
 
   const CustomInput = ({ value, onClick }) => (
@@ -162,7 +210,7 @@ const Shiftreport = () => {
             machineHourlyData.map((shift, index) => (
               <CCard className="mb-4" key={index}>
                 <CCardHeader>
-                  <h5>{shift.shift_name || 'Shift ' + (index + 1)}</h5>
+                  <h5>{shift.shift_name || 'Shift ' + shift.shift_no}</h5>
                 </CCardHeader>
                 <CCardBody style={{ marginTop: '10px' }}>
                   <CTable striped hover>
@@ -173,12 +221,16 @@ const Shiftreport = () => {
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
-                      {Object.entries(shift.hourly_data).map(([timeRange, count], i) => (
+                      {Object.entries(shift.timing).map(([timeRange, count], i) => (
                         <CTableRow key={i}>
                           <CTableDataCell>{timeRange}</CTableDataCell>
                           <CTableDataCell>{count}</CTableDataCell>
                         </CTableRow>
                       ))}
+                      <CTableRow>
+                        <CTableDataCell>Total</CTableDataCell>
+                        <CTableDataCell>{calculateTotal(shift.timing)}</CTableDataCell>
+                      </CTableRow>
                     </CTableBody>
                   </CTable>
                 </CCardBody>
