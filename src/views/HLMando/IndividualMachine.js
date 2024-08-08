@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import axios from 'axios';
+import BaseURL from 'src/assets/contants/BaseURL';
 import {
   CCard,
   CCardBody,
@@ -29,17 +31,77 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 const Machine = () => {
   const location = useLocation();
   const { state } = location;
-  const { machine } = state || { machine: null, groupName: '' };
+  const { machineId } = state || { machineId: null };
+
+  const [machine, setMachine] = useState(null);
+  const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
-    const headerCells = document.querySelectorAll('.custom-table-header th');
-    headerCells.forEach((cell) => {
-      cell.style.backgroundColor = '#047BC4';
-      cell.style.color = 'white';
-    });
+    const fetchMachineData = async () => {
+      try {
+        const response = await axios.get(`${BaseURL}data/individual/${machineId}/`, {
+          headers: getAuthHeaders(),
+        });
+        setMachine(response.data.machine_details);
+      } catch (error) {
+        console.error('Error fetching machine data:', error);
+      }
+    };
+
+    if (machineId) {
+      fetchMachineData();
+      const dataFetchInterval = setInterval(fetchMachineData, 3000);
+
+      return () => clearInterval(dataFetchInterval);
+    }
+  }, [machineId]);
+
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = hours % 12 || 12;
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      const formattedSeconds = seconds.toString().padStart(2, '0');
+      setCurrentTime(`${formattedHours}:${formattedMinutes}:${formattedSeconds} ${ampm}`);
+    };
+
+    updateCurrentTime();
+    const timeUpdateInterval = setInterval(updateCurrentTime, 1000);
+
+    return () => clearInterval(timeUpdateInterval);
   }, []);
 
+  useEffect(() => {
+    const applyHeaderStyles = () => {
+      const headerCells = document.querySelectorAll('.custom-table-header th');
+      headerCells.forEach(cell => {
+        cell.style.backgroundColor = '#047BC4';
+        cell.style.color = 'white';
+      });
+    };
+
+    applyHeaderStyles();
+  }, [machine]);
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      'Authorization': `Token ${token}`,
+      'Content-Type': 'application/json',
+    };
+  };
+
   if (!machine) return <div>Loading...</div>;
+
+  const currentDate = new Date().toISOString().split('T')[0];
+  const productionData = machine.production_data || [];
+  const todayData = productionData.find(item => item.date === currentDate);
+  const targetProduction = todayData ? todayData.target_production : 'N/A';
+  const productionCount = todayData ? todayData.production_count : 'N/A';
 
   const data = {
     labels: ['Label 1', 'Label 2', 'Label 3', 'Label 4', 'Label 5'],
@@ -122,19 +184,19 @@ const Machine = () => {
               <tbody>
                 <tr>
                   <td style={{ fontWeight: 'bold' }}>Date</td>
-                  <td>{machine.date}</td>
+                  <td>{currentDate}</td>
                 </tr>
                 <tr>
                   <td style={{ fontWeight: 'bold' }}>Time</td>
-                  <td>{machine.time || 'N/A'}</td>
+                  <td>{currentTime}</td>
                 </tr>
                 <tr>
-                  <td style={{ fontWeight: 'bold' }}>Todays Count</td>
-                  <td>{machine.today_count || 'N/A'}</td>
+                  <td style={{ fontWeight: 'bold' }}>Today's Production</td>
+                  <td>{productionCount}</td>
                 </tr>
                 <tr>
                   <td style={{ fontWeight: 'bold' }}>Actual Reading</td>
-                  <td>{machine.actual_count || 'N/A'}</td>
+                  <td>{targetProduction}</td>
                 </tr>
               </tbody>
             </CTable>
@@ -160,26 +222,30 @@ const Machine = () => {
                 <strong>Machine Data</strong>
               </CCardHeader>
               <CCardBody>
-                <CTable striped hover>
-                  <CTableHead className="custom-table-header">
-                    <CTableRow>
-                      <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Date</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
-                      <CTableHeaderCell scope="col"> Data</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    <CTableRow>
-                      <CTableDataCell></CTableDataCell>
-                      <CTableDataCell></CTableDataCell>
-                      <CTableDataCell></CTableDataCell>
-                      <CTableDataCell></CTableDataCell>
-                      <CTableDataCell></CTableDataCell>
-                    </CTableRow>
-                  </CTableBody>
-                </CTable>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <CTable striped hover>
+                    <CTableHead className="custom-table-header">
+                      <CTableRow>
+                        <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Date</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Data</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      {machine.machine_data.map((data, index) => (
+                        <CTableRow key={index}>
+                          <CTableDataCell>{index + 1}</CTableDataCell>
+                          <CTableDataCell>{data.date}</CTableDataCell>
+                          <CTableDataCell>{data.time}</CTableDataCell>
+                          <CTableDataCell>{data.machine_id}</CTableDataCell>
+                          <CTableDataCell>{JSON.stringify(data.data)}</CTableDataCell>
+                        </CTableRow>
+                      ))}
+                    </CTableBody>
+                  </CTable>
+                </div>
               </CCardBody>
             </CCard>
           </CCol>
