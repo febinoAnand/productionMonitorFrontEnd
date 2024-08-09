@@ -252,7 +252,9 @@ applyHeaderStyles = () => {
             </CAlert>
           )}
           <CCol xs={12}>
-            <CCard className="mb-4">
+            <CCard className="mb-4"style={{
+        marginTop: '30px',
+      }}>
               <CCardHeader>
                 <strong>Machine List</strong>
                 <CButton color='success' variant='outline' size='sm' className='float-end' onClick={this.openAddModal}>Add Machine</CButton>

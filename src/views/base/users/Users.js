@@ -274,7 +274,9 @@ const Users = () => {
             )}
             <CRow>
                 <CCol xs={12}>
-                    <CCard className="mb-4">
+                    <CCard className="mb-4"style={{
+        marginTop: '30px',
+      }}>
                         <CCardHeader>
                             <div className="d-flex align-items-center justify-content-between">
                                 <strong> EMPLOYEES LIST</strong>

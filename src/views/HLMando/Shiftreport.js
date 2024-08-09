@@ -156,53 +156,64 @@ const Shiftreport = () => {
 
   return (
     <div className="page">
-      <CRow className="mb-3">
-        <CCol md={4}>
-          <CInputGroup className="flex-nowrap mt-3 mb-4">
-            <CFormSelect
-              aria-label="Select Machine"
-              value={selectedMachine}
-              onChange={(e) => setSelectedMachine(e.target.value)}
-            >
-              <option value="">Select Machine</option>
-              {machineOptions.length > 0 ? (
-                machineOptions.map((machine, index) => (
-                  <option key={index} value={machine.name}>
-                    {machine.name}
-                  </option>
-                ))
-              ) : (
-                <option value="">Loading machines...</option>
-              )}
-            </CFormSelect>
-          </CInputGroup>
-        </CCol>
-        <CCol md={4} className="text-end">
-          <CInputGroup className="flex-nowrap mt-3 mb-4">
-            <DatePicker
-              selected={startDate ? new Date(startDate) : null}
-              onChange={(date) => setStartDate(date)}
-              customInput={<CustomInput />}
-              dateFormat="yyyy-MM-dd"
-              popperPlacement="bottom-end"
-              onChangeRaw={(e) => {
-                const rawDate = new Date(e.target.value);
-                setStartDate(isNaN(rawDate.getTime()) ? null : rawDate);
-              }}
-            />
-            <CButton
-              type="button"
-              color="primary"
-              className="ms-2"
-              style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}
-              onClick={handleSearchClick}
-              disabled={!selectedMachine || !startDate}
-            >
-              <CIcon icon={cilSearch} />
-            </CButton>
-          </CInputGroup>
-        </CCol>
-      </CRow>
+       <CCard className="mb-3"
+       style={{
+        marginTop: '30px',
+      }}
+      >
+      <CCardHeader>
+        <h5>Shift Report</h5>
+      </CCardHeader>
+      <CCardBody>
+        <CRow className="mb-3">
+          <CCol md={4}>
+            <CInputGroup className="flex-nowrap mt-3 mb-4">
+              <CFormSelect
+                aria-label="Select Machine"
+                value={selectedMachine}
+                onChange={(e) => setSelectedMachine(e.target.value)}
+              >
+                <option value="">Select Machine</option>
+                {machineOptions.length > 0 ? (
+                  machineOptions.map((machine, index) => (
+                    <option key={index} value={machine.name}>
+                      {machine.name}
+                    </option>
+                  ))
+                ) : (
+                  <option value="">Loading machines...</option>
+                )}
+              </CFormSelect>
+            </CInputGroup>
+          </CCol>
+          <CCol md={4} className="text-end">
+            <CInputGroup className="flex-nowrap mt-3 mb-4">
+              <DatePicker
+                selected={startDate ? new Date(startDate) : null}
+                onChange={(date) => setStartDate(date)}
+                customInput={<CustomInput />}
+                dateFormat="yyyy-MM-dd"
+                popperPlacement="bottom-end"
+                onChangeRaw={(e) => {
+                  const rawDate = new Date(e.target.value);
+                  setStartDate(isNaN(rawDate.getTime()) ? null : rawDate);
+                }}
+              />
+              <CButton
+                type="button"
+                color="primary"
+                className="ms-2"
+                style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}
+                onClick={handleSearchClick}
+                disabled={!selectedMachine || !startDate}
+              >
+                <CIcon icon={cilSearch} />
+              </CButton>
+            </CInputGroup>
+          </CCol>
+        </CRow>
+      </CCardBody>
+    </CCard>
 
       <CRow>
         <CCol xs={12}>

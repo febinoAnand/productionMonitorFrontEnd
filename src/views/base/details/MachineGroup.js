@@ -228,7 +228,9 @@ const Groups = () => {
             )}
             <CRow>
                 <CCol xs={12}>
-                    <CCard className="mb-4">
+                    <CCard className="mb-4"style={{
+        marginTop: '30px',
+      }}>
                         <CCardHeader className="d-flex justify-content-between align-items-center">
                             <strong>Group LIST</strong>
                             <CTooltip content="Create new Group">

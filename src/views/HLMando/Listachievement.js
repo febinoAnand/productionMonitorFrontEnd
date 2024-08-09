@@ -159,7 +159,9 @@ const Listachievement = () => {
       {/* First Table */}
       <CRow>
         <CCol xs={12}>
-          <CCard className="mb-4">
+          <CCard className="mb-4"style={{
+        marginTop: '40px',
+      }}>
             <CCardHeader><h5>List Achievement</h5></CCardHeader>
             <CCardBody style={{ marginTop: '10px' }}> 
               <CTable striped hover>

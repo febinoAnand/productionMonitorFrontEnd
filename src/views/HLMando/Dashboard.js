@@ -106,7 +106,7 @@ const Dashboard = () => {
   });
 
   return (
-    <div className="page" style={zoomOutStyle}>
+    <div className="page" style={{ ...zoomOutStyle, marginTop: '20px' }}>
       <CRow className="mb-3">
         {combinedData.slice().reverse().map((group) => (
           group.machines.length > 0 && (
