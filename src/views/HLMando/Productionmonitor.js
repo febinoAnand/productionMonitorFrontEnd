@@ -77,7 +77,15 @@ const ProductionMonitor = () => {
           }))
         }));
 
-        setFilteredData(reversedGroupData);
+        const formattedGroupData = reversedGroupData.map(group => ({
+          ...group,
+          machines: group.machines.map(machine => ({
+            ...machine,
+            total_production_count: Object.values(machine.shifts || {}).reduce((sum, shift) => sum + (shift.production_count || 0), 0)
+          }))
+        }));
+
+        setFilteredData(formattedGroupData);
         setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
       } catch (error) {
         setError(error);
@@ -87,8 +95,8 @@ const ProductionMonitor = () => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 3000); // Fetch data every 3 seconds
-    return () => clearInterval(interval); // Cleanup on unmount
+    const interval = setInterval(fetchData, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -97,9 +105,9 @@ const ProductionMonitor = () => {
       cell.style.backgroundColor = '#047BC4';
       cell.style.color = 'white';
     });
-  }, [filteredData]); // Apply styles after data is loaded
+  }, [filteredData]);
 
-  if (loading && filteredData.length === 0) return null; // Do not show loading message if no data
+  if (loading && filteredData.length === 0) return null;
 
   if (error) return <div>Error: {error.message}</div>;
 
@@ -143,7 +151,7 @@ const ProductionMonitor = () => {
                             if (shiftNumber !== 0) {
                               const shiftIndex = shiftNumbers.indexOf(shiftNumber);
                               if (shiftIndex >= 0) {
-                                machineTotals[shiftIndex] = (shift.Production_count || 0);
+                                machineTotals[shiftIndex] = (shift.production_count);
                               }
                             }
                           });
