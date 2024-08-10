@@ -30,84 +30,83 @@ const ProductionMonitor = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [shiftData, setShiftData] = useState({ names: {}, numbers: [] });
   const [selectedDate, setSelectedDate] = useState('');
-  const [allData, setAllData] = useState([]);
-  const [searchClicked, setSearchClicked] = useState(false);
+
+  const getTodayDate = () => new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    // Set the default date to today
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayDate();
     setSelectedDate(today);
+    fetchData(today);
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setError(null);
-      try {
-        console.log('Fetching data...');
-        const response = await axios.get(`${BaseURL}data/production/`, {
-          headers: getAuthHeaders()
-        });
+  const fetchData = async (date) => {
+    setError(null);
+    try {
+      console.log('Fetching data...');
+      const response = await axios.post(
+        `${BaseURL}data/production/`,
+        { date },
+        { headers: getAuthHeaders() }
+      );
 
-        console.log('API Response:', response.data);
+      console.log('API Response:', response.data);
 
-        const { date, machine_groups } = response.data;
+      const { machine_groups } = response.data;
 
-        if (!Array.isArray(machine_groups)) {
-          throw new Error('Invalid data format: machine_groups is not an array');
-        }
-
-        const shiftNamesMap = {};
-        const shiftNumbers = new Set();
-        const formattedGroups = machine_groups.reverse().map(group => { 
-          const formattedMachines = group.machines.map(machine => {
-            const shiftTotals = {};
-            const shiftArray = machine.shifts || [];
-            shiftArray.forEach(shift => {
-              if (shift.shift_no !== 0) {
-                const shiftNumber = shift.shift_no;
-                shiftNamesMap[shiftNumber] = shift.shift_name || `Shift ${shiftNumber}`;
-                shiftNumbers.add(shiftNumber);
-                shiftTotals[shiftNumber] = (shiftTotals[shiftNumber] || 0) + (shift.production_count || 0);
-              }
-            });
-
-            return {
-              ...machine,
-              total_production_count: Object.values(shiftTotals).reduce((sum, count) => sum + count, 0),
-              shiftTotals,
-              production_date: date 
-            };
+      const shiftNamesMap = {};
+      const shiftNumbers = new Set();
+      const formattedGroups = machine_groups.reverse().map(group => {
+        const formattedMachines = group.machines.map(machine => {
+          const shiftTotals = {};
+          const shiftArray = machine.shifts || [];
+          shiftArray.forEach(shift => {
+            if (shift.shift_no !== 0) {
+              const shiftNumber = shift.shift_no;
+              shiftNamesMap[shiftNumber] = shift.shift_name || `Shift ${shiftNumber}`;
+              shiftNumbers.add(shiftNumber);
+              shiftTotals[shiftNumber] = (shiftTotals[shiftNumber] || 0) + (shift.production_count || 0);
+            }
           });
 
           return {
-            ...group,
-            machines: formattedMachines
+            ...machine,
+            total_production_count: Object.values(shiftTotals).reduce((sum, count) => sum + count, 0),
+            shiftTotals,
+            production_date: date
           };
         });
 
-        const sortedShiftNumbers = Array.from(shiftNumbers).sort((a, b) => a - b); 
+        return {
+          ...group,
+          machines: formattedMachines
+        };
+      });
 
-        setAllData(formattedGroups);
-        setFilteredData(formattedGroups); // Set initial data to display in the table
-        setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError(`Error: ${error.message || 'An unknown error occurred'}`);
+      const sortedShiftNumbers = Array.from(shiftNumbers).sort((a, b) => a - b);
+
+      
+      const hasData = formattedGroups.some(group => group.machines.length > 0);
+
+      if (!hasData) {
+        setFilteredData([]); 
+      } else {
+        setFilteredData(formattedGroups);
       }
-    };
 
-    fetchData();
-  }, []);
+      setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError(`Error: ${error.message || 'An unknown error occurred'}`);
+    }
+  };
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      console.log('Interval triggered');
-      // fetchData();
-    }, 3000);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
+  const handleSearch = async () => {
+    const today = getTodayDate();
+    if (selectedDate && selectedDate !== today) {
+      console.log('Selected Date:', selectedDate);
+      await fetchData(selectedDate);
+    }
+  };
   useEffect(() => {
     const applyHeaderStyles = () => {
       const headerCells = document.querySelectorAll('.custom-table-header th');
@@ -119,45 +118,6 @@ const ProductionMonitor = () => {
 
     applyHeaderStyles();
   }, [filteredData]);
-
-  const handleSearch = () => {
-    setSearchClicked(true);
-
-    if (selectedDate) {
-      console.log('Selected Date:', selectedDate);
-      console.log('All Data Before:', allData);
-
-      const filtered = allData.map(group => ({
-        ...group,
-        machines: group.machines.filter(machine => {
-          const machineDate = machine.production_date || 'Unknown Date';
-          console.log('Machine Date:', machineDate);
-          return machineDate === selectedDate;
-        })
-      }));
-
-      console.log('Filtered Data After:', filtered);
-
-      // Check if filtered data is empty
-      const hasData = filtered.some(group => group.machines.length > 0);
-      if (!hasData) {
-        // Create a default data structure with zeros
-        filtered.forEach(group => {
-          group.machines.forEach(machine => {
-            machine.shiftTotals = shiftData.numbers.reduce((acc, shiftNumber) => {
-              acc[shiftNumber] = 0;
-              return acc;
-            }, {});
-            machine.total_production_count = 0;
-          });
-        });
-      }
-
-      setFilteredData(filtered);
-    } else {
-      setFilteredData(allData);
-    }
-  };
 
   if (error) return <div>{error}</div>;
 
