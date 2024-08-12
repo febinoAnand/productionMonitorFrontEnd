@@ -34,6 +34,9 @@ const Download = () => {
   const [selectedMachine, setSelectedMachine] = useState('');
   const [machineOptions, setMachineOptions] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isDataFetched, setIsDataFetched] = useState(false);
+  const [data, setData] = useState(null);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,21 +68,60 @@ const Download = () => {
     setSelectedMachine(e.target.value);
   };
 
+  const searchHandler = async () => {
+    if (!selectedDate || !selectedMachine) {
+      setErrorMessage('Please select both the date and machine.');
+      setTimeout(() => setErrorMessage(''), 6000);
+      return;
+    }
 
-
-  const generateShiftwisePDF = async () => {
     try {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      const machineId = selectedMachine; 
+      const machineId = selectedMachine;
       
       const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
         date: formattedDate,
         machine_id: machineId,
       }, { headers: getAuthHeaders() });
-  
-      console.log('API Response:', response.data); 
-  
-      const { shifts } = response.data;
+
+      setData(response.data);
+      setIsDataFetched(true); 
+      setErrorMessage('');
+    } catch (error) {
+      console.error('Error fetching data:', error.message);
+      setErrorMessage('Error fetching data. Please try again.');
+      setTimeout(() => setErrorMessage(''), 6000);
+    }
+  };
+
+
+
+  const generateShiftwisePDF =async () => {
+    if (!selectedDate || !selectedMachine) {
+      setErrorMessage('Please select both the date and machine to generate the PDF.');
+      setTimeout(() => setErrorMessage(''), 6000);
+      return;
+    }
+
+    if (!data || !isDataFetched) {
+      alert('No data available to generate the PDF. Please perform the search first.');
+      setTimeout(() => setErrorMessage(''), 6000);
+      return;
+    }
+
+
+  try {
+    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+    const machineId = selectedMachine; 
+    
+    const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
+      date: formattedDate,
+      machine_id: machineId,
+    }, { headers: getAuthHeaders() });
+
+    console.log('API Response:', response.data); 
+
+    const { shifts } = response.data;
   
       if (!Array.isArray(shifts) || shifts.length === 0) {
         throw new Error('No shifts found in the API response');
@@ -115,29 +157,35 @@ const Download = () => {
         startY += headerGap;
   
         doc.setFontSize(16);
-        doc.text(`Shift:Shift ${shift.shift_no}`, 14, startY);
+        doc.text(`Shift: ${shift.shift_no}`, 14, startY);
         startY += 10;
   
         const tableData = Object.entries(shift.timing).map(([timeRange, count]) => [
           timeRange, 
-          count || 0
+          count || 0,
+          0
         ]);
   
         const totalProductionCount = Object.values(shift.timing).reduce((sum, count) => sum + (count || 0), 0);
   
         autoTable(doc, {
-          head: [['Time Range', 'Production Count']],
+          head: [['Time Range', 'Production Count', 'Target']], 
           body: tableData,
           startY: startY,
           theme: 'grid',
           headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255] },
-          styles: { cellPadding: 5, fontSize: 10, valign: 'middle', lineWidth: 0.5 },
-          columnStyles: { 0: { cellWidth: pageWidth / 2 - 14 }, 1: { cellWidth: pageWidth / 2 - 14 } }, // Adjust column width
-          margin: { top: 10 },
-          didDrawPage: () => {
-            addPageHeader();
-          }
-        });
+         styles: {
+    cellPadding: 2, 
+    fontSize: 7,   
+    valign: 'middle',
+    lineWidth: 0.5
+  },
+  columnStyles: { 0: { cellWidth: pageWidth / 3 - 14 }, 1: { cellWidth: pageWidth / 3 - 14 } },2: { cellWidth: pageWidth / 3 - 14 },
+  margin: { top: 10 },
+  didDrawPage: () => {
+    addPageHeader();
+  }
+});
   
         startY = doc.autoTable.previous.finalY + 10; 
   
@@ -149,28 +197,27 @@ const Download = () => {
       addPageHeader(); 
   
       const validShifts = shifts.filter(shift => shift.shift_no !== 0 && shift.timing && Object.keys(shift.timing).length > 0);
-  
-      if (validShifts.length === 0) {
-        doc.text('No data available for the selected date and machine.', 14, startY);
-      } else {
-        validShifts.forEach((shift) => {
-          addShiftTable(shift);
-        });
-      }
+
+    validShifts.forEach((shift) => {
+      addShiftTable(shift);
+    });
   
       doc.save('shiftwise_report.pdf');
     } catch (error) {
       console.error('Error generating PDF:', error.message);
-      setErrorMessage('Error generating PDF. Please check the console for details.');
+      setErrorMessage('Error generating PDF. Please select the machine.');
+       setTimeout(() => {
+        setErrorMessage('');
+      }, 6000);
     }
   };
 
   const generateSummaryPDF = async () => {
     try {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      const currentDate = format(new Date(), 'yyyy-MM-dd'); // Get current date for filename
+      const currentDate = format(new Date(), 'yyyy-MM-dd'); 
   
-      // Fetch data from API
+      
       const response = await axios.post(`${BaseURL}data/production/`, {
         date: formattedDate
       }, { headers: getAuthHeaders() });
@@ -203,7 +250,7 @@ const Download = () => {
         
         group.machines.forEach(machine => {
           machine.shifts.forEach(shift => {
-            shiftNames.add(shift.shift_name || `Shift ${shift.shift_no}`);
+            shiftNames.add(shift.shift_name || `${shift.shift_no}`);
           });
         });
   
@@ -259,7 +306,7 @@ const Download = () => {
   
       let startY = 30;
   
-      // Generate tables for each group
+      
       for (const group of machine_groups) {
         if (startY + 50 > doc.internal.pageSize.height) {
           doc.addPage();
@@ -286,7 +333,7 @@ const Download = () => {
         <CCol xs={12}>
           <CCard>
             <CCardHeader>
-              <h4>Machines</h4>
+              <h4>Download</h4>
             </CCardHeader>
             <CCardBody>
               <CRow>
@@ -322,6 +369,7 @@ const Download = () => {
                         type="button"
                         color="primary"
                         className="ms-2"
+                        onClick={searchHandler}
                         style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}
                       >
                         <CIcon icon={cilSearch} />
@@ -338,7 +386,9 @@ const Download = () => {
       variant="outline"
       className="mb-3"
       style={{ width: '100%' }}
+      disabled={!selectedDate || !selectedMachine}
       onClick={generateShiftwisePDF}
+      
     >
       Shiftwise Report
     </CButton>

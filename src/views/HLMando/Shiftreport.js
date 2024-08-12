@@ -104,7 +104,7 @@ const Shiftreport = () => {
         cell.style.color = 'white';
       });
     };
-
+   
     applyHeaderStyles();
 
   }, [machineHourlyData]);
@@ -228,7 +228,8 @@ const Shiftreport = () => {
                     <CTableHead className="custom-table-header">
                       <CTableRow>
                         <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Production Count Actual</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Production Count </CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Target</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
@@ -236,11 +237,13 @@ const Shiftreport = () => {
                         <CTableRow key={i}>
                           <CTableDataCell>{timeRange}</CTableDataCell>
                           <CTableDataCell>{count}</CTableDataCell>
+                          <CTableDataCell>0</CTableDataCell>
                         </CTableRow>
                       ))}
-                      <CTableRow>
-                        <CTableDataCell>Total</CTableDataCell>
-                        <CTableDataCell>{calculateTotal(shift.timing)}</CTableDataCell>
+                     <CTableRow>
+                        <CTableDataCell style={{ fontWeight: 'bold', }}>Total</CTableDataCell> 
+                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>{calculateTotal(shift.timing)}</CTableDataCell> {/* Total production count color */}
+                        <CTableDataCell style={{ fontWeight: 'bold',color: '#007bff ' }}>0</CTableDataCell> 
                       </CTableRow>
                     </CTableBody>
                   </CTable>

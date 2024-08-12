@@ -198,9 +198,9 @@ const ProductionMonitor = () => {
                     <CTableRow>
                       <CTableDataCell><strong>Total</strong></CTableDataCell>
                       {shiftNumbers.map((shiftNumber, idx) => (
-                        <CTableDataCell key={idx}><strong>{group.machines.reduce((sum, machine) => sum + (machine.shiftTotals[shiftNumber] || 0), 0)}</strong></CTableDataCell>
+                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}key={idx}>{group.machines.reduce((sum, machine) => sum + (machine.shiftTotals[shiftNumber] || 0), 0)}</CTableDataCell>
                       ))}
-                      <CTableDataCell><strong>{group.machines.reduce((sum, machine) => sum + machine.total_production_count, 0)}</strong></CTableDataCell>
+                      <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>{group.machines.reduce((sum, machine) => sum + machine.total_production_count, 0)}</CTableDataCell>
                     </CTableRow>
                   </CTableBody>
                 </CTable>
