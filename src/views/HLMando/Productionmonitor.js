@@ -16,6 +16,7 @@ import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
 import CIcon from '@coreui/icons-react';
 import { cilSearch } from '@coreui/icons';
+import { useNavigate } from 'react-router-dom'; 
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -30,26 +31,33 @@ const ProductionMonitor = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [shiftData, setShiftData] = useState({ names: {}, numbers: [] });
   const [selectedDate, setSelectedDate] = useState('');
+  const navigate = useNavigate();
 
   const getTodayDate = () => new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     const today = getTodayDate();
     setSelectedDate(today);
-    fetchData(today);
+
+    const checkAuthAndFetchData = async () => {
+      if (!localStorage.getItem('token')) {
+        handleAuthError(); 
+        return;
+      }
+      await fetchData(today);
+    };
+
+    checkAuthAndFetchData();
   }, []);
 
   const fetchData = async (date) => {
     setError(null);
     try {
-      console.log('Fetching data...');
       const response = await axios.post(
         `${BaseURL}data/production/`,
         { date },
         { headers: getAuthHeaders() }
       );
-
-      console.log('API Response:', response.data);
 
       const { machine_groups } = response.data;
 
@@ -84,7 +92,6 @@ const ProductionMonitor = () => {
 
       const sortedShiftNumbers = Array.from(shiftNumbers).sort((a, b) => a - b);
 
-      
       const hasData = formattedGroups.some(group => group.machines.length > 0);
 
       if (!hasData) {
@@ -95,18 +102,27 @@ const ProductionMonitor = () => {
 
       setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setError(`Error: ${error.message || 'An unknown error occurred'}`);
+      if (error.response && error.response.status === 401) {
+        handleAuthError();
+      } else {
+        console.error('Error fetching data:', error);
+        setError(`Error: ${error.message || 'An unknown error occurred'}`);
+      }
     }
+  };
+
+  const handleAuthError = () => {
+    localStorage.removeItem('token');
+    navigate('/login'); 
   };
 
   const handleSearch = async () => {
     const today = getTodayDate();
     if (selectedDate && selectedDate !== today) {
-      console.log('Selected Date:', selectedDate);
       await fetchData(selectedDate);
     }
   };
+
   useEffect(() => {
     const applyHeaderStyles = () => {
       const headerCells = document.querySelectorAll('.custom-table-header th');
@@ -162,48 +178,54 @@ const ProductionMonitor = () => {
             </CCardHeader>
             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               <CCardBody style={{ marginTop: '10px' }}>
-                <CTable striped hover>
-                  <CTableHead className="custom-table-header">
-                    <CTableRow>
-                      <CTableHeaderCell rowSpan="2" scope="col">WORK CENTER</CTableHeaderCell>
-                      {shiftNumbers.length > 0 && shiftNumbers.map((shiftNumber, index) => (
-                        <CTableHeaderCell key={index} colSpan="1" scope="col">
-                          {shiftNamesMap[shiftNumber] || `Shift ${shiftNumber}`}
-                        </CTableHeaderCell>
-                      ))}
-                      <CTableHeaderCell rowSpan="2" scope="col">Total</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    {group.machines && group.machines.length > 0 ? (
-                      group.machines.map(machine => {
-                        const machineTotals = shiftNumbers.map(shiftNumber => machine.shiftTotals[shiftNumber] || 0);
-                        const total = machineTotals.reduce((sum, value) => sum + value, 0);
-
-                        return (
-                          <CTableRow key={machine.machine_id}>
-                            <CTableDataCell>{machine.machine_id}</CTableDataCell>
-                            {machineTotals.map((total, idx) => (
-                              <CTableDataCell key={idx}>{total}</CTableDataCell>
-                            ))}
-                            <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>{total}</CTableDataCell>
-                          </CTableRow>
-                        );
-                      })
-                    ) : (
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <CTable striped hover>
+                    <CTableHead className="custom-table-header">
                       <CTableRow>
-                        <CTableDataCell colSpan={shiftNumbers.length + 2}>No machines available</CTableDataCell>
+                        <CTableHeaderCell rowSpan="2" scope="col">WORK CENTER</CTableHeaderCell>
+                        {shiftNumbers.length > 0 && shiftNumbers.map((shiftNumber, index) => (
+                          <CTableHeaderCell key={index} colSpan="1" scope="col">
+                            {shiftNamesMap[shiftNumber] || `Shift ${shiftNumber}`}
+                          </CTableHeaderCell>
+                        ))}
+                        <CTableHeaderCell rowSpan="2" scope="col">Total</CTableHeaderCell>
                       </CTableRow>
-                    )}
-                    <CTableRow>
-                      <CTableDataCell><strong>Total</strong></CTableDataCell>
-                      {shiftNumbers.map((shiftNumber, idx) => (
-                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}key={idx}>{group.machines.reduce((sum, machine) => sum + (machine.shiftTotals[shiftNumber] || 0), 0)}</CTableDataCell>
-                      ))}
-                      <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>{group.machines.reduce((sum, machine) => sum + machine.total_production_count, 0)}</CTableDataCell>
-                    </CTableRow>
-                  </CTableBody>
-                </CTable>
+                    </CTableHead>
+                    <CTableBody>
+                      {group.machines && group.machines.length > 0 ? (
+                        group.machines.map(machine => {
+                          const machineTotals = shiftNumbers.map(shiftNumber => machine.shiftTotals[shiftNumber] || 0);
+                          const total = machineTotals.reduce((sum, value) => sum + value, 0);
+
+                          return (
+                            <CTableRow key={machine.machine_id}>
+                              <CTableDataCell>{machine.machine_id}</CTableDataCell>
+                              {machineTotals.map((total, idx) => (
+                                <CTableDataCell key={idx}>{total}</CTableDataCell>
+                              ))}
+                              <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>{total}</CTableDataCell>
+                            </CTableRow>
+                          );
+                        })
+                      ) : (
+                        <CTableRow>
+                          <CTableDataCell colSpan={shiftNumbers.length + 2}>No machines available</CTableDataCell>
+                        </CTableRow>
+                      )}
+                      <CTableRow>
+                        <CTableDataCell><strong>Total</strong></CTableDataCell>
+                        {shiftNumbers.map((shiftNumber, idx) => (
+                          <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }} key={idx}>
+                            {group.machines.reduce((sum, machine) => sum + (machine.shiftTotals[shiftNumber] || 0), 0)}
+                          </CTableDataCell>
+                        ))}
+                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
+                          {group.machines.reduce((sum, machine) => sum + machine.total_production_count, 0)}
+                        </CTableDataCell>
+                      </CTableRow>
+                    </CTableBody>
+                  </CTable>
+                </div>
               </CCardBody>
             </div>
           </CCard>

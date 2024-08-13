@@ -31,6 +31,18 @@ import axios from 'axios';
 import CIcon from '@coreui/icons-react';
 import BaseURL from 'src/assets/contants/BaseURL';
 
+const handleAuthError = (error) => {
+    if (error.response && error.response.status === 401) {
+      // Token is invalid or expired
+      localStorage.removeItem('token');
+      // Optionally, redirect to the login page
+      window.location.href = '/login'; // Adjust the path as needed
+    } else {
+      // Handle other types of errors
+      console.error("An error occurred:", error);
+    }
+  };
+
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
     return {
@@ -60,16 +72,17 @@ const Groups = () => {
             setGroupData(sortedData);
             setFilteredGroupData(sortedData);
         } catch (error) {
-            console.error('Error fetching group data:', error);
+            handleAuthError(error); // Use the handleAuthError function
         }
     }, []);
+
 
     const fetchMachineData = useCallback(async () => {
         try {
             const response = await axios.get(BaseURL + "devices/machine/", { headers: getAuthHeaders() });
             setMachineData(response.data);
         } catch (error) {
-            console.error('Error fetching machine data:', error);
+            handleAuthError(error); // Use the handleAuthError function
         }
     }, []);
     
@@ -155,7 +168,7 @@ const Groups = () => {
             setModalVisible(false);
             setSuccessMessage('Group updated successfully!');
         } catch (error) {
-            console.error('Error updating group:', error.response?.data || error.message);
+            handleAuthError(error); // Use the handleAuthError function
             setErrors(error.response?.data || {});
         }
     };
@@ -176,10 +189,11 @@ const Groups = () => {
             setNewGroupMachines([]);
             setSuccessMessage('Group created successfully!');
         } catch (error) {
-            console.error('Error creating new group:', error.response?.data || error.message);
+            handleAuthError(error); // Use the handleAuthError function
             setErrors(error.response?.data || {});
         }
     };
+
 
     const handleDeleteGroup = async (groupId) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this group?");
@@ -193,9 +207,10 @@ const Groups = () => {
             fetchGroupData();
             setDeleteMessage('Group deleted successfully!');
         } catch (error) {
-            console.error('Error deleting group:', error);
+            handleAuthError(error); // Use the handleAuthError function
         }
     };
+
 
     useEffect(() => {
         if (successMessage || deleteMessage) {

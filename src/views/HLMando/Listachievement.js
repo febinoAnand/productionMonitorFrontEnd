@@ -26,6 +26,25 @@ import CIcon from '@coreui/icons-react';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
 
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
+const handleAuthError = (error) => {
+  if (error.response && error.response.status === 401) {
+    
+    localStorage.removeItem('token');
+    
+    window.location.href = '/login'; 
+  } else {
+    
+    console.error("An error occurred:", error);
+  }
+};
 const Listachievement = () => {
   const [data, setData] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -37,8 +56,10 @@ const Listachievement = () => {
   useEffect(() => {
     
     const fetchData = async () => {
+      console.log('Fetching data...');
       try {
-        const response = await axios.get(`${BaseURL}data/achievements/`);
+        const response = await axios.get(`${BaseURL}data/achievements/`, { headers: getAuthHeaders() });
+        console.log('Data fetched:', response.data);
         const { achievements } = response.data;
 
        
@@ -72,7 +93,7 @@ const Listachievement = () => {
 
         setGroupedData(reversedGroupedData);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        handleAuthError(error);
       }
     };
 
@@ -131,6 +152,7 @@ const Listachievement = () => {
             <CCard className="mb-4" style={{ marginTop: '40px' }} key={index}>
               <CCardHeader><h5>{groupName}</h5></CCardHeader>
               <CCardBody style={{ marginTop: '10px' }}>
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <CTable striped hover>
                   <CTableHead color='dark' className="custom-table-header">
                     <CTableRow>
@@ -170,6 +192,7 @@ const Listachievement = () => {
                     )}
                   </CTableBody>
                 </CTable>
+                </div>
               </CCardBody>
             </CCard>
           ))}

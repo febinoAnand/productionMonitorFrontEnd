@@ -27,6 +27,17 @@ import {
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import BaseURL from 'src/assets/contants/BaseURL';
+const handleAuthError = (error) => {
+    if (error.response && error.response.status === 401) {
+      // Token is invalid or expired
+      localStorage.removeItem('token');
+      // Optionally, redirect to the login page
+      window.location.href = '/login'; // Adjust the path as needed
+    } else {
+      // Handle other types of errors
+      console.error("An error occurred:", error);
+    }
+  };
 
 const Users = () => {
     const [users, setUsers] = useState([]);
@@ -79,7 +90,7 @@ const Users = () => {
                 setFilteredUsers(transformedData);
             })
             .catch(error => {
-                console.error('Error fetching users:', error);
+                handleAuthError(error);
             });
     };
     
@@ -162,12 +173,11 @@ const Users = () => {
                     setSuccessMessage('User deleted successfully');
                 })
                 .catch(error => {
-                    console.error('Error deleting user:', error);
+                    handleAuthError(error);
                 });
         });
         setSelectedUsers([]);
     };
-
     const handleUpdateUser = () => {
         if (!selectedUser || !selectedUser.userdetail_id) {
             console.error('Error: No user selected for update.');
@@ -207,7 +217,7 @@ const Users = () => {
                 setSuccessMessage('User updated successfully');
             })
             .catch(error => {
-                console.error('Error updating user:', error);
+                handleAuthError(error);
             });
     };
     
@@ -245,7 +255,7 @@ const Users = () => {
                 setSuccessMessage('Password updated successfully');
             })
             .catch(error => {
-                console.error('Error updating password:', error);
+                handleAuthError(error);
             });
     };    
 
@@ -261,7 +271,7 @@ const Users = () => {
                 setSuccessMessage('User deleted successfully');
             })
             .catch(error => {
-                console.error('Error deleting user:', error);
+                handleAuthError(error);
             });
     };
 

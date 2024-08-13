@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom'; 
 import CIcon from '@coreui/icons-react';
 import { cilCalendar, cilSearch } from '@coreui/icons';
 import {
@@ -73,41 +74,34 @@ const Shiftreport = () => {
   const [machineOptions, setMachineOptions] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState('');
   const [machineHourlyData, setMachineHourlyData] = useState(HARDCORE_SHIFT_DATA);
+  const navigate = useNavigate(); 
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${BaseURL}devices/machine/`, {
-          headers: {
-            'Authorization': `Token ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        const machineData = response.data;
+  const logout = () => {
+    localStorage.removeItem('token');
+    navigate('/login'); 
+  };
 
-        const machineNames = Array.from(new Set(machineData.map(machine => machine.machine_name)));
-        const machineIds = Array.from(new Set(machineData.map(machine => machine.machine_id)));
-        setMachineOptions(machineNames.map((name, index) => ({ name, id: machineIds[index] })));
-      } catch (error) {
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`${BaseURL}devices/machine/`, {
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const machineData = response.data;
+      const machineNames = Array.from(new Set(machineData.map(machine => machine.machine_name)));
+      const machineIds = Array.from(new Set(machineData.map(machine => machine.machine_id)));
+      setMachineOptions(machineNames.map((name, index) => ({ name, id: machineIds[index] })));
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+
+        logout();
+      } else {
         console.error("Error fetching data:", error);
       }
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const applyHeaderStyles = () => {
-      const headerCells = document.querySelectorAll('.custom-table-header th');
-      headerCells.forEach((cell) => {
-        cell.style.backgroundColor = '#047BC4';
-        cell.style.color = 'white';
-      });
-    };
-   
-    applyHeaderStyles();
-
-  }, [machineHourlyData]);
+    }
+  };
 
   const handleSearchClick = async () => {
     if (!selectedMachine || !startDate) return;
@@ -127,9 +121,30 @@ const Shiftreport = () => {
       const data = response.data;
       setMachineHourlyData(data.shifts.filter(shift => shift.timing && Object.keys(shift.timing).length > 0));
     } catch (error) {
-      console.error("Error fetching machine hourly data:", error);
+      if (error.response && error.response.status === 401) {
+        
+        logout();
+      } else {
+        console.error("Error fetching machine hourly data:", error);
+      }
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const applyHeaderStyles = () => {
+      const headerCells = document.querySelectorAll('.custom-table-header th');
+      headerCells.forEach((cell) => {
+        cell.style.backgroundColor = '#047BC4';
+        cell.style.color = 'white';
+      });
+    };
+   
+    applyHeaderStyles();
+  }, [machineHourlyData]);
 
   const calculateTotal = (timing) => {
     return Object.values(timing).reduce((acc, value) => acc + value, 0);
@@ -156,64 +171,60 @@ const Shiftreport = () => {
 
   return (
     <div className="page">
-       <CCard className="mb-3"
-       style={{
-        marginTop: '30px',
-      }}
-      >
-      <CCardHeader>
-        <h5>Shift Report</h5>
-      </CCardHeader>
-      <CCardBody>
-        <CRow className="mb-3">
-          <CCol md={4}>
-            <CInputGroup className="flex-nowrap mt-3 mb-4">
-              <CFormSelect
-                aria-label="Select Machine"
-                value={selectedMachine}
-                onChange={(e) => setSelectedMachine(e.target.value)}
-              >
-                <option value="">Select Machine</option>
-                {machineOptions.length > 0 ? (
-                  machineOptions.map((machine, index) => (
-                    <option key={index} value={machine.name}>
-                      {machine.name}
-                    </option>
-                  ))
-                ) : (
-                  <option value="">Loading machines...</option>
-                )}
-              </CFormSelect>
-            </CInputGroup>
-          </CCol>
-          <CCol md={4} className="text-end">
-            <CInputGroup className="flex-nowrap mt-3 mb-4">
-              <DatePicker
-                selected={startDate ? new Date(startDate) : null}
-                onChange={(date) => setStartDate(date)}
-                customInput={<CustomInput />}
-                dateFormat="yyyy-MM-dd"
-                popperPlacement="bottom-end"
-                onChangeRaw={(e) => {
-                  const rawDate = new Date(e.target.value);
-                  setStartDate(isNaN(rawDate.getTime()) ? null : rawDate);
-                }}
-              />
-              <CButton
-                type="button"
-                color="primary"
-                className="ms-2"
-                style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}
-                onClick={handleSearchClick}
-                disabled={!selectedMachine || !startDate}
-              >
-                <CIcon icon={cilSearch} />
-              </CButton>
-            </CInputGroup>
-          </CCol>
-        </CRow>
-      </CCardBody>
-    </CCard>
+      <CCard className="mb-3" style={{ marginTop: '30px' }}>
+        <CCardHeader>
+          <h5>Shift Report</h5>
+        </CCardHeader>
+        <CCardBody>
+          <CRow className="mb-3">
+            <CCol md={4}>
+              <CInputGroup className="flex-nowrap mt-3 mb-4">
+                <CFormSelect
+                  aria-label="Select Machine"
+                  value={selectedMachine}
+                  onChange={(e) => setSelectedMachine(e.target.value)}
+                >
+                  <option value="">Select Machine</option>
+                  {machineOptions.length > 0 ? (
+                    machineOptions.map((machine, index) => (
+                      <option key={index} value={machine.name}>
+                        {machine.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">Loading machines...</option>
+                  )}
+                </CFormSelect>
+              </CInputGroup>
+            </CCol>
+            <CCol md={4} className="text-end">
+              <CInputGroup className="flex-nowrap mt-3 mb-4">
+                <DatePicker
+                  selected={startDate ? new Date(startDate) : null}
+                  onChange={(date) => setStartDate(date)}
+                  customInput={<CustomInput />}
+                  dateFormat="yyyy-MM-dd"
+                  popperPlacement="bottom-end"
+                  onChangeRaw={(e) => {
+                    const rawDate = new Date(e.target.value);
+                    setStartDate(isNaN(rawDate.getTime()) ? null : rawDate);
+                  }}
+                />
+                <CButton
+                  type="button"
+                  color="primary"
+                  className="ms-2"
+                  style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}
+                  onClick={handleSearchClick}
+                  disabled={!selectedMachine || !startDate}
+                >
+                  <CIcon icon={cilSearch} />
+                </CButton>
+              </CInputGroup>
+            </CCol>
+          </CRow>
+        </CCardBody>
+      </CCard>
 
       <CRow>
         <CCol xs={12}>
@@ -224,34 +235,38 @@ const Shiftreport = () => {
                   <h5>{shift.shift_name || 'Shift ' + shift.shift_no}</h5>
                 </CCardHeader>
                 <CCardBody style={{ marginTop: '10px' }}>
-                  <CTable striped hover>
-                    <CTableHead className="custom-table-header">
-                      <CTableRow>
-                        <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Production Count </CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Target</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {Object.entries(shift.timing).map(([timeRange, count], i) => (
-                        <CTableRow key={i}>
-                          <CTableDataCell>{timeRange}</CTableDataCell>
-                          <CTableDataCell>{count}</CTableDataCell>
-                          <CTableDataCell>0</CTableDataCell>
+                  <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    <CTable striped hover>
+                      <CTableHead className="custom-table-header">
+                        <CTableRow>
+                          <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+                          <CTableHeaderCell scope="col">Production Count </CTableHeaderCell>
+                          <CTableHeaderCell scope="col">Target</CTableHeaderCell>
                         </CTableRow>
-                      ))}
-                     <CTableRow>
-                        <CTableDataCell style={{ fontWeight: 'bold', }}>Total</CTableDataCell> 
-                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>{calculateTotal(shift.timing)}</CTableDataCell> {/* Total production count color */}
-                        <CTableDataCell style={{ fontWeight: 'bold',color: '#007bff ' }}>0</CTableDataCell> 
-                      </CTableRow>
-                    </CTableBody>
-                  </CTable>
+                      </CTableHead>
+                      <CTableBody>
+                        {Object.entries(shift.timing).map(([timeRange, count], i) => (
+                          <CTableRow key={i}>
+                            <CTableDataCell>{timeRange}</CTableDataCell>
+                            <CTableDataCell>{count}</CTableDataCell>
+                            <CTableDataCell>0</CTableDataCell>
+                          </CTableRow>
+                        ))}
+                        <CTableRow>
+                          <CTableDataCell style={{ fontWeight: 'bold' }}>Total</CTableDataCell>
+                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                            {calculateTotal(shift.timing)}
+                          </CTableDataCell>
+                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>0</CTableDataCell>
+                        </CTableRow>
+                      </CTableBody>
+                    </CTable>
+                  </div>
                 </CCardBody>
               </CCard>
             ))
           ) : (
-            <p>No data available for the selected date and machine.</p>
+            <p>No data available</p>
           )}
         </CCol>
       </CRow>

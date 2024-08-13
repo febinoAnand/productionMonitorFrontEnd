@@ -36,6 +36,18 @@ const getAuthHeaders = () => {
   };
 };
 
+const handleAuthError = (error) => {
+  if (error.response && error.response.status === 401) {
+   
+    localStorage.removeItem('token');
+  
+    window.location.href = '/login'; 
+  } else {
+    
+    console.error("An error occurred:", error);
+  }
+};
+
 class MachineDetails extends React.Component {
   constructor(props) {
     super(props);
@@ -60,13 +72,13 @@ class MachineDetails extends React.Component {
     this.applyHeaderStyles();
   }
 
-  fetchMachineList = async () => {
+ fetchMachineList = async () => {
     try {
       const response = await axios.get(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
       const sortedData = response.data.reverse(); 
       this.setState({ machineList: sortedData });
     } catch (error) {
-      console.error("There was an error fetching the machine list!", error);
+      handleAuthError(error);
     }
   }
 
@@ -160,40 +172,38 @@ class MachineDetails extends React.Component {
       return;
     }
 
-    const { machineID, name, manufacture, line,productionPerHour } = this.state;
-    try {
-      const response = await axios.post(`${BaseURL}devices/machine/`, {
-        machine_id: machineID,
-        machine_name: name,
-        manufacture: manufacture,
-        line: line,
-        production_per_hour: productionPerHour,
-      }, { headers: getAuthHeaders() });
-      const newMachine = response.data;
-      this.displaySuccessMessage("Machine added successfully!");
-      this.setState((prevState) => ({
-        machineList: [newMachine, ...prevState.machineList], 
-      }));
-      this.closeAddModal(); 
-    } catch (error) {
-      console.error("There was an error adding the machine!", error);
-      this.setState({ errors: { submit: "There was an error adding the machine" } });
-      this.closeAddModal(); 
-    }
+    const { machineID, name, manufacture, line, productionPerHour } = this.state;
+  try {
+    const response = await axios.post(`${BaseURL}devices/machine/`, {
+      machine_id: machineID,
+      machine_name: name,
+      manufacture: manufacture,
+      line: line,
+      production_per_hour: productionPerHour,
+    }, { headers: getAuthHeaders() });
+    const newMachine = response.data;
+    this.displaySuccessMessage("Machine added successfully!");
+    this.setState((prevState) => ({
+      machineList: [newMachine, ...prevState.machineList], 
+    }));
+    this.closeAddModal(); 
+  } catch (error) {
+    handleAuthError(error);
   }
+}
 
   machineUpdateData = async () => {
     if (!this.validateForm()) {
       return;
     }
 
-    const { selectedMachine, machineID, name, manufacture, line, hmiID,productionPerHour } = this.state;
+    const { selectedMachine, machineID, name, manufacture, line, hmiID, productionPerHour } = this.state;
 
     if (!selectedMachine) {
       console.error("Selected machine data is missing!");
       return;
     }
-
+  
     try {
       await axios.put(`${BaseURL}devices/machine/${selectedMachine.id}/`, {
         machine_id: machineID,
@@ -207,9 +217,7 @@ class MachineDetails extends React.Component {
       this.closeUpdateModal(); 
       this.fetchMachineList();
     } catch (error) {
-      console.error("There was an error updating the machine!", error);
-      this.setState({ errors: { submit: "There was an error updating the machine" } });
-      this.closeUpdateModal(); 
+      handleAuthError(error);
     }
   }
 
@@ -225,7 +233,7 @@ class MachineDetails extends React.Component {
       this.displaySuccessMessage("Machine deleted successfully!");
       this.fetchMachineList();
     } catch (error) {
-      console.error("There was an error deleting the machine!", error);
+      handleAuthError(error);
     }
   }
 applyHeaderStyles = () => {

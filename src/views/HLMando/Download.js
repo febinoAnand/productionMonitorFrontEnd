@@ -19,6 +19,7 @@ import autoTable from 'jspdf-autotable';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom'; 
 
 
 const getAuthHeaders = () => {
@@ -29,6 +30,11 @@ const getAuthHeaders = () => {
   };
 };
 
+const logout = (navigate) => {
+  localStorage.removeItem('token');
+  navigate('/login'); 
+};
+
 const Download = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMachine, setSelectedMachine] = useState('');
@@ -36,6 +42,7 @@ const Download = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [data, setData] = useState(null);
+  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -43,6 +50,9 @@ const Download = () => {
       try {
         const machineResponse = await fetch(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
         if (!machineResponse.ok) {
+          if (machineResponse.status === 401) {
+            logout(navigate); 
+          }
           throw new Error(`HTTP error! Status: ${machineResponse.status}`);
         }
         const machineData = await machineResponse.json();
@@ -57,7 +67,7 @@ const Download = () => {
     };
 
     fetchData();
-  }, []);
+  }, [navigate]); 
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -84,6 +94,11 @@ const Download = () => {
         machine_id: machineId,
       }, { headers: getAuthHeaders() });
 
+      if (response.status === 401) {
+        logout(navigate); // Handle invalid token
+        return;
+      }
+
       setData(response.data);
       setIsDataFetched(true); 
       setErrorMessage('');
@@ -96,7 +111,7 @@ const Download = () => {
 
 
 
-  const generateShiftwisePDF =async () => {
+  const generateShiftwisePDF = async () => {
     if (!selectedDate || !selectedMachine) {
       setErrorMessage('Please select both the date and machine to generate the PDF.');
       setTimeout(() => setErrorMessage(''), 6000);
@@ -109,19 +124,23 @@ const Download = () => {
       return;
     }
 
-
-  try {
-    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-    const machineId = selectedMachine; 
+    try {
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      const machineId = selectedMachine; 
     
-    const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
-      date: formattedDate,
-      machine_id: machineId,
-    }, { headers: getAuthHeaders() });
+      const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
+        date: formattedDate,
+        machine_id: machineId,
+      }, { headers: getAuthHeaders() });
 
-    console.log('API Response:', response.data); 
+      if (response.status === 401) {
+        logout(navigate); // Handle invalid token
+        return;
+      }
 
-    const { shifts } = response.data;
+      console.log('API Response:', response.data); 
+
+      const { shifts } = response.data;
   
       if (!Array.isArray(shifts) || shifts.length === 0) {
         throw new Error('No shifts found in the API response');
@@ -174,18 +193,18 @@ const Download = () => {
           startY: startY,
           theme: 'grid',
           headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255] },
-         styles: {
-    cellPadding: 2, 
-    fontSize: 7,   
-    valign: 'middle',
-    lineWidth: 0.5
-  },
-  columnStyles: { 0: { cellWidth: pageWidth / 3 - 14 }, 1: { cellWidth: pageWidth / 3 - 14 } },2: { cellWidth: pageWidth / 3 - 14 },
-  margin: { top: 10 },
-  didDrawPage: () => {
-    addPageHeader();
-  }
-});
+          styles: {
+            cellPadding: 2, 
+            fontSize: 7,   
+            valign: 'middle',
+            lineWidth: 0.5
+          },
+          columnStyles: { 0: { cellWidth: pageWidth / 3 - 14 }, 1: { cellWidth: pageWidth / 3 - 14 }, 2: { cellWidth: pageWidth / 3 - 14 } },
+          margin: { top: 10 },
+          didDrawPage: () => {
+            addPageHeader();
+          }
+        });
   
         startY = doc.autoTable.previous.finalY + 10; 
   
@@ -198,29 +217,30 @@ const Download = () => {
   
       const validShifts = shifts.filter(shift => shift.shift_no !== 0 && shift.timing && Object.keys(shift.timing).length > 0);
 
-    validShifts.forEach((shift) => {
-      addShiftTable(shift);
-    });
+      validShifts.forEach((shift) => {
+        addShiftTable(shift);
+      });
   
       doc.save('shiftwise_report.pdf');
     } catch (error) {
       console.error('Error generating PDF:', error.message);
       setErrorMessage('Error generating PDF. Please select the machine.');
-       setTimeout(() => {
-        setErrorMessage('');
-      }, 6000);
+      setTimeout(() => setErrorMessage(''), 6000);
     }
   };
 
   const generateSummaryPDF = async () => {
     try {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      const currentDate = format(new Date(), 'yyyy-MM-dd'); 
+      const currentDate = format(new Date(), 'yyyy-MM-dd');
   
-      
       const response = await axios.post(`${BaseURL}data/production/`, {
         date: formattedDate
       }, { headers: getAuthHeaders() });
+      if (response.status === 401) {
+        logout(navigate); 
+        return;
+      }
   
       console.log('API Response:', response.data);
   
@@ -242,79 +262,88 @@ const Download = () => {
         doc.line(14, 22, pageWidth - 14, 22);
       };
   
-      const addSummaryTableForGroup = (group, startY) => {
-        const shiftNames = new Set();
-        const tableData = [];
-        let totalProductionCount = 0;
-  
-        
+      
+      const shiftNames = new Set();
+      machine_groups.forEach(group => {
         group.machines.forEach(machine => {
           machine.shifts.forEach(shift => {
-            shiftNames.add(shift.shift_name || `${shift.shift_no}`);
+            shiftNames.add(shift.shift_name || `Shift ${shift.shift_no}`);
           });
         });
-  
-        
-        const shiftNamesArray = Array.from(shiftNames).sort();
-  
-       
-        doc.setFontSize(14);
-        doc.text(`Group: ${group.group_name}`, 14, startY);
-        startY += 2;
-  
-        
-        const headers = ['Work Center', ...shiftNamesArray, 'Total Production Count'];
-  
-        
-        group.machines.forEach(machine => {
-          const row = [machine.machine_id]; 
-          let rowTotal = 0;
-  
-          shiftNamesArray.forEach(shiftName => {
-            const shift = machine.shifts.find(s => (s.shift_name === shiftName) || (`Shift ${s.shift_no}` === shiftName));
-            const productionCount = shift ? shift.production_count : 0;
-            row.push(productionCount);
-            rowTotal += productionCount;
-          });
-  
-          row.push(rowTotal); 
-          tableData.push(row);
-          totalProductionCount += rowTotal;
-        });
-  
-        autoTable(doc, {
-          head: [headers],
-          body: tableData,
-          startY: startY,
-          theme: 'grid',
-          headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255] },
-          styles: { cellPadding: 3, fontSize: 8, valign: 'middle', lineWidth: 0.5 },
-          columnStyles: { 0: { cellWidth: pageWidth / (headers.length + 1) } },
-          margin: { top: 10 },
-          didDrawPage: () => {
-            addPageHeader();
-          }
-        });
-  
-        startY = doc.autoTable.previous.finalY + 10;
-        doc.setFontSize(14);
-        doc.text(`Total Production Count for ${group.group_name}: ${totalProductionCount}`, 14, startY);
-        startY += 20;
-  
-        return startY;
-      };
-  
-      let startY = 30;
+      });
   
       
-      for (const group of machine_groups) {
-        if (startY + 50 > doc.internal.pageSize.height) {
-          doc.addPage();
+      const shiftNamesArray = Array.from(shiftNames).sort((a, b) => {
+        const shiftNumberA = parseInt(a.replace(/\D/g, ''));
+        const shiftNumberB = parseInt(b.replace(/\D/g, ''));
+        return shiftNumberA - shiftNumberB;
+      });
+  
+      const headers = ['Groups', 'Work Centre', ...shiftNamesArray, 'Production Count', 'Total Production Count'];
+  
+      const tableData = [];
+      let grandTotalProductionCount = 0; 
+  
+      // Generate table data
+      machine_groups.forEach(group => {
+        group.machines.forEach((machine, index) => {
+          const row = [];
+          let groupTotalCount = 0;
+  
+          
+          if (index === 0) {
+            row.push({ content: group.group_name, styles: { fontStyle: 'bold' } });
+          } else {
+            row.push('');
+          }
+  
+          
+          row.push(machine.machine_id);
+  
+          let rowTotal = 0;
+  
+          
+          shiftNamesArray.forEach(shiftName => {
+            const shift = machine.shifts.find(s => s.shift_name === shiftName || `Shift ${s.shift_no}` === shiftName);
+            const productionCountForShift = shift ? shift.production_count : 0;
+            row.push(productionCountForShift);
+            rowTotal += productionCountForShift; 
+          });
+  
+         
+          row.push(rowTotal);
+  
+         
+          row.push(groupTotalCount);
+  
+          
+          tableData.push(row);
+  
+        
+          grandTotalProductionCount += rowTotal;
+        });
+      });
+  
+      
+      const totalRow = new Array(headers.length).fill('');
+      totalRow[0] = 'Total'; 
+      totalRow[headers.length - 1] = grandTotalProductionCount; 
+      tableData.push(totalRow);
+  
+      
+      autoTable(doc, {
+        head: [headers],
+        body: tableData,
+        startY: 30,
+        theme: 'grid',
+        headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255] },
+        styles: { cellPadding: 1.5, fontSize: 6, valign: 'middle', lineWidth: 0.5 },
+        columnStyles: { 0: { fontStyle: 'bold' } }, 
+        margin: { top: 10 },
+        didDrawPage: () => {
           addPageHeader();
-          startY = 30;
         }
-        startY = addSummaryTableForGroup(group, startY);
-      }
+      });
   
       const fileName = `Production_Summary_Report_${currentDate}.pdf`;
       doc.save(fileName);
@@ -322,7 +351,12 @@ const Download = () => {
       console.error('Error generating PDF:', error.message);
       setErrorMessage('Error generating PDF. Please check the console for details.');
     }
-  };  
+  };
+  
+  
+  
+  
+
 
   return (
     <div className="page">

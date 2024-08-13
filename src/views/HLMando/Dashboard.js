@@ -17,6 +17,10 @@ const Dashboard = () => {
       'Content-Type': 'application/json'
     };
   };
+  const handleAuthError = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -24,7 +28,11 @@ const Dashboard = () => {
       setDashboardData(response.data);
       console.log(response.data)
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      if (error.response && error.response.status === 401) {
+        handleAuthError();
+      } else {
+        console.error('Error fetching dashboard data:', error);
+      }
     }
   };
 
@@ -34,7 +42,11 @@ const Dashboard = () => {
       setMachineGroupData(response.data);
       console.log(response.data)
     } catch (error) {
-      console.error('Error fetching machine group data:', error);
+      if (error.response && error.response.status === 401) {
+        handleAuthError();
+      } else {
+        console.error('Error fetching machine group data:', error);
+      }
     }
   };
 
