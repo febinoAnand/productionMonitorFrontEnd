@@ -29,42 +29,42 @@ const HARDCORE_SHIFT_DATA = [
     shift_name: 'Shift 1',
     shift_no: 1,
     timing: {
-      '06:30 AM - 07:30 AM': 0,
-      '07:30 AM - 08:30 AM': 0,
-      '08:30 AM - 09:30 AM': 0,
-      '09:30 AM - 10:30 AM': 0,
-      '10:30 AM - 11:30 AM': 0,
-      '11:30 AM - 12:30 PM': 0,
-      '12:30 PM - 01:30 PM': 0,
-      '01:30 PM - 02:30 PM': 0,
+      '06:30 AM - 07:30 AM': [0, 0],
+      '07:30 AM - 08:30 AM': [0, 0],
+      '08:30 AM - 09:30 AM': [0, 0],
+      '09:30 AM - 10:30 AM': [0, 0],
+      '10:30 AM - 11:30 AM': [0, 0],
+      '11:30 AM - 12:30 PM': [0, 0],
+      '12:30 PM - 01:30 PM': [0, 0],
+      '01:30 PM - 02:30 PM': [0, 0],
     }
   },
   {
     shift_name: 'Shift 2',
     shift_no: 2,
     timing: {
-      '02:30 PM - 03:30 PM': 0,
-      '03:30 PM - 04:30 PM': 0,
-      '04:30 PM - 05:30 PM': 0,
-      '05:30 PM - 06:30 PM': 0,
-      '06:30 PM - 07:30 PM': 0,
-      '07:30 PM - 08:30 PM': 0,
-      '08:30 PM - 09:30 PM': 0,
-      '09:30 PM - 10:30 PM': 0
+      '02:30 PM - 03:30 PM': [0, 0],
+      '03:30 PM - 04:30 PM': [0, 0],
+      '04:30 PM - 05:30 PM': [0, 0],
+      '05:30 PM - 06:30 PM': [0, 0],
+      '06:30 PM - 07:30 PM': [0, 0],
+      '07:30 PM - 08:30 PM': [0, 0],
+      '08:30 PM - 09:30 PM': [0, 0],
+      '09:30 PM - 10:30 PM': [0, 0]
     }
   },
   {
     shift_name: 'Shift 3',
     shift_no: 3,
     timing: {
-      '10:30 PM - 11:30 PM': 0,
-      '11:30 PM - 12:30 AM': 0,
-      '12:30 AM - 01:30 AM': 0,
-      '01:30 AM - 02:30 AM': 0,
-      '02:30 AM - 03:30 AM': 0,
-      '03:30 AM - 04:30 AM': 0,
-      '04:30 AM - 05:30 AM': 0,
-      '05:30 AM - 06:30 AM': 0
+      '10:30 PM - 11:30 PM': [0, 0],
+      '11:30 PM - 12:30 AM': [0, 0],
+      '12:30 AM - 01:30 AM': [0, 0],
+      '01:30 AM - 02:30 AM': [0, 0],
+      '02:30 AM - 03:30 AM': [0, 0],
+      '03:30 AM - 04:30 AM': [0, 0],
+      '04:30 AM - 05:30 AM': [0, 0],
+      '05:30 AM - 06:30 AM': [0, 0]
     }
   }
 ];
@@ -146,9 +146,10 @@ const Shiftreport = () => {
     applyHeaderStyles();
   }, [machineHourlyData]);
 
-  const calculateTotal = (timing) => {
-    return Object.values(timing).reduce((acc, value) => acc + value, 0);
+  const calculateTotal = (timing, index) => {
+    return Object.values(timing).reduce((acc, value) => acc + value[index], 0);
   };
+  
 
   const CustomInput = ({ value, onClick }) => (
     <div className="input-group" style={{ height: '38px', borderRadius: '0px' }}>
@@ -241,23 +242,25 @@ const Shiftreport = () => {
                         <CTableRow>
                           <CTableHeaderCell scope="col">Time</CTableHeaderCell>
                           <CTableHeaderCell scope="col">Production Count </CTableHeaderCell>
-                          <CTableHeaderCell scope="col">Target</CTableHeaderCell>
+                          <CTableHeaderCell scope="col">Target Count</CTableHeaderCell>
                         </CTableRow>
                       </CTableHead>
                       <CTableBody>
-                        {Object.entries(shift.timing).map(([timeRange, count], i) => (
-                          <CTableRow key={i}>
-                            <CTableDataCell>{timeRange}</CTableDataCell>
-                            <CTableDataCell>{count}</CTableDataCell>
-                            <CTableDataCell>0</CTableDataCell>
-                          </CTableRow>
-                        ))}
-                        <CTableRow>
-                          <CTableDataCell style={{ fontWeight: 'bold' }}>Total</CTableDataCell>
-                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
-                            {calculateTotal(shift.timing)}
-                          </CTableDataCell>
-                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>0</CTableDataCell>
+                      {Object.entries(shift.timing).map(([timeRange, counts], i) => (
+                        <CTableRow key={i}>
+                          <CTableDataCell>{timeRange}</CTableDataCell>
+                          <CTableDataCell>{counts[0]}</CTableDataCell>
+                          <CTableDataCell>{counts[1]}</CTableDataCell>
+                        </CTableRow>
+                      ))}
+                      <CTableRow>
+                        <CTableDataCell style={{ fontWeight: 'bold' }}>Total</CTableDataCell>
+                        <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                          {calculateTotal(shift.timing, 0)}
+                        </CTableDataCell>
+                        <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                          {calculateTotal(shift.timing, 1)}
+                        </CTableDataCell>
                         </CTableRow>
                       </CTableBody>
                     </CTable>
@@ -275,3 +278,4 @@ const Shiftreport = () => {
 };
 
 export default Shiftreport;
+

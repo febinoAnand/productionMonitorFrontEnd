@@ -95,7 +95,7 @@ const Download = () => {
       }, { headers: getAuthHeaders() });
 
       if (response.status === 401) {
-        logout(navigate); // Handle invalid token
+        logout(navigate); 
         return;
       }
 
@@ -109,249 +109,276 @@ const Download = () => {
     }
   };
 
-
-
   const generateShiftwisePDF = async () => {
     if (!selectedDate || !selectedMachine) {
-      setErrorMessage('Please select both the date and machine to generate the PDF.');
-      setTimeout(() => setErrorMessage(''), 6000);
-      return;
+        setErrorMessage('Please select both the date and machine to generate the PDF.');
+        setTimeout(() => setErrorMessage(''), 6000);
+        return;
     }
-
     if (!data || !isDataFetched) {
-      alert('No data available to generate the PDF. Please perform the search first.');
-      setTimeout(() => setErrorMessage(''), 6000);
-      return;
+        alert('No data available to generate the PDF. Please perform the search first.');
+        setTimeout(() => setErrorMessage(''), 6000);
+        return;
     }
 
     try {
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      const machineId = selectedMachine; 
-    
-      const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
-        date: formattedDate,
-        machine_id: machineId,
-      }, { headers: getAuthHeaders() });
+        const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+        const machineId = selectedMachine;
 
-      if (response.status === 401) {
-        logout(navigate); // Handle invalid token
-        return;
-      }
+        const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
+            date: formattedDate,
+            machine_id: machineId,
+        }, { headers: getAuthHeaders() });
 
-      console.log('API Response:', response.data); 
+        if (response.status === 401) {
+            logout(navigate); 
+            return;
+        }
 
-      const { shifts } = response.data;
-  
-      if (!Array.isArray(shifts) || shifts.length === 0) {
-        throw new Error('No shifts found in the API response');
-      }
-  
-      const doc = new jsPDF();
-      let startY = 30; 
-      const headerGap = 10;
-      const pageWidth = doc.internal.pageSize.width;
-  
-      const addPageHeader = () => {
+        const { date, machine_id, shifts } = response.data;
+
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.width;
+
+        
         doc.setFontSize(12);
-        doc.text(`Machine ID: ${machineId}`, 14, 15);
-        doc.text(`Date: ${formattedDate}`, pageWidth - 50, 15, { align: 'right' });
+        doc.text(`Machine ID: ${machine_id}`, 14, 15);
+        doc.text(`Date: ${date}`, pageWidth - 50, 15, { align: 'right' });
         doc.setFontSize(18);
         doc.text('Shiftwise Report', pageWidth / 2, 25, { align: 'center' });
         doc.setLineWidth(0.5);
-        doc.line(14, 28, pageWidth - 14, 28); 
-      };
-  
-      const addShiftTable = (shift) => {
-        if (!shift.timing || typeof shift.timing !== 'object' || Object.keys(shift.timing).length === 0) {
-          console.log(`Skipping Shift ${shift.shift_no}: No data available`);
-          return; 
+        doc.line(14, 28, pageWidth - 14, 28);
+
+        
+const tableData = [];
+const shiftMap = new Map();
+
+shifts.forEach(shift => {
+    const shiftLabel = `Shift ${shift.shift_no}`;
+    const totalProduction = Object.values(shift.timing).reduce((sum, [proCount]) => sum + (proCount || 0), 0);
+    const totalTarget = Object.values(shift.timing).reduce((sum, [, targetCount]) => sum + (targetCount || 0), 0);
+    const timeRanges = Object.keys(shift.timing);
+    const productionCounts = Object.values(shift.timing);
+
+    timeRanges.forEach((timeRange, index) => {
+        const [proCount, targetCount] = productionCounts[index];
+        if (!shiftMap.has(shiftLabel)) {
+            shiftMap.set(shiftLabel, []);
         }
-  
-        if (startY + 80 > doc.internal.pageSize.height) { 
-          doc.addPage();
-          startY = 30; 
-          addPageHeader(); 
-        }
-  
-        startY += headerGap;
-  
-        doc.setFontSize(16);
-        doc.text(`Shift: ${shift.shift_no}`, 14, startY);
-        startY += 10;
-  
-        const tableData = Object.entries(shift.timing).map(([timeRange, count]) => [
-          timeRange, 
-          count || 0,
-          0
+        shiftMap.get(shiftLabel).push([
+            timeRange,
+            `${proCount || 0}/${targetCount || 0}`,
+            (index === timeRanges.length - 1) ? `${totalProduction}/${totalTarget}` : ''
         ]);
-  
-        const totalProductionCount = Object.values(shift.timing).reduce((sum, count) => sum + (count || 0), 0);
-  
+    });
+});
+
+
+shiftMap.forEach((rows, shiftLabel) => {
+    rows.forEach(([timeRange, proTargetCount, totalCount], index) => {
+        tableData.push([
+            index === 0 ? shiftLabel : '',
+            timeRange,
+            proTargetCount,
+            totalCount
+        ]);
+    });
+});
+
+
+const totalProductionCount = tableData.reduce(([sumProCount, sumTargetCount], row) => {
+    const [proCount, targetCount] = row[2].split('/').map(Number);
+    return [sumProCount + (proCount || 0), sumTargetCount + (targetCount || 0)];
+}, [0, 0]);
+
+
+tableData.push(['TOTAL', '', '', `${totalProductionCount[0]}/${totalProductionCount[1]}`]);
+
+
+      
         autoTable(doc, {
-          head: [['Time Range', 'Production Count', 'Target']], 
+          head: [['Shift', 'Time Range', 'Production Count ', 'Total Production Count']],
           body: tableData,
-          startY: startY,
+          startY: 40,
           theme: 'grid',
           headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255] },
           styles: {
-            cellPadding: 2, 
-            fontSize: 7,   
-            valign: 'middle',
-            lineWidth: 0.5
+              cellPadding: 4,
+              fontSize: 10,
+              valign: 'middle',
+              lineWidth: 0.5,
+              cellWidth: 'auto'
           },
-          columnStyles: { 0: { cellWidth: pageWidth / 3 - 14 }, 1: { cellWidth: pageWidth / 3 - 14 }, 2: { cellWidth: pageWidth / 3 - 14 } },
-          margin: { top: 10 },
-          didDrawPage: () => {
-            addPageHeader();
-          }
-        });
-  
-        startY = doc.autoTable.previous.finalY + 10; 
-  
-        doc.setFontSize(14);
-        doc.text(`Total Production Count: ${totalProductionCount}`, 14, startY);
-        startY += 20;
-      };
-  
-      addPageHeader(); 
-  
-      const validShifts = shifts.filter(shift => shift.shift_no !== 0 && shift.timing && Object.keys(shift.timing).length > 0);
+          columnStyles: {
+              0: { cellWidth: (pageWidth - 40) / 4 },
+              1: { cellWidth: (pageWidth - 40) / 4 },
+              2: { cellWidth: (pageWidth - 40) / 4 },
+              3: { cellWidth: (pageWidth - 40) / 4 }
+          },
+      });
 
-      validShifts.forEach((shift) => {
-        addShiftTable(shift);
-      });
-  
-      doc.save('shiftwise_report.pdf');
-    } catch (error) {
-      console.error('Error generating PDF:', error.message);
-      setErrorMessage('Error generating PDF. Please select the machine.');
-      setTimeout(() => setErrorMessage(''), 6000);
-    }
-  };
-
-  const generateSummaryPDF = async () => {
-    try {
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      const currentDate = format(new Date(), 'yyyy-MM-dd');
-  
-      const response = await axios.post(`${BaseURL}data/production/`, {
-        date: formattedDate
-      }, { headers: getAuthHeaders() });
-      if (response.status === 401) {
-        logout(navigate); 
-        return;
-      }
-  
-      console.log('API Response:', response.data);
-  
-      const { machine_groups } = response.data;
-  
-      if (!Array.isArray(machine_groups) || machine_groups.length === 0) {
-        throw new Error('No machine groups found in the API response');
-      }
-  
-      const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.width;
-  
-      const addPageHeader = () => {
-        doc.setFontSize(12);
-        doc.text(`Date: ${formattedDate}`, 14, 15);
-        doc.setFontSize(18);
-        doc.text('Production Summary Report', pageWidth / 2, 15, { align: 'center' });
-        doc.setLineWidth(0.5);
-        doc.line(14, 22, pageWidth - 14, 22);
-      };
-  
-      
-      const shiftNames = new Set();
-      machine_groups.forEach(group => {
-        group.machines.forEach(machine => {
-          machine.shifts.forEach(shift => {
-            shiftNames.add(shift.shift_name || `Shift ${shift.shift_no}`);
-          });
-        });
-      });
-  
-      
-      const shiftNamesArray = Array.from(shiftNames).sort((a, b) => {
-        const shiftNumberA = parseInt(a.replace(/\D/g, ''));
-        const shiftNumberB = parseInt(b.replace(/\D/g, ''));
-        return shiftNumberA - shiftNumberB;
-      });
-  
-      const headers = ['Groups', 'Work Centre', ...shiftNamesArray, 'Production Count', 'Total Production Count'];
-  
-      const tableData = [];
-      let grandTotalProductionCount = 0; 
-  
-      // Generate table data
-      machine_groups.forEach(group => {
-        group.machines.forEach((machine, index) => {
-          const row = [];
-          let groupTotalCount = 0;
-  
-          
-          if (index === 0) {
-            row.push({ content: group.group_name, styles: { fontStyle: 'bold' } });
-          } else {
-            row.push('');
-          }
-  
-          
-          row.push(machine.machine_id);
-  
-          let rowTotal = 0;
-  
-          
-          shiftNamesArray.forEach(shiftName => {
-            const shift = machine.shifts.find(s => s.shift_name === shiftName || `Shift ${s.shift_no}` === shiftName);
-            const productionCountForShift = shift ? shift.production_count : 0;
-            row.push(productionCountForShift);
-            rowTotal += productionCountForShift; 
-          });
-  
-         
-          row.push(rowTotal);
-  
-         
-          row.push(groupTotalCount);
-  
-          
-          tableData.push(row);
-  
         
-          grandTotalProductionCount += rowTotal;
+        const currentDate = format(new Date(), 'yyyy-MM-dd');
+        doc.save(`shiftwise_report_${currentDate}.pdf`);
+    } catch (error) {
+        console.error('Error generating PDF:', error.message);
+        setErrorMessage('Error generating PDF.');
+        setTimeout(() => setErrorMessage(''), 6000);
+    }
+};
+
+  
+  
+
+ 
+
+const generateSummaryPDF = async () => {
+  try {
+    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+    const currentDate = format(new Date(), 'yyyy-MM-dd');
+
+    const response = await axios.post(`${BaseURL}data/production/`, {
+      date: formattedDate
+    }, { headers: getAuthHeaders() });
+
+    if (response.status === 401) {
+      logout(navigate); 
+      return;
+    }
+
+    console.log('API Response:', response.data);
+
+    const { machine_groups } = response.data;
+
+    if (!Array.isArray(machine_groups) || machine_groups.length === 0) {
+      throw new Error('No machine groups found in the API response');
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+
+    const addPageHeader = () => {
+      doc.setFontSize(12);
+      doc.text(`Date: ${formattedDate}`, 14, 15);
+      doc.setFontSize(18);
+      doc.text('Production Summary Report', pageWidth / 2, 15, { align: 'center' });
+      doc.setLineWidth(0.5);
+      doc.line(14, 22, pageWidth - 14, 22);
+    };
+
+    const shiftNames = new Set();
+    machine_groups.forEach(group => {
+      group.machines.forEach(machine => {
+        machine.shifts.forEach(shift => {
+          shiftNames.add(shift.shift_name || `Shift ${shift.shift_no}`);
         });
       });
-  
-      
-      const totalRow = new Array(headers.length).fill('');
-      totalRow[0] = 'Total'; 
-      totalRow[headers.length - 1] = grandTotalProductionCount; 
-      tableData.push(totalRow);
-  
-      
-      autoTable(doc, {
-        head: [headers],
-        body: tableData,
-        startY: 30,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255] },
-        styles: { cellPadding: 1.5, fontSize: 6, valign: 'middle', lineWidth: 0.5 },
-        columnStyles: { 0: { fontStyle: 'bold' } }, 
-        margin: { top: 10 },
-        didDrawPage: () => {
-          addPageHeader();
+    });
+
+    const shiftNamesArray = Array.from(shiftNames).sort((a, b) => {
+      const shiftNumberA = parseInt(a.replace(/\D/g, ''));
+      const shiftNumberB = parseInt(b.replace(/\D/g, ''));
+      return shiftNumberA - shiftNumberB;
+    });
+
+    const headers = ['Groups', 'Work Centre', ...shiftNamesArray, 'Production Count', 'Target Count'];
+
+    const tableData = [];
+    let grandTotalProductionCount = 0;
+    let grandTotalTargetCount = 0;
+
+    machine_groups.forEach(group => {
+      let groupTotalCount = 0;
+      let groupTotalTarget = 0;
+
+      group.machines.forEach((machine, index) => {
+        const row = [];
+        let rowTotalProduction = 0;
+        let rowTotalTarget = 0;
+
+        if (index === 0) {
+          row.push({ content: group.group_name, styles: { fontStyle: 'bold' } });
+        } else {
+          row.push('');
         }
+
+        row.push(machine.machine_id);
+
+        shiftNamesArray.forEach(shiftName => {
+          const shift = machine.shifts.find(s => s.shift_name === shiftName || `Shift ${s.shift_no}` === shiftName);
+          const productionCountForShift = shift && !isNaN(shift.total_shift_production_count) ? shift.total_shift_production_count : 0;
+          const targetCountForShift = shift && !isNaN(shift.target_count) ? shift.target_count : 0;
+          row.push(`${productionCountForShift}/${targetCountForShift}`);
+          rowTotalProduction += productionCountForShift;
+          rowTotalTarget += targetCountForShift;
+        });
+
+        row.push(`${rowTotalProduction}/${rowTotalTarget}`);
+        groupTotalCount += rowTotalProduction;
+        groupTotalTarget += rowTotalTarget;
+
+        tableData.push(row);
+
+        grandTotalProductionCount += rowTotalProduction;
+        grandTotalTargetCount += rowTotalTarget;
       });
+
+      // Group total row with fractions
+      tableData[tableData.length - 1].push(`${groupTotalCount}/${groupTotalTarget}`);
+    });
+
+    
+    const totalRow = new Array(headers.length).fill('');
+    totalRow[0] = 'Total';
+    totalRow[headers.length - 2] = `${grandTotalProductionCount}/${grandTotalTargetCount}`;
+    totalRow[headers.length - 1] = `${grandTotalProductionCount}/${grandTotalTargetCount}`;
+    tableData.push(totalRow);
+
+    autoTable(doc, {
+      head: [headers],
+      body: tableData,
+      startY: 30,
+      theme: 'grid',
+      headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255] },
+      styles: { 
+        cellPadding: 1, 
+        fontSize: 5, 
+        valign: 'middle', 
+        lineWidth: 0.5 
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', fillColor: [240, 240, 240] }, 
+        1: { fontStyle: 'italic' }, 
+        ...shiftNamesArray.reduce((styles, shiftName, index) => {
+          styles[index + 2] = { columnWidth: 'auto' };
+          return styles;
+        }, {})
+      },
+      margin: { top: 10 },
+      didDrawPage: (data) => {
+        if (data.pageCount === 1) {
+          addPageHeader(); 
+        }
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245] 
+      }
+    });
+    
+
+    const fileName = `Production_Summary_Report_${currentDate}.pdf`;
+    doc.save(fileName);
+  } catch (error) {
+    console.error('Error generating PDF:', error.message);
+    setErrorMessage('Error generating PDF. Please check the console for details.');
+  }
+};
+
+
   
-      const fileName = `Production_Summary_Report_${currentDate}.pdf`;
-      doc.save(fileName);
-    } catch (error) {
-      console.error('Error generating PDF:', error.message);
-      setErrorMessage('Error generating PDF. Please check the console for details.');
-    }
-  };
+  
+  
+  
   
   
   

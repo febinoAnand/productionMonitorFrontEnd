@@ -72,13 +72,13 @@ const ProductionMonitor = () => {
               const shiftNumber = shift.shift_no;
               shiftNamesMap[shiftNumber] = shift.shift_name || `Shift ${shiftNumber}`;
               shiftNumbers.add(shiftNumber);
-              shiftTotals[shiftNumber] = (shiftTotals[shiftNumber] || 0) + (shift.production_count || 0);
+              shiftTotals[shiftNumber] = (shiftTotals[shiftNumber] || 0) + (shift.total_shift_production_count || 0);
             }
           });
 
           return {
             ...machine,
-            total_production_count: Object.values(shiftTotals).reduce((sum, count) => sum + count, 0),
+            total_shift_production_count: Object.values(shiftTotals).reduce((sum, count) => sum + count, 0),
             shiftTotals,
             production_date: date
           };
@@ -220,7 +220,7 @@ const ProductionMonitor = () => {
                           </CTableDataCell>
                         ))}
                         <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
-                          {group.machines.reduce((sum, machine) => sum + machine.total_production_count, 0)}
+                          {group.machines.reduce((sum, machine) => sum + machine.total_shift_production_count, 0)}
                         </CTableDataCell>
                       </CTableRow>
                     </CTableBody>
