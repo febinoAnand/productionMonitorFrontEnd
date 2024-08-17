@@ -104,26 +104,60 @@ const Machine = () => {
   const productionCount = todayData ? todayData.production_count : 'N/A';
 
   const data = {
-    labels: ['Label 1', 'Label 2', 'Label 3', 'Label 4', 'Label 5'],
+    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
     datasets: [
       {
-        label: 'Dataset 1',
-        data: [12, 19, 3, 5, 2],
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        label: 'Target Production',
+        data: [12, 19, 3, 5, 2, 3, 7],
+        backgroundColor: 'rgba(75, 192, 192, 0.5)',
         borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1,
+      },
+      {
+        label: 'Actual Production',
+        data: [14, 18, 5, 4, 7, 2, 9],
+        backgroundColor: 'rgba(153, 102, 255, 0.5)',
+        borderColor: 'rgba(153, 102, 255, 1)',
         borderWidth: 1,
       },
     ],
   };
-
+  
   const options = {
     scales: {
       y: {
         beginAtZero: true,
       },
     },
+    plugins: {
+      legend: {
+        display: true,
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            label += context.raw;
+            return label;
+          },
+        },
+      },
+      datalabels: {
+        anchor: 'end',
+        align: 'end',
+        color: '#000',
+        font: {
+          weight: 'bold',
+        },
+        formatter: (value) => value,
+      },
+    },
   };
-
+  
+  
   return (
     <div
       className="page"
@@ -191,9 +225,10 @@ const Machine = () => {
                   <td>{currentTime}</td>
                 </tr>
                 <tr>
-                  <td style={{ fontWeight: 'bold' }}>Today's Production</td>
+                  <td style={{ fontWeight: 'bold' }}>Today&apos;s Production</td>
                   <td>{productionCount}</td>
                 </tr>
+
                 <tr>
                   <td style={{ fontWeight: 'bold' }}>Actual Reading</td>
                   <td>{targetProduction}</td>
@@ -217,37 +252,36 @@ const Machine = () => {
       <div style={{ width: '100%' }}>
         <CRow>
           <CCol xs={12}>
-            <CCard className="mb-4">
-              <CCardHeader>
-                <strong>Machine Data</strong>
-              </CCardHeader>
-              <CCardBody>
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  <CTable striped hover>
-                    <CTableHead className="custom-table-header">
-                      <CTableRow>
-                        <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Date</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Data</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {machine.machine_data.map((data, index) => (
-                        <CTableRow key={index}>
-                          <CTableDataCell>{index + 1}</CTableDataCell>
-                          <CTableDataCell>{data.date}</CTableDataCell>
-                          <CTableDataCell>{data.time}</CTableDataCell>
-                          <CTableDataCell>{data.machine_id}</CTableDataCell>
-                          <CTableDataCell>{JSON.stringify(data.data)}</CTableDataCell>
-                        </CTableRow>
-                      ))}
-                    </CTableBody>
-                  </CTable>
-                </div>
-              </CCardBody>
-            </CCard>
+          <CCard className="mb-4">
+  <CCardHeader>
+    <strong>Machine Data - {machine.machine_id}</strong>
+  </CCardHeader>
+  <CCardBody>
+    <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+      <CTable striped hover>
+        <CTableHead className="custom-table-header">
+          <CTableRow>
+            <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
+            <CTableHeaderCell scope="col">Date</CTableHeaderCell>
+            <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+            <CTableHeaderCell scope="col">Data</CTableHeaderCell>
+          </CTableRow>
+        </CTableHead>
+        <CTableBody>
+          {machine.machine_data.map((data, index) => (
+            <CTableRow key={index}>
+              <CTableDataCell>{index + 1}</CTableDataCell>
+              <CTableDataCell>{data.date}</CTableDataCell>
+              <CTableDataCell>{data.time}</CTableDataCell>
+              <CTableDataCell>{JSON.stringify(data.data)}</CTableDataCell>
+            </CTableRow>
+          ))}
+        </CTableBody>
+      </CTable>
+    </div>
+  </CCardBody>
+</CCard>
+
           </CCol>
         </CRow>
       </div>

@@ -33,12 +33,12 @@ import BaseURL from 'src/assets/contants/BaseURL';
 
 const handleAuthError = (error) => {
     if (error.response && error.response.status === 401) {
-      // Token is invalid or expired
+      
       localStorage.removeItem('token');
-      // Optionally, redirect to the login page
-      window.location.href = '/login'; // Adjust the path as needed
+    
+      window.location.href = '/login'; 
     } else {
-      // Handle other types of errors
+     
       console.error("An error occurred:", error);
     }
   };
@@ -72,7 +72,7 @@ const Groups = () => {
             setGroupData(sortedData);
             setFilteredGroupData(sortedData);
         } catch (error) {
-            handleAuthError(error); // Use the handleAuthError function
+            handleAuthError(error); 
         }
     }, []);
 
@@ -82,7 +82,7 @@ const Groups = () => {
             const response = await axios.get(BaseURL + "devices/machine/", { headers: getAuthHeaders() });
             setMachineData(response.data);
         } catch (error) {
-            handleAuthError(error); // Use the handleAuthError function
+            handleAuthError(error); 
         }
     }, []);
     
@@ -168,7 +168,7 @@ const Groups = () => {
             setModalVisible(false);
             setSuccessMessage('Group updated successfully!');
         } catch (error) {
-            handleAuthError(error); // Use the handleAuthError function
+            handleAuthError(error); 
             setErrors(error.response?.data || {});
         }
     };
@@ -188,12 +188,18 @@ const Groups = () => {
             setNewGroupName('');
             setNewGroupMachines([]);
             setSuccessMessage('Group created successfully!');
+            handleCloseNewGroupModal(); 
         } catch (error) {
-            handleAuthError(error); // Use the handleAuthError function
+            handleAuthError(error); 
             setErrors(error.response?.data || {});
         }
     };
-
+    const handleCloseNewGroupModal = () => {
+        setNewGroupName('');
+        setNewGroupMachines([]);
+        setErrors({});
+        setNewGroupModalVisible(false);
+    };
 
     const handleDeleteGroup = async (groupId) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this group?");
@@ -207,7 +213,7 @@ const Groups = () => {
             fetchGroupData();
             setDeleteMessage('Group deleted successfully!');
         } catch (error) {
-            handleAuthError(error); // Use the handleAuthError function
+            handleAuthError(error); 
         }
     };
 
@@ -339,7 +345,7 @@ const Groups = () => {
                                         onChange={(e) => setSelectedGroup({ ...selectedGroup, group_name: e.target.value })}
                                     />
                                      {errors.group_name && (
-                                    <CFormText color="danger">{errors.group_name}</CFormText>
+                                    <CFormText color="danger"style={{ color: 'red' }}>{errors.group_name}</CFormText>
                                 )}
                                 </CCol>
                                 <CCol xs={12} className="mt-3">
@@ -357,7 +363,7 @@ const Groups = () => {
                                         ))}
                                     </CFormSelect>
                                     {errors.machines && (
-                                    <CFormText color="danger">{errors.machines}</CFormText>
+                                    <CFormText color="danger"style={{ color: 'red' }}>{errors.machines}</CFormText>
                                 )}
                                 </CCol>
                             </CRow>
@@ -390,7 +396,7 @@ const Groups = () => {
                                     onChange={(e) => setNewGroupName(e.target.value)}
                                 />
                                {errors.group_name && (
-                                    <CFormText color="danger">{errors.group_name}</CFormText>
+                                    <CFormText color="danger"style={{ color: 'red' }}>{errors.group_name}</CFormText>
                                 )}
                             </CCol>
                             <CCol xs={12} className="mt-3">
@@ -420,7 +426,7 @@ const Groups = () => {
                                     ))}
                                 </CFormSelect>
                                 {errors.machines && (
-                                    <CFormText color="danger">{errors.machines}</CFormText>
+                                    <CFormText color="danger"style={{ color: 'red' }}>{errors.machines}</CFormText>
                                 )}
                             </CCol>
                         </CRow>

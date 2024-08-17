@@ -104,7 +104,12 @@ const Shiftreport = () => {
   };
 
   const handleSearchClick = async () => {
-    if (!selectedMachine || !startDate) return;
+   
+    if (!selectedMachine || !startDate) {
+      
+      alert('Please select both a machine and a date.');
+      return;
+    }
 
     try {
       const machineId = machineOptions.find(machine => machine.name === selectedMachine).id;

@@ -17,16 +17,18 @@ const Dashboard = () => {
       'Content-Type': 'application/json'
     };
   };
-  const handleAuthError = () => {
+
+
+  const handleAuthError = useCallback(() => {
     localStorage.removeItem('token');
     navigate('/login');
-  };
+  }, [navigate]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
-      const response = await axios.get(BaseURL + 'data/dashboard/', { headers: getAuthHeaders() });
-      setDashboardData(response.data);
-      console.log(response.data)
+      const response = await axios.get(BaseURL + 'data/dashboard-data/', { headers: getAuthHeaders() });
+      setDashboardData(response.data.groups);
+      console.log(response.data.groups);
     } catch (error) {
       if (error.response && error.response.status === 401) {
         handleAuthError();
@@ -34,13 +36,13 @@ const Dashboard = () => {
         console.error('Error fetching dashboard data:', error);
       }
     }
-  };
+  }, [handleAuthError]);
 
-  const fetchMachineGroupData = async () => {
+  const fetchMachineGroupData = useCallback(async () => {
     try {
       const response = await axios.get(BaseURL + 'devices/machinegroup/', { headers: getAuthHeaders() });
       setMachineGroupData(response.data);
-      console.log(response.data)
+      console.log(response.data);
     } catch (error) {
       if (error.response && error.response.status === 401) {
         handleAuthError();
@@ -48,12 +50,12 @@ const Dashboard = () => {
         console.error('Error fetching machine group data:', error);
       }
     }
-  };
+  }, [handleAuthError]);
 
   const fetchData = useCallback(async () => {
     await Promise.all([fetchDashboardData(), fetchMachineGroupData()]);
     setLoading(false); 
-  }, []);
+  }, [fetchDashboardData, fetchMachineGroupData]);
 
   useEffect(() => {
     fetchData(); 
@@ -102,25 +104,25 @@ const Dashboard = () => {
     return <div>No data available.</div>; 
   }
 
-  const combinedData = machineGroupData.map(group => {
-    const dashboardGroup = dashboardData.find(dg => dg.group_id === group.group_id) || {};
+  const combinedData = dashboardData.map(group => {
+    const machineGroup = machineGroupData.find(mg => mg.group_id === group.group_id) || {};
     return {
       ...group,
-      ...dashboardGroup,
+      ...machineGroup,
       machines: group.machines.map(machine => {
-        const dashboardMachine = dashboardGroup.machines.find(dm => dm.machine_id === machine.machine_id) || {};
+        const machineData = machineGroup.machines?.find(m => m.machine_id === machine.machine_id) || {};
         return {
           ...machine,
-          ...dashboardMachine
+          ...machineData
         };
       })
     };
-  });
+  }).reverse(); 
 
   return (
     <div className="page" style={{ ...zoomOutStyle, marginTop: '20px' }}>
       <CRow className="mb-3">
-        {combinedData.slice().reverse().map((group) => (
+        {combinedData.map((group) => (
           group.machines.length > 0 && (
             <CCol xs={12} key={group.group_id} style={{ marginBottom: '20px' }}>
               <CCard>
