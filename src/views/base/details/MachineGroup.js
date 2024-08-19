@@ -8,10 +8,10 @@ import {
     CCardHeader,
     CCol,
     CFormInput,
-    CFormLabel,
-    CForm,
-    CRow,
     CInputGroup,
+    CFormLabel,
+    CFormText,
+    CRow,
     CTable,
     CTableBody,
     CTableDataCell,
@@ -25,7 +25,7 @@ import {
     CModalTitle,
     CTooltip,
     CAlert,
-    CFormText
+    CForm
 } from '@coreui/react';
 import axios from 'axios';
 import CIcon from '@coreui/icons-react';
@@ -33,15 +33,12 @@ import BaseURL from 'src/assets/contants/BaseURL';
 
 const handleAuthError = (error) => {
     if (error.response && error.response.status === 401) {
-      
-      localStorage.removeItem('token');
-    
-      window.location.href = '/login'; 
+        localStorage.removeItem('token');
+        window.location.href = '/login'; 
     } else {
-     
-      console.error("An error occurred:", error);
+        console.error("An error occurred:", error);
     }
-  };
+};
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
@@ -75,7 +72,6 @@ const Groups = () => {
             handleAuthError(error); 
         }
     }, []);
-
 
     const fetchMachineData = useCallback(async () => {
         try {
@@ -153,7 +149,25 @@ const Groups = () => {
         }));
     };
 
+    const validateGroupName = (name) => {
+        return name && name.trim() !== '';
+    };
+
+    const validateMachines = (machines) => {
+        return machines && machines.length > 0;
+    };
+
     const handleUpdateGroup = async () => {
+        if (!validateGroupName(selectedGroup.group_name)) {
+            setErrors((prevErrors) => ({ ...prevErrors, group_name: 'Group name is required' }));
+            return;
+        }
+
+        if (!validateMachines(selectedGroup.machines)) {
+            setErrors((prevErrors) => ({ ...prevErrors, machines: 'At least one machine must be selected' }));
+            return;
+        }
+
         try {
             const machineIds = selectedGroup.machines.map(machine => machine.id);
 
@@ -174,6 +188,16 @@ const Groups = () => {
     };
 
     const handleCreateNewGroup = async () => {
+        if (!validateGroupName(newGroupName)) {
+            setErrors((prevErrors) => ({ ...prevErrors, group_name: 'Group name is required' }));
+            return;
+        }
+
+        if (!validateMachines(newGroupMachines)) {
+            setErrors((prevErrors) => ({ ...prevErrors, machines: 'At least one machine must be selected' }));
+            return;
+        }
+
         try {
             const machineIds = newGroupMachines.map(machine => machine.id);
 
@@ -194,6 +218,7 @@ const Groups = () => {
             setErrors(error.response?.data || {});
         }
     };
+
     const handleCloseNewGroupModal = () => {
         setNewGroupName('');
         setNewGroupMachines([]);
@@ -216,7 +241,6 @@ const Groups = () => {
             handleAuthError(error); 
         }
     };
-
 
     useEffect(() => {
         if (successMessage || deleteMessage) {

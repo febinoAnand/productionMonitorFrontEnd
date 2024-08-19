@@ -345,9 +345,16 @@ applyHeaderStyles = () => {
               </CCol>
               <CCol md={3}>
   <CFormLabel htmlFor="productionPerHour">Production Per Hour <span className="text-danger">*</span></CFormLabel>
-  <CFormInput id="productionPerHour" placeholder="eg: 100 units" value={productionPerHour} onChange={this.handleFormData} isInvalid={!!errors.productionPerHead} />
-  {errors.productionPerHead && <CFormText className="text-danger">{errors.productionPerHour}</CFormText>}
+  <CFormInput 
+    id="productionPerHour" 
+    placeholder="eg: 100 units" 
+    value={productionPerHour} 
+    onChange={this.handleFormData} 
+    isInvalid={!!errors.productionPerHour} 
+  />
+  {errors.productionPerHour && <CFormText className="text-danger">{errors.productionPerHour}</CFormText>} {/* Corrected error reference here */}
 </CCol>
+
             </CForm>
           </CModalBody>
           <CModalFooter>

@@ -18,6 +18,7 @@ import {
   CTableRow,
   CInputGroup,
   CFormSelect,
+  
   CButton
 } from '@coreui/react';
 import DatePicker from 'react-datepicker';
@@ -74,6 +75,7 @@ const Shiftreport = () => {
   const [machineOptions, setMachineOptions] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState('');
   const [machineHourlyData, setMachineHourlyData] = useState(HARDCORE_SHIFT_DATA);
+  const [setErrorMessage] = useState('');
   const navigate = useNavigate(); 
 
   const logout = () => {
@@ -104,13 +106,11 @@ const Shiftreport = () => {
   };
 
   const handleSearchClick = async () => {
-   
+    
     if (!selectedMachine || !startDate) {
-      
-      alert('Please select both a machine and a date.');
+      setErrorMessage('Please select both a machine and a date.'); 
       return;
     }
-
     try {
       const machineId = machineOptions.find(machine => machine.name === selectedMachine).id;
       const formattedDate = format(startDate, 'yyyy-MM-dd');
@@ -164,7 +164,7 @@ const Shiftreport = () => {
         value={value || ""}
         onClick={onClick}
         readOnly
-        placeholder="Select date"
+        placeholder="yyyy-mm-dd"
         style={{ paddingRight: '30px', height: '38px', borderRadius: '0px' }}
       />
       <div className="input-group-append" style={{ borderRadius: '0px' }}>
@@ -227,6 +227,13 @@ const Shiftreport = () => {
                   <CIcon icon={cilSearch} />
                 </CButton>
               </CInputGroup>
+            </CCol>
+          </CRow>
+          <CRow className="mb-3">
+            <CCol md={12}>
+              <p style={{ color: 'blue' }}>
+                Please select both a machine and a date, then click the search button to view the shift report.
+              </p>
             </CCol>
           </CRow>
         </CCardBody>

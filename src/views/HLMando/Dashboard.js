@@ -67,7 +67,13 @@ const Dashboard = () => {
     return () => clearInterval(intervalId);
   }, [fetchData]);
 
-  const colors = ['#4a90e2', '#50e3c2', '#f5a623', '#d0021b', '#8b572a', '#7ed321'];
+  const colors = [
+    '#4a90e2', '#33FF57', '#3357FF', '#FF33A1', '#FF8C00', '#F1C40F',
+    '#E67E22', '#9B59B6', '#1ABC9C', '#2ECC71', '#3498DB', '#E74C3C',
+    '#F39C12', '#D35400', '#7F8C8D', '#BDC3C7', '#9B59B6', '#FF6F61'
+  ];
+  
+  
 
   const widgetStyles = {
     backgroundColor: '#4a90e2',
