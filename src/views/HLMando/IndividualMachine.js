@@ -50,7 +50,7 @@ const Machine = () => {
 
     if (machineId) {
       fetchMachineData();
-      const dataFetchInterval = setInterval(fetchMachineData, 3000);
+      const dataFetchInterval = setInterval(fetchMachineData, 5000);
 
       return () => clearInterval(dataFetchInterval);
     }
@@ -268,7 +268,7 @@ const Machine = () => {
           </CTableRow>
         </CTableHead>
         <CTableBody>
-          {machine.machine_data.map((data, index) => (
+        {machine.machine_data.slice().reverse().map((data, index) => (
             <CTableRow key={index}>
               <CTableDataCell>{index + 1}</CTableDataCell>
               <CTableDataCell>{data.date}</CTableDataCell>

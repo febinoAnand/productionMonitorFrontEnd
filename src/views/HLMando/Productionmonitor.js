@@ -16,7 +16,7 @@ import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
 import CIcon from '@coreui/icons-react';
 import { cilSearch } from '@coreui/icons';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -48,7 +48,14 @@ const ProductionMonitor = () => {
     };
 
     checkAuthAndFetchData();
-  }, []);
+
+    
+    const intervalId = setInterval(() => {
+      fetchData(selectedDate);
+    }, 5000); 
+
+    return () => clearInterval(intervalId);
+  }, [selectedDate]);
 
   const fetchData = async (date) => {
     setError(null);
@@ -68,7 +75,7 @@ const ProductionMonitor = () => {
           const shiftTotals = {};
           const shiftArray = machine.shifts || [];
           shiftArray.forEach(shift => {
-            if (shift.shift_no !== 0) {
+            if (shift.shift_no !== 0 && ![4, 5, 6].includes(shift.shift_no)) {  // Exclude Shifts 4, 5, and 6
               const shiftNumber = shift.shift_no;
               shiftNamesMap[shiftNumber] = shift.shift_name || `Shift ${shiftNumber}`;
               shiftNumbers.add(shiftNumber);
@@ -102,8 +109,10 @@ const ProductionMonitor = () => {
 
       setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        handleAuthError();
+      if (error.response) {
+        
+        console.error('Server responded with error:', error.response);
+        setError(`Server Error: ${error.response.status} - ${error.response.data.detail || 'An unknown error occurred'}`);
       } else {
         console.error('Error fetching data:', error);
         setError(`Error: ${error.message || 'An unknown error occurred'}`);
