@@ -16,7 +16,7 @@ import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
 import CIcon from '@coreui/icons-react';
 import { cilSearch } from '@coreui/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; 
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -48,14 +48,7 @@ const ProductionMonitor = () => {
     };
 
     checkAuthAndFetchData();
-
-    
-    const intervalId = setInterval(() => {
-      fetchData(selectedDate);
-    }, 5000); 
-
-    return () => clearInterval(intervalId);
-  }, [selectedDate]);
+  }, []);
 
   const fetchData = async (date) => {
     setError(null);
@@ -109,10 +102,8 @@ const ProductionMonitor = () => {
 
       setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
     } catch (error) {
-      if (error.response) {
-        
-        console.error('Server responded with error:', error.response);
-        setError(`Server Error: ${error.response.status} - ${error.response.data.detail || 'An unknown error occurred'}`);
+      if (error.response && error.response.status === 401) {
+        handleAuthError();
       } else {
         console.error('Error fetching data:', error);
         setError(`Error: ${error.message || 'An unknown error occurred'}`);
@@ -185,7 +176,6 @@ const ProductionMonitor = () => {
             <CCardHeader>
               <h5>{group.group_name || 'Group Name'}</h5>
             </CCardHeader>
-            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               <CCardBody style={{ marginTop: '10px' }}>
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                   <CTable striped hover>
@@ -236,7 +226,6 @@ const ProductionMonitor = () => {
                   </CTable>
                 </div>
               </CCardBody>
-            </div>
           </CCard>
         ))
       )}
