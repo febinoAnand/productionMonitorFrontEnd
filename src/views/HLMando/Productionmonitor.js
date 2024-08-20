@@ -11,6 +11,7 @@ import {
   CTableRow,
   CFormInput,
   CButton,
+  CSpinner, // Imported CSpinner for loading indicators
 } from '@coreui/react';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
@@ -31,6 +32,7 @@ const ProductionMonitor = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [shiftData, setShiftData] = useState({ names: {}, numbers: [] });
   const [selectedDate, setSelectedDate] = useState('');
+  const [loading, setLoading] = useState(true); // Added loading state
   const navigate = useNavigate();
 
   const getTodayDate = () => new Date().toISOString().split('T')[0];
@@ -52,6 +54,7 @@ const ProductionMonitor = () => {
 
   const fetchData = async (date) => {
     setError(null);
+    setLoading(true); // Set loading to true when fetching starts
     try {
       const response = await axios.post(
         `${BaseURL}data/production/`,
@@ -108,6 +111,8 @@ const ProductionMonitor = () => {
         console.error('Error fetching data:', error);
         setError(`Error: ${error.message || 'An unknown error occurred'}`);
       }
+    } finally {
+      setLoading(false); // Set loading to false after fetching completes
     }
   };
 
@@ -134,6 +139,18 @@ const ProductionMonitor = () => {
 
     applyHeaderStyles();
   }, [filteredData]);
+
+  if (loading) return (
+    <div style={{ textAlign: 'center', marginTop: '50px' }}>
+      <CSpinner color="primary" variant="grow" />
+          <CSpinner color="secondary" variant="grow" />
+          <CSpinner color="success" variant="grow" />
+          <CSpinner color="danger" variant="grow" />
+          <CSpinner color="warning" variant="grow" />
+          <CSpinner color="info" variant="grow" />
+          <CSpinner color="dark" variant="grow" />
+    </div>
+  );
 
   if (error) return <div>{error}</div>;
 

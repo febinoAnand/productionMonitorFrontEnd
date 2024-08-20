@@ -23,7 +23,8 @@ import {
   CFormInput,
   CFormLabel,
   CFormText,
-  CAlert
+  CAlert,
+  CSpinner
 } from '@coreui/react';
 import axios from 'axios';
 import CIcon from '@coreui/icons-react';
@@ -38,12 +39,9 @@ const getAuthHeaders = () => {
 
 const handleAuthError = (error) => {
   if (error.response && error.response.status === 401) {
-   
     localStorage.removeItem('token');
-  
     window.location.href = '/login'; 
   } else {
-    
     console.error("An error occurred:", error);
   }
 };
@@ -63,7 +61,8 @@ class MachineDetails extends React.Component {
       machineList: [],
       selectedMachine: null,
       successMessage: '',
-      errors: {} 
+      errors: {}, 
+      loading: false // Added loading state
     };
   }
 
@@ -72,13 +71,16 @@ class MachineDetails extends React.Component {
     this.applyHeaderStyles();
   }
 
- fetchMachineList = async () => {
+  fetchMachineList = async () => {
+    this.setState({ loading: true }); // Start loading
     try {
       const response = await axios.get(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
       const sortedData = response.data.reverse(); 
       this.setState({ machineList: sortedData });
     } catch (error) {
       handleAuthError(error);
+    } finally {
+      this.setState({ loading: false }); // End loading
     }
   }
 
@@ -124,7 +126,6 @@ class MachineDetails extends React.Component {
     this.setState({ [e.target.id]: e.target.value });
   }
 
-
   getRowData = (machine) => {
     this.setState({
       selectedMachine: machine,
@@ -143,7 +144,7 @@ class MachineDetails extends React.Component {
   }
 
   validateForm = () => {
-    const { machineID, name,productionPerHour } = this.state;
+    const { machineID, name, productionPerHour } = this.state;
     let errors = {};
     let isValid = true;
 
@@ -156,7 +157,6 @@ class MachineDetails extends React.Component {
       errors.name = "Name is required";
       isValid = false;
     }
-
 
     if (!productionPerHour) {
       errors.productionPerHour = "Production per hour is required";
@@ -173,44 +173,48 @@ class MachineDetails extends React.Component {
     }
 
     const { machineID, name, manufacture, line, productionPerHour } = this.state;
-  try {
-    const response = await axios.post(`${BaseURL}devices/machine/`, {
-      machine_id: machineID,
-      machine_name: name,
-      manufacture: manufacture,
-      line: line,
-      production_per_hour: productionPerHour,
-    }, { headers: getAuthHeaders() });
-    const newMachine = response.data;
-    this.displaySuccessMessage("Machine added successfully!");
-    this.setState((prevState) => ({
-      machineList: [newMachine, ...prevState.machineList], 
-    }));
-    this.closeAddModal(); 
-  } catch (error) {
-    handleAuthError(error);
+    this.setState({ loading: true }); // Start loading
+    try {
+      const response = await axios.post(`${BaseURL}devices/machine/`, {
+        machine_id: machineID,
+        machine_name: name,
+        manufacture: manufacture,
+        line: line,
+        production_per_hour: productionPerHour,
+      }, { headers: getAuthHeaders() });
+      const newMachine = response.data;
+      this.displaySuccessMessage("Machine added successfully!");
+      this.setState((prevState) => ({
+        machineList: [newMachine, ...prevState.machineList], 
+      }));
+      this.closeAddModal(); 
+    } catch (error) {
+      handleAuthError(error);
+    } finally {
+      this.setState({ loading: false }); // End loading
+    }
   }
-}
 
   machineUpdateData = async () => {
     if (!this.validateForm()) {
       return;
     }
 
-    const { selectedMachine, machineID, name, manufacture, line, hmiID, productionPerHour } = this.state;
+    const { selectedMachine, machineID, name, manufacture, line, productionPerHour } = this.state;
 
     if (!selectedMachine) {
       console.error("Selected machine data is missing!");
       return;
     }
   
+    this.setState({ loading: true }); // Start loading
     try {
       await axios.put(`${BaseURL}devices/machine/${selectedMachine.id}/`, {
         machine_id: machineID,
         machine_name: name,
         manufacture: manufacture,
         line: line,
-        device: hmiID,
+        device: this.state.hmiID,
         production_per_hour: productionPerHour,
       }, { headers: getAuthHeaders() });
       this.displaySuccessMessage("Machine updated successfully!");
@@ -218,6 +222,8 @@ class MachineDetails extends React.Component {
       this.fetchMachineList();
     } catch (error) {
       handleAuthError(error);
+    } finally {
+      this.setState({ loading: false }); // End loading
     }
   }
 
@@ -228,26 +234,42 @@ class MachineDetails extends React.Component {
       return;
     }
   
+    this.setState({ loading: true }); // Start loading
     try {
       await axios.delete(`${BaseURL}devices/machine/${machineId}/`, { headers: getAuthHeaders() });
       this.displaySuccessMessage("Machine deleted successfully!");
       this.fetchMachineList();
     } catch (error) {
       handleAuthError(error);
+    } finally {
+      this.setState({ loading: false }); // End loading
     }
   }
-applyHeaderStyles = () => {
+
+  applyHeaderStyles = () => {
     const headerCells = document.querySelectorAll('.custom-table-header th');
     headerCells.forEach((cell) => {
       cell.style.backgroundColor = '#047BC4';
       cell.style.color = 'white';
     });
   }
+
   render() {
-    const { machineList, showAddModal, showUpdateModal, machineID, name, manufacture, line, successMessage, errors,productionPerHour } = this.state;
+    const { machineList, showAddModal, showUpdateModal, machineID, name, manufacture, line, successMessage, errors, productionPerHour, loading } = this.state;
 
     return (
       <div className="page">
+        {loading && (
+          <div style={{ textAlign: 'center', marginTop: '50px' }}>
+            <CSpinner color="primary" variant="grow" />
+            <CSpinner color="secondary" variant="grow" />
+            <CSpinner color="success" variant="grow" />
+            <CSpinner color="danger" variant="grow" />
+            <CSpinner color="warning" variant="grow" />
+            <CSpinner color="info" variant="grow" />
+            <CSpinner color="dark" variant="grow" />
+          </div>
+        )}
         <CRow>
           {successMessage && (
             <CAlert color="success" dismissible onClose={() => this.setState({ successMessage: '' })}>

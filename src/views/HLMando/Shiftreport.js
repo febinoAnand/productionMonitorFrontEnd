@@ -18,7 +18,7 @@ import {
   CTableRow,
   CInputGroup,
   CFormSelect,
-  
+  CSpinner,
   CButton
 } from '@coreui/react';
 import DatePicker from 'react-datepicker';
@@ -77,6 +77,7 @@ const Shiftreport = () => {
   const [machineHourlyData, setMachineHourlyData] = useState(HARDCORE_SHIFT_DATA);
   const [setErrorMessage] = useState('');
   const navigate = useNavigate(); 
+  const [loading, setLoading] = useState(false);
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -84,6 +85,7 @@ const Shiftreport = () => {
   };
 
   const fetchData = async () => {
+    setLoading(true); 
     try {
       const response = await axios.get(`${BaseURL}devices/machine/`, {
         headers: {
@@ -97,20 +99,21 @@ const Shiftreport = () => {
       setMachineOptions(machineNames.map((name, index) => ({ name, id: machineIds[index] })));
     } catch (error) {
       if (error.response && error.response.status === 401) {
-
         logout();
       } else {
         console.error("Error fetching data:", error);
       }
+    } finally {
+      setLoading(false); 
     }
   };
 
   const handleSearchClick = async () => {
-    
     if (!selectedMachine || !startDate) {
       setErrorMessage('Please select both a machine and a date.'); 
       return;
     }
+    setLoading(true); 
     try {
       const machineId = machineOptions.find(machine => machine.name === selectedMachine).id;
       const formattedDate = format(startDate, 'yyyy-MM-dd');
@@ -127,11 +130,12 @@ const Shiftreport = () => {
       setMachineHourlyData(data.shifts.filter(shift => shift.timing && Object.keys(shift.timing).length > 0));
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        
         logout();
       } else {
         console.error("Error fetching machine hourly data:", error);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -177,6 +181,18 @@ const Shiftreport = () => {
 
   return (
     <div className="page">
+      {loading && (
+        <div style={{ textAlign: 'center', marginTop: '50px' }}>
+          <CSpinner color="primary" variant="grow" />
+          <CSpinner color="secondary" variant="grow" />
+          <CSpinner color="success" variant="grow" />
+          <CSpinner color="danger" variant="grow" />
+          <CSpinner color="warning" variant="grow" />
+          <CSpinner color="info" variant="grow" />
+          <CSpinner color="dark" variant="grow" />
+        </div>
+      )}
+
       <CCard className="mb-3" style={{ marginTop: '30px' }}>
         <CCardHeader>
           <h5>Shift Report</h5>

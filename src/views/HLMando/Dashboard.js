@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { CRow, CCol, CCard, CCardHeader, CCardBody, CWidgetStatsA } from '@coreui/react';
+import { CRow, CCol, CCard, CCardHeader, CCardBody, CWidgetStatsA,CSpinner } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import BaseURL from 'src/assets/contants/BaseURL';
 
@@ -103,7 +103,18 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>; 
+    // Original code: return <div>Loading...</div>;
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <CSpinner color="primary" variant="grow" />
+        <CSpinner color="secondary" variant="grow" />
+        <CSpinner color="success" variant="grow" />
+        <CSpinner color="danger" variant="grow" />
+        <CSpinner color="warning" variant="grow" />
+        <CSpinner color="info" variant="grow" />
+        <CSpinner color="dark" variant="grow" />
+      </div>
+    );
   }
 
   if (!dashboardData.length && !machineGroupData.length) {

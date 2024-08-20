@@ -23,21 +23,20 @@ import {
     CModalHeader,
     CModalTitle,
     CFormLabel,
-    CForm
+    CForm,
+    CSpinner
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import BaseURL from 'src/assets/contants/BaseURL';
+
 const handleAuthError = (error) => {
     if (error.response && error.response.status === 401) {
-      // Token is invalid or expired
-      localStorage.removeItem('token');
-      // Optionally, redirect to the login page
-      window.location.href = '/login'; // Adjust the path as needed
+        localStorage.removeItem('token');
+        window.location.href = '/login'; // Adjust the path as needed
     } else {
-      // Handle other types of errors
-      console.error("An error occurred:", error);
+        console.error("An error occurred:", error);
     }
-  };
+};
 
 const Users = () => {
     const [users, setUsers] = useState([]);
@@ -50,6 +49,7 @@ const Users = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [passwordModalVisible, setPasswordModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [loading, setLoading] = useState(false); // State to track loading
 
     useEffect(() => {
         fetchUsers();
@@ -71,9 +71,8 @@ const Users = () => {
         applyHeaderStyles();
     }, []);
 
-
-
     const fetchUsers = () => {
+        setLoading(true); // Set loading to true when starting data fetch
         const token = localStorage.getItem('token');
         axios.get(BaseURL + 'Userauth/userdetail/', {
             headers: {
@@ -81,19 +80,19 @@ const Users = () => {
             }
         })
             .then(response => {
-                // Transform the data to include the `name` field
                 const transformedData = response.data.map(user => ({
                     ...user,
                     name: `${user.usermod.first_name} ${user.usermod.last_name}`.trim()
                 }));
                 setUsers(transformedData);
                 setFilteredUsers(transformedData);
+                setLoading(false); // Set loading to false after data is fetched
             })
             .catch(error => {
                 handleAuthError(error);
+                setLoading(false); // Set loading to false if an error occurs
             });
     };
-    
 
     const handleSearch = () => {
         const query = document.getElementById('searchInput').value.toLowerCase();
@@ -178,21 +177,22 @@ const Users = () => {
         });
         setSelectedUsers([]);
     };
+
     const handleUpdateUser = () => {
         if (!selectedUser || !selectedUser.userdetail_id) {
             console.error('Error: No user selected for update.');
             return;
         }
-    
+
         const username = document.getElementById('name').value;
         const designation = document.getElementById('designation').value;
         const mobileno = document.getElementById('mobileno').value;
-    
+
         if (!username || !designation || !mobileno) {
             console.error('Error: Username, designation, or mobile number cannot be empty.');
             return;
         }
-    
+
         const updatedUser = {
             ...selectedUser,
             usermod: {
@@ -203,7 +203,7 @@ const Users = () => {
             mobile_no: mobileno,
             userActive: userActive
         };
-    
+
         const token = localStorage.getItem('token');
         axios.put(`${BaseURL}Userauth/userdetail/${selectedUser.userdetail_id}/`, updatedUser, {
             headers: {
@@ -220,7 +220,7 @@ const Users = () => {
                 handleAuthError(error);
             });
     };
-    
+
     const handleUpdatePassword = () => {
         if (!selectedUser || !selectedUser.userdetail_id) {
             console.error('Error: No user selected for password update.');
@@ -228,20 +228,20 @@ const Users = () => {
         }
         const newPassword = document.getElementById('newpassword').value;
         const confirmPassword = document.getElementById('confirmpassword').value;
-    
+
         if (newPassword !== confirmPassword) {
             console.error('Error: New Password and Confirm Password do not match.');
             return;
         }
-    
+
         const requestData = {
             user_id: selectedUser.user_id,
             username: selectedUser.usermod.username,
             new_password: newPassword,
             confirm_password: confirmPassword,
         };
-        console.log("data",requestData)
-    
+        console.log("data", requestData)
+
         const token = localStorage.getItem('token');
         axios.post(`${BaseURL}Userauth/change-password/`, requestData, {
             headers: {
@@ -257,7 +257,7 @@ const Users = () => {
             .catch(error => {
                 handleAuthError(error);
             });
-    };    
+    };
 
     const handleDeleteUser = (userId) => {
         const token = localStorage.getItem('token');
@@ -277,6 +277,16 @@ const Users = () => {
 
     return (
         <div className="page">
+             {loading && (
+                <div style={{ textAlign: 'center', marginTop: '50px' }}>
+                    <CSpinner color="primary" variant="grow" />
+                    <CSpinner color="secondary" variant="grow" />
+                    <CSpinner color="success" variant="grow" />
+                    <CSpinner color="danger" variant="grow" />
+                    <CSpinner color="warning" variant="grow" />
+                    <CSpinner color="info" variant="grow" />
+                </div>
+            )}
             {successMessage && (
                 <div className="alert alert-success" role="alert">
                     {successMessage}

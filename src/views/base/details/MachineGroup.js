@@ -25,7 +25,8 @@ import {
     CModalTitle,
     CTooltip,
     CAlert,
-    CForm
+    CForm,
+    CSpinner
 } from '@coreui/react';
 import axios from 'axios';
 import CIcon from '@coreui/icons-react';
@@ -60,9 +61,11 @@ const Groups = () => {
     const [successMessage, setSuccessMessage] = useState('');
     const [deleteMessage, setDeleteMessage] = useState('');
     const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
     const MESSAGE_DISPLAY_DURATION = 3000;
 
     const fetchGroupData = useCallback(async () => {
+        setLoading(true);
         try {
             const response = await axios.get(BaseURL + "devices/machinegroup/", { headers: getAuthHeaders() });
             const sortedData = response.data.reverse();
@@ -70,15 +73,20 @@ const Groups = () => {
             setFilteredGroupData(sortedData);
         } catch (error) {
             handleAuthError(error); 
+        } finally {
+            setLoading(false);
         }
     }, []);
 
     const fetchMachineData = useCallback(async () => {
+        setLoading(true);
         try {
             const response = await axios.get(BaseURL + "devices/machine/", { headers: getAuthHeaders() });
             setMachineData(response.data);
         } catch (error) {
             handleAuthError(error); 
+        } finally {
+            setLoading(false);
         }
     }, []);
     
@@ -168,6 +176,7 @@ const Groups = () => {
             return;
         }
 
+        setLoading(true);
         try {
             const machineIds = selectedGroup.machines.map(machine => machine.id);
 
@@ -184,6 +193,8 @@ const Groups = () => {
         } catch (error) {
             handleAuthError(error); 
             setErrors(error.response?.data || {});
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -198,6 +209,7 @@ const Groups = () => {
             return;
         }
 
+        setLoading(true);
         try {
             const machineIds = newGroupMachines.map(machine => machine.id);
 
@@ -216,6 +228,8 @@ const Groups = () => {
         } catch (error) {
             handleAuthError(error); 
             setErrors(error.response?.data || {});
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -233,12 +247,15 @@ const Groups = () => {
             return;
         }
 
+        setLoading(true);
         try {
             await axios.delete(`${BaseURL}devices/machinegroup/${groupId}/`, { headers: getAuthHeaders() });
             fetchGroupData();
             setDeleteMessage('Group deleted successfully!');
         } catch (error) {
             handleAuthError(error); 
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -255,6 +272,17 @@ const Groups = () => {
 
     return (
         <div className="page">
+          {loading && (
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+              <CSpinner color="primary" variant="grow" />
+              <CSpinner color="secondary" variant="grow" />
+              <CSpinner color="success" variant="grow" />
+              <CSpinner color="danger" variant="grow" />
+              <CSpinner color="warning" variant="grow" />
+              <CSpinner color="info" variant="grow" />
+              <CSpinner color="dark" variant="grow" />
+            </div>
+          )}
             {(successMessage || deleteMessage) && (
                 <CRow>
                     <CCol>
