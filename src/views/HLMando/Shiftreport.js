@@ -245,13 +245,6 @@ const Shiftreport = () => {
               </CInputGroup>
             </CCol>
           </CRow>
-          <CRow className="mb-3">
-            <CCol md={12}>
-              <p style={{ color: 'blue' }}>
-                Please select both a machine and a date, then click the search button to view the shift report.
-              </p>
-            </CCol>
-          </CRow>
         </CCardBody>
       </CCard>
 

@@ -13,7 +13,7 @@ import {
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import CIcon from '@coreui/icons-react';
-import { cilCalendar, cilSearch } from '@coreui/icons';
+import { cilCalendar} from '@coreui/icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import axios from 'axios';
@@ -40,8 +40,6 @@ const Download = () => {
   const [selectedMachine, setSelectedMachine] = useState('');
   const [machineOptions, setMachineOptions] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isDataFetched, setIsDataFetched] = useState(false);
-  const [data, setData] = useState(null);
   const navigate = useNavigate();
 
 
@@ -78,49 +76,8 @@ const Download = () => {
     setSelectedMachine(e.target.value);
   };
 
-  const searchHandler = async () => {
-    if (!selectedDate || !selectedMachine) {
-      setErrorMessage('Please select both the date and machine.');
-      setTimeout(() => setErrorMessage(''), 6000);
-      return;
-    }
-
-    try {
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      const machineId = selectedMachine;
-      
-      const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
-        date: formattedDate,
-        machine_id: machineId,
-      }, { headers: getAuthHeaders() });
-
-      if (response.status === 401) {
-        logout(navigate); 
-        return;
-      }
-
-      setData(response.data);
-      setIsDataFetched(true); 
-      setErrorMessage('');
-    } catch (error) {
-      console.error('Error fetching data:', error.message);
-      setErrorMessage('Error fetching data. Please try again.');
-      setTimeout(() => setErrorMessage(''), 6000);
-    }
-  };
-
   const generateShiftwisePDF = async () => {
-    if (!selectedDate || !selectedMachine) {
-        setErrorMessage('Please select both the date and machine to generate the PDF.');
-        setTimeout(() => setErrorMessage(''), 6000);
-        return;
-    }
-    if (!data || !isDataFetched) {
-        alert('No data available to generate the PDF. Please perform the search first.');
-        setTimeout(() => setErrorMessage(''), 6000);
-        return;
-    }
-
+    
     try {
         const formattedDate = format(selectedDate, 'yyyy-MM-dd');
         const machineId = selectedMachine;
@@ -426,15 +383,6 @@ const generateSummaryPDF = async () => {
                         dateFormat="dd/MM/yyyy"
                         popperPlacement="bottom-end"
                       />
-                      <CButton
-                        type="button"
-                        color="primary"
-                        className="ms-2"
-                        onClick={searchHandler}
-                        style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}
-                      >
-                        <CIcon icon={cilSearch} />
-                      </CButton>
                     </CInputGroup>
                   </div>
                 </CCol>
@@ -447,7 +395,6 @@ const generateSummaryPDF = async () => {
       variant="outline"
       className="mb-3"
       style={{ width: '100%' }}
-      disabled={!selectedDate || !selectedMachine}
       onClick={generateShiftwisePDF}
       
     >
