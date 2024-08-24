@@ -63,6 +63,9 @@ const HTTP = React.lazy(() => import('./views/base/configuration/HTTP'))
 const Users = React.lazy(() => import('./views/base/users/Users'))
 const Groups = React.lazy(() => import('./views/base/users/Groups'))
 const UserSubpage = React.lazy(() => import('./views/base/users/UserSubpage'))
+const Logindemo =React.lazy(()=> import('./views/base/users/Logindemo'))
+const Activatedemo =React.lazy(()=> import('./views/base/users/Activatedemo'))
+
 
 
 
@@ -185,6 +188,8 @@ const routes = [
   { path: '/users/users', name: 'Employees', element: Users}, //users
   { path: '/users/groups', name: 'User Management / Groups', element: Groups}, //users
   { path: '/users/usersubpage', name: 'UserSubpage', element: UserSubpage}, //users
+  {path:'/users/Logindemo',name:'Logindemo',element:Logindemo},
+  {path:'/users/Activatedemo',name:'Activatedemo',element:Activatedemo},
 
 
    //{ path: '/config/uart', name: 'UART', element: UART}, //config

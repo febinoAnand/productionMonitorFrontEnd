@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,Link } from 'react-router-dom';
 import {
   CButton,
   CCard,
@@ -11,17 +11,15 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
-  //CFormCheck,
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser, cilExitToApp } from '@coreui/icons';
 import BaseURL from 'src/assets/contants/BaseURL';
 
-
 const useAuth = () => {
   const login = (token) => {
     localStorage.setItem('token', token);
-    console.log(token)
+    console.log(token);
   };
 
   return { login };
@@ -30,7 +28,6 @@ const useAuth = () => {
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  //const [saveId, setSaveId] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -70,7 +67,7 @@ const Login = () => {
 
   return (
     <div className="bg-light min-vh-100 d-flex flex-row align-items-center justify-content-center">
-      <CContainer className="container-md"  style={{ transform: 'scale(0.8)'}}>
+      <CContainer className="container-md" style={{ transform: 'scale(0.8)' }}>
         <CRow className="justify-content-center">
           <CCol md={6}>
             <img
@@ -80,7 +77,7 @@ const Login = () => {
             />
           </CCol>
           <CCol md={3}>
-            <CCard className="p-4" style={{ height: '60vh', backgroundColor:  '#047BC4', borderRadius: 0, marginTop: '10px' }}>
+            <CCard className="p-4" style={{ height: '60vh', backgroundColor: '#047BC4', borderRadius: 0, marginTop: '10px' }}>
               <CCardBody style={{ height: '100%', overflowY: 'auto' }}>
                 <CForm onSubmit={handleLogin}>
                   <h1 style={{ color: '#FFFFFF' }}>Login</h1>
@@ -108,16 +105,34 @@ const Login = () => {
                     />
                   </CInputGroup>
                   <CButton type="submit" color="primary" className="w-100" style={{
-                    backgroundColor: 'black', 
-                    borderColor: '#6CB4EE', 
-                    color: 'white', 
-                    width: '40px', 
-                    height: '40px', 
-                    padding: 0, 
-                    borderRadius: '10px' 
+                    backgroundColor: 'black',
+                    borderColor: '#6CB4EE',
+                    color: 'white',
+                    width: '40px',
+                    height: '40px',
+                    padding: 0,
+                    borderRadius: '10px'
                   }}>
                     <CIcon icon={cilExitToApp} /> Sign In
                   </CButton>
+                  <CRow className="mt-3 text-center">
+                    <CCol>
+                    <Link
+      to="/users/Logindemo" 
+      style={{ fontSize: '0.8rem', color: '#FFFFFF' }}
+    >
+      Demo User OTP
+    </Link>
+                    </CCol>
+                    <CCol>
+                    <Link
+      to="/users/Activatedemo" 
+      style={{ fontSize: '0.8rem', color: '#FFFFFF' }}
+    >
+     To Activate Demo User
+    </Link>
+                    </CCol>
+                  </CRow>
                 </CForm>
               </CCardBody>
             </CCard>
