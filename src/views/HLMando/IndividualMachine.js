@@ -271,7 +271,7 @@ style={{
   <CCol xs={12}>
   <CCard className="mb-4">
 <CCardHeader>
-<strong>Machine Data - {machine.machine_id}</strong>
+<strong>Machine Data - {machine.machine_name}</strong>
 </CCardHeader>
 <CCardBody>
 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
