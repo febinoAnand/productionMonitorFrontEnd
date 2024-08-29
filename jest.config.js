@@ -1,12 +1,3 @@
-/**
- * Copyright (c) 2013-present, creativeLabs Lukasz Holeczek.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-'use strict'
-
 module.exports = {
   collectCoverageFrom: [
     'src/**/*.{js,jsx}',
@@ -14,4 +5,17 @@ module.exports = {
     '!src/serviceWorker.js',
     '!src/polyfill.js',
   ],
-}
+  transform: {
+    '^.+\\.(js|jsx)?$': 'babel-jest',
+  },
+  moduleFileExtensions: [
+    'js',
+    'jsx',
+    'json',
+    'node',
+  ],
+  // Add this if you're using modules like `axios` or `react`
+  moduleNameMapper: {
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+  },
+};

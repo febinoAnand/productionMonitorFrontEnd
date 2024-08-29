@@ -158,6 +158,10 @@ const Shiftreport = () => {
   const calculateTotal = (timing, index) => {
     return Object.values(timing).reduce((acc, value) => acc + value[index], 0);
   };
+
+   const calculateTotalDifferences = (timing) => {
+    return Object.values(timing).reduce((acc, [prodCount, targetCount]) => acc + (targetCount - prodCount), 0);
+  };
   
 
   const CustomInput = ({ value, onClick }) => (
@@ -264,6 +268,7 @@ const Shiftreport = () => {
                           <CTableHeaderCell scope="col">Time</CTableHeaderCell>
                           <CTableHeaderCell scope="col">Production Count </CTableHeaderCell>
                           <CTableHeaderCell scope="col">Target Count</CTableHeaderCell>
+                          <CTableHeaderCell scope="col">Differences</CTableHeaderCell>
                         </CTableRow>
                       </CTableHead>
                       <CTableBody>
@@ -272,6 +277,7 @@ const Shiftreport = () => {
                           <CTableDataCell>{timeRange}</CTableDataCell>
                           <CTableDataCell>{counts[0]}</CTableDataCell>
                           <CTableDataCell>{counts[1]}</CTableDataCell>
+                          <CTableDataCell>{counts[1] - counts[0]}</CTableDataCell>
                         </CTableRow>
                       ))}
                       <CTableRow>
@@ -281,6 +287,9 @@ const Shiftreport = () => {
                         </CTableDataCell>
                         <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
                           {calculateTotal(shift.timing, 1)}
+                        </CTableDataCell>
+                        <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                            {calculateTotalDifferences(shift.timing)}
                         </CTableDataCell>
                         </CTableRow>
                       </CTableBody>

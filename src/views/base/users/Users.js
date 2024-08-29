@@ -72,7 +72,7 @@ const Users = () => {
     }, []);
 
     const fetchUsers = () => {
-        setLoading(true); // Set loading to true when starting data fetch
+        setLoading(true); 
         const token = localStorage.getItem('token');
         axios.get(BaseURL + 'Userauth/userdetail/', {
             headers: {
@@ -86,11 +86,11 @@ const Users = () => {
                 }));
                 setUsers(transformedData);
                 setFilteredUsers(transformedData);
-                setLoading(false); // Set loading to false after data is fetched
+                setLoading(false); 
             })
             .catch(error => {
                 handleAuthError(error);
-                setLoading(false); // Set loading to false if an error occurs
+                setLoading(false); 
             });
     };
 
@@ -284,7 +284,7 @@ const Users = () => {
                     <CSpinner color="success" variant="grow" />
                     <CSpinner color="danger" variant="grow" />
                     <CSpinner color="warning" variant="grow" />
-                    <CSpinner color="info" variant="grow" />
+                    <CSpinner color="info" variant="grow" />0
                 </div>
             )}
             {successMessage && (
@@ -395,9 +395,9 @@ const Users = () => {
                     {selectedUser && (
                         <CForm>
                             <CRow className="mb-3">
-                                <CFormLabel htmlFor="name" className="col-sm-2 col-form-label">User Name</CFormLabel>
+                                <CFormLabel htmlFor="name" className="col-sm-2 col-form-label">Name</CFormLabel>
                                 <CCol md={4}>
-                                    <CFormInput type="text" id="name" name="name" defaultValue={selectedUser.name} readOnly />
+                                    <CFormInput type="text" id="name" name="name" defaultValue={selectedUser.name}  />
                                 </CCol>
 
                                 <CFormLabel htmlFor="email" className="col-sm-2 col-form-label">Email Address</CFormLabel>
@@ -410,7 +410,7 @@ const Users = () => {
                                 <CCol md={4}>
                                     <CFormInput type="text" id="designation" name="designation" defaultValue={selectedUser.designation} />
                                 </CCol>
-                                <CFormLabel htmlFor="mobileno" className="col-sm-2 col-form-label">Mobile N0</CFormLabel>
+                                <CFormLabel htmlFor="mobileno" className="col-sm-2 col-form-label">Mobile No</CFormLabel>
                                 <CCol md={4}>
                                     <CFormInput type="text" id="mobileno" name="mobileno" defaultValue={selectedUser.mobile_no} />
                                 </CCol>
