@@ -215,7 +215,7 @@ const ProductionMonitor = () => {
 
                           return (
                             <CTableRow key={machine.machine_id}>
-                              <CTableDataCell>{machine.machine_id}</CTableDataCell>
+                              <CTableDataCell>{machine.machine_name}</CTableDataCell>
                               {machineTotals.map((total, idx) => (
                                 <CTableDataCell key={idx}>{total}</CTableDataCell>
                               ))}
