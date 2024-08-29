@@ -92,14 +92,14 @@ const Download = () => {
             return;
         }
 
-        const { date, machine_id, shifts } = response.data;
+        const { date, machine_id,machine_name, shifts } = response.data;
 
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.width;
 
         
         doc.setFontSize(12);
-        doc.text(`Machine ID: ${machine_id}`, 14, 15);
+        doc.text(`Machine Name: ${machine_name}`, 14, 15);
         doc.text(`Date: ${date}`, pageWidth - 50, 15, { align: 'right' });
         doc.setFontSize(18);
         doc.text('Shiftwise Report', pageWidth / 2, 25, { align: 'center' });
@@ -259,7 +259,7 @@ const generateSummaryPDF = async () => {
           row.push('');
         }
 
-        row.push(machine.machine_id);
+        row.push(machine.machine_name);
 
         shiftNamesArray.forEach(shiftName => {
           const shift = machine.shifts.find(s => s.shift_name === shiftName || `Shift ${s.shift_no}` === shiftName);
@@ -330,17 +330,6 @@ const generateSummaryPDF = async () => {
     setErrorMessage('Error generating PDF. Please check the console for details.');
   }
 };
-
-
-  
-  
-  
-  
-  
-  
-  
-  
-
 
   return (
     <div className="page">

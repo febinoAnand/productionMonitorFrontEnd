@@ -160,7 +160,7 @@ const Shiftreport = () => {
   };
 
    const calculateTotalDifferences = (timing) => {
-    return Object.values(timing).reduce((acc, [prodCount, targetCount]) => acc + (targetCount - prodCount), 0);
+    return Object.values(timing).reduce((acc, [prodCount, targetCount]) => acc + (prodCount - targetCount), 0);
   };
   
 
@@ -277,7 +277,7 @@ const Shiftreport = () => {
                           <CTableDataCell>{timeRange}</CTableDataCell>
                           <CTableDataCell>{counts[0]}</CTableDataCell>
                           <CTableDataCell>{counts[1]}</CTableDataCell>
-                          <CTableDataCell>{counts[1] - counts[0]}</CTableDataCell>
+                          <CTableDataCell>{counts[0] - counts[1]}</CTableDataCell>
                         </CTableRow>
                       ))}
                       <CTableRow>

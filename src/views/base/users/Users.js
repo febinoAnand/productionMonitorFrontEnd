@@ -284,7 +284,7 @@ const Users = () => {
                     <CSpinner color="success" variant="grow" />
                     <CSpinner color="danger" variant="grow" />
                     <CSpinner color="warning" variant="grow" />
-                    <CSpinner color="info" variant="grow" />0
+                    <CSpinner color="info" variant="grow" />
                 </div>
             )}
             {successMessage && (
