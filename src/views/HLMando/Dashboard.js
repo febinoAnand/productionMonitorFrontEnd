@@ -99,7 +99,8 @@ const Dashboard = () => {
   };
 
   const handleClick = (groupName, machine) => {
-    navigate('/HLMando/IndividualMachine', { state: { groupName, machineId: machine.id } });
+    console.log('Selected Machine ID:', machine.machine_id);
+    navigate('/HLMando/IndividualMachine', { state: { groupName, machineId: machine.machine_id } });
   };
 
   if (loading) {

@@ -3,7 +3,6 @@ import { useNavigate,Link } from 'react-router-dom';
 import {
   CButton,
   CCard,
-  CCardBody,
   CCol,
   CContainer,
   CForm,
@@ -78,7 +77,6 @@ const Login = () => {
           </CCol>
           <CCol md={3}>
             <CCard className="p-4" style={{ height: '60vh', backgroundColor: '#047BC4', borderRadius: 0, marginTop: '10px' }}>
-              <CCardBody style={{ height: '100%', overflowY: 'auto' }}>
                 <CForm onSubmit={handleLogin}>
                   <h1 style={{ color: '#FFFFFF' }}>Login</h1>
                   <CInputGroup className="mb-3" style={{ marginTop: '40px' }}>
@@ -134,7 +132,6 @@ const Login = () => {
                     </CCol>
                   </CRow>
                 </CForm>
-              </CCardBody>
             </CCard>
           </CCol>
         </CRow>

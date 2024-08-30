@@ -2,308 +2,196 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
+import CIcon from '@coreui/icons-react';
+import { cilFeaturedPlaylist } from '@coreui/icons';
 import {
-CCard,
-CCardBody,
-CTable,
-CRow,
-CCol,
-CCardHeader,
-CTableHead,
-CTableRow,
-CTableHeaderCell,
-CTableBody,
-CTableDataCell,
-CSpinner
+  CCard,
+  CCardBody,
+  CRow,
+  CCol,
+  CTableHead,
+  CTableHeaderCell,
+  CTable,
+  CTableRow,
+  CTableDataCell,
+  CTableBody,
+  CCardHeader,
+  CSpinner,
 } from '@coreui/react';
-import { Bar } from 'react-chartjs-2';
-import {
-Chart as ChartJS,
-CategoryScale,
-LinearScale,
-BarElement,
-Title,
-Tooltip,
-Legend,
-} from 'chart.js';
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Machine = () => {
-const location = useLocation();
-const { state } = location;
-const { machineId } = state || { machineId: null };
+  const location = useLocation();
+  const { state } = location;
+  const { machineId } = state || { machineId: null };
 
-const [machine, setMachine] = useState(null);
-const [currentTime, setCurrentTime] = useState('');
+  const [machine, setMachine] = useState(null);
+  const [currentDate, setCurrentDate] = useState('');
+  const [currentTime, setCurrentTime] = useState('');
 
-useEffect(() => {
-const fetchMachineData = async () => {
-try {
-const response = await axios.get(`${BaseURL}data/individual/${machineId}/`, {
-  headers: getAuthHeaders(),
-});
-setMachine(response.data.machine_details);
-} catch (error) {
-console.error('Error fetching machine data:', error);
-}
-};
+  useEffect(() => {
+    const fetchMachineData = async () => {
+      try {
+        const response = await axios.get(`${BaseURL}data/individual-report/`, {
+          headers: getAuthHeaders(),
+        });
+        const machineData = response.data.machines.find(machine => machine.machine_id === machineId);
+        setMachine(machineData);
+      } catch (error) {
+        console.error('Error fetching machine data:', error);
+      }
+    };
 
-if (machineId) {
-fetchMachineData();
-const dataFetchInterval = setInterval(fetchMachineData, 5000);
-
-return () => clearInterval(dataFetchInterval);
-}
-}, [machineId]);
-
-useEffect(() => {
-const updateCurrentTime = () => {
-const now = new Date();
-const hours = now.getHours();
-const minutes = now.getMinutes();
-const seconds = now.getSeconds();
-const ampm = hours >= 12 ? 'PM' : 'AM';
-const formattedHours = hours % 12 || 12;
-const formattedMinutes = minutes.toString().padStart(2, '0');
-const formattedSeconds = seconds.toString().padStart(2, '0');
-setCurrentTime(`${formattedHours}:${formattedMinutes}:${formattedSeconds} ${ampm}`);
-};
-
-updateCurrentTime();
-const timeUpdateInterval = setInterval(updateCurrentTime, 1000);
-
-return () => clearInterval(timeUpdateInterval);
-}, []);
-
-useEffect(() => {
-const applyHeaderStyles = () => {
-const headerCells = document.querySelectorAll('.custom-table-header th');
-headerCells.forEach(cell => {
-cell.style.backgroundColor = '#047BC4';
-cell.style.color = 'white';
-});
-};
-
-applyHeaderStyles();
-}, [machine]);
-
-const getAuthHeaders = () => {
-const token = localStorage.getItem('token');
-return {
-'Authorization': `Token ${token}`,
-'Content-Type': 'application/json',
-};
-};
-
-if (!machine) return (
-<div style={{ textAlign: 'center', marginTop: '50px' }}>
-<CSpinner color="primary" variant="grow" />
-<CSpinner color="secondary" variant="grow" />
-<CSpinner color="success" variant="grow" />
-<CSpinner color="danger" variant="grow" />
-<CSpinner color="warning" variant="grow" />
-<CSpinner color="info" variant="grow" />
-<CSpinner color="dark" variant="grow" />
-</div>
-);
-
-const currentDate = new Date().toISOString().split('T')[0];
-const productionData = machine.production_data || [];
-const todayData = productionData.find(item => item.date === currentDate);
-const targetProduction = todayData ? todayData.target_production : 'N/A';
-const productionCount = todayData ? todayData.production_count : 'N/A';
-
-// Get the production and target data for the last seven days
-const lastSevenDaysData = machine.last_seven_days_production_by_day || {};
-const labels = Object.keys(lastSevenDaysData);
-const targetData = labels.map(day => lastSevenDaysData[day]?.target_production || 0);
-const actualData = labels.map(day => lastSevenDaysData[day]?.production_count || 0);
-
-const data = {
-labels,
-datasets: [
-{
-label: 'Target Production',
-data: targetData,
-backgroundColor: 'rgba(75, 192, 192, 0.5)',
-borderColor: 'rgba(75, 192, 192, 1)',
-borderWidth: 1,
-},
-{
-label: 'Actual Production',
-data: actualData,
-backgroundColor: 'rgba(153, 102, 255, 0.5)',
-borderColor: 'rgba(153, 102, 255, 1)',
-borderWidth: 1,
-},
-],
-};
-
-const options = {
-scales: {
-y: {
-beginAtZero: true,
-},
-},
-plugins: {
-legend: {
-display: true,
-},
-tooltip: {
-callbacks: {
-  label: function(context) {
-    let label = context.dataset.label || '';
-    if (label) {
-      label += ': ';
+    if (machineId) {
+      fetchMachineData();
+      const dataFetchInterval = setInterval(fetchMachineData, 10000);
+      return () => clearInterval(dataFetchInterval);
     }
-    label += context.raw;
-    return label;
-  },
-},
-},
-datalabels: {
-anchor: 'end',
-align: 'end',
-color: '#000',
-font: {
-  weight: 'bold',
-},
-formatter: (value) => value,
-},
-},
-};
+  }, [machineId]);
 
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = hours % 12 || 12;
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      const formattedSeconds = seconds.toString().padStart(2, '0');
+      const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
 
-return (
-<div
-className="page"
-style={{
-display: 'flex',
-flexDirection: 'column',
-alignItems: 'center',
-minHeight: '100vh',
-paddingTop: '50px',
-}}
->
-<div
-style={{
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'flex-start',
-  width: '100%',
-  marginBottom: '30px',
-}}
->
-<CCard style={{ maxWidth: '600px', width: '100%' }}>
-  <CCardBody>
-    <h3>Machine Details</h3>
-    <CTable striped hover style={{ fontSize: '0.9rem' }}>
-      <tbody>
-        <tr>
-          <td style={{ fontWeight: 'bold' }}>Machine Name</td>
-          <td>{machine.machine_name}</td>
-        </tr>
-        <tr>
-          <td style={{ fontWeight: 'bold' }}>Machine ID</td>
-          <td>{machine.machine_id || 'N/A'}</td>
-        </tr>
-        <tr>
-          <td style={{ fontWeight: 'bold' }}>Line</td>
-          <td>{machine.line || 'N/A'}</td>
-        </tr>
-        <tr>
-          <td style={{ fontWeight: 'bold' }}>Manufacture</td>
-          <td>{machine.manufacture || 'N/A'}</td>
-        </tr>
-        <tr>
-          <td style={{ fontWeight: 'bold' }}>Year</td>
-          <td>{machine.year || 'N/A'}</td>
-        </tr>
-        <tr>
-          <td style={{ fontWeight: 'bold' }}>Production per hour</td>
-          <td>{machine.production_per_hour || 'N/A'}</td>
-        </tr>
-      </tbody>
-    </CTable>
-  </CCardBody>
-</CCard>
-<CCard style={{ maxWidth: '600px', width: '100%', marginLeft: '50px' }}>
-  <CCardBody>
-    <h3>Production Data</h3>
-    <CTable striped hover style={{ fontSize: '0.9rem' }}>
-      <tbody>
-        <tr>
-          <td style={{ fontWeight: 'bold' }}>Date</td>
-          <td>{currentDate}</td>
-        </tr>
-        <tr>
-          <td style={{ fontWeight: 'bold' }}>Time</td>
-          <td>{currentTime}</td>
-        </tr>
-        <tr>
-          <td style={{ fontWeight: 'bold' }}>Today&apos;s Production</td>
-          <td>{productionCount}</td>
-        </tr>
+      setCurrentTime(`${formattedHours}:${formattedMinutes}:${formattedSeconds} ${ampm}`);
+      setCurrentDate(formattedDate);
+    };
 
-        <tr>
-          <td style={{ fontWeight: 'bold' }}>Actual Reading</td>
-          <td>{targetProduction}</td>
-        </tr>
-      </tbody>
-    </CTable>
-  </CCardBody>
-</CCard>
-</div>
-<div style={{ width: '100%', marginBottom: '30px' }}>
-<CCard className="mb-4">
-  <CCardHeader>
-    <strong>Production Chart</strong>
-  </CCardHeader>
-  <CCardBody>
-    <Bar data={data} options={options} />
-  </CCardBody>
-</CCard>
-</div>
+    updateDateTime();
+    const timeUpdateInterval = setInterval(updateDateTime, 1000);
 
-<div style={{ width: '100%' }}>
-<CRow>
-  <CCol xs={12}>
-  <CCard className="mb-4">
-<CCardHeader>
-<strong>Machine Data - {machine.machine_name}</strong>
-</CCardHeader>
-<CCardBody>
-<div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-<CTable striped hover>
-<CTableHead className="custom-table-header">
-  <CTableRow>
-    <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
-    <CTableHeaderCell scope="col">Date</CTableHeaderCell>
-    <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-    <CTableHeaderCell scope="col">Data</CTableHeaderCell>
-  </CTableRow>
-</CTableHead>
-<CTableBody>
-{machine.machine_data.slice().reverse().map((data, index) => (
-    <CTableRow key={index}>
-      <CTableDataCell>{index + 1}</CTableDataCell>
-      <CTableDataCell>{data.date}</CTableDataCell>
-      <CTableDataCell>{data.time}</CTableDataCell>
-      <CTableDataCell>{JSON.stringify(data.data)}</CTableDataCell>
-    </CTableRow>
-  ))}
-</CTableBody>
-</CTable>
-</div>
-</CCardBody>
-</CCard>
+    return () => clearInterval(timeUpdateInterval);
+  }, []);
 
-  </CCol>
-</CRow>
-</div>
-</div>
-);
+  useEffect(() => {
+    const applyHeaderStyles = () => {
+      const headerCells = document.querySelectorAll('.custom-table-header th');
+      headerCells.forEach(cell => {
+        cell.style.backgroundColor = '#047BC4';
+        cell.style.color = 'white';
+      });
+    };
+
+    applyHeaderStyles();
+  }, [machine]); // Ensure it runs when machine data changes
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      'Authorization': `Token ${token}`,
+      'Content-Type': 'application/json',
+    };
+  };
+
+  if (!machine) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <CSpinner color="primary" variant="grow" />
+        <CSpinner color="secondary" variant="grow" />
+        <CSpinner color="success" variant="grow" />
+        <CSpinner color="danger" variant="grow" />
+        <CSpinner color="warning" variant="grow" />
+        <CSpinner color="info" variant="grow" />
+        <CSpinner color="dark" variant="grow" />
+      </div>
+    );
+  }
+
+  const productionData = machine.shifts_data || {};
+  const shiftNames = Object.keys(productionData); // Get all shift names
+
+  return (
+    <div
+      className="page"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        minHeight: '100vh',
+        paddingTop: '50px',
+      }}
+    >
+      <CCard style={{ maxWidth: '450px', width: '100%', marginBottom: '15px' }}>
+        <CCardBody style={{ textAlign: 'center' }}>
+          <CIcon icon={cilFeaturedPlaylist} size="4xl" style={{ color: '#047BC4', marginBottom: '20px' }} />
+          <h2 style={{ textAlign: 'center', color: '#047BC4' }}>{machine.machine_name}</h2>
+          <CTable striped hover style={{ fontSize: '0.9rem', marginTop: '20px', textAlign: 'left' }}>
+            <CTableBody>
+              {shiftNames.length > 0 && (
+                <>
+                  {shiftNames.map(shiftName => {
+                    const shiftData = productionData[shiftName];
+                    const shiftTimes = Object.keys(shiftData);
+                    const currentShiftData = shiftTimes.find(time => shiftData[time]);
+
+                    return (
+                      <React.Fragment key={shiftName}>
+                        <CTableRow>
+                          <CTableDataCell style={{ fontWeight: 'bold' }}>Production Count for {shiftName}</CTableDataCell>
+                          <CTableDataCell>{currentShiftData ? shiftData[currentShiftData].actual_production : 'N/A'}</CTableDataCell>
+                        </CTableRow>
+                        <CTableRow>
+                          <CTableDataCell style={{ fontWeight: 'bold' }}>Shift Time</CTableDataCell>
+                          <CTableDataCell>{currentShiftData || 'N/A'}</CTableDataCell>
+                        </CTableRow>
+                      </React.Fragment>
+                    );
+                  })}
+                </>
+              )}
+              <CTableRow>
+                <CTableDataCell style={{ fontWeight: 'bold' }}>Date</CTableDataCell>
+                <CTableDataCell>{currentDate}</CTableDataCell>
+              </CTableRow>
+            </CTableBody>
+          </CTable>
+        </CCardBody>
+      </CCard>
+
+      {/* Shift Report Table */}
+      <div style={{ width: '100%' }}>
+        <CRow>
+          <CCol xs={12}>
+            <CCard className="mb-4">
+              <CCardHeader>
+                <strong>Shift Wise Report</strong>
+              </CCardHeader>
+              <CCardBody>
+                {shiftNames.map(shiftName => (
+                  <div key={shiftName} style={{ marginBottom: '20px' }}>
+                    <strong>{shiftName}</strong>
+                    <CTable striped hover>
+                      <CTableHead className="custom-table-header">
+                        <CTableRow>
+                          <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+                          <CTableHeaderCell scope="col">Production Count</CTableHeaderCell>
+                        </CTableRow>
+                      </CTableHead>
+                      <CTableBody>
+                        {Object.keys(productionData[shiftName]).map(timeRange => (
+                          <CTableRow key={timeRange}>
+                            <CTableDataCell>{timeRange}</CTableDataCell>
+                            <CTableDataCell>{productionData[shiftName][timeRange].actual_production}</CTableDataCell>
+                          </CTableRow>
+                        ))}
+                      </CTableBody>
+                    </CTable>
+                  </div>
+                ))}
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      </div>
+    </div>
+  );
 };
 
 export default Machine;
