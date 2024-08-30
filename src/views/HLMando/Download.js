@@ -92,7 +92,7 @@ const Download = () => {
             return;
         }
 
-        const { date, machine_id,machine_name, shifts } = response.data;
+        const { date, machine_name, shifts } = response.data;
 
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.width;
