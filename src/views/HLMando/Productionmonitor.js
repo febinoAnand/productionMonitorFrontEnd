@@ -11,7 +11,7 @@ import {
   CTableRow,
   CFormInput,
   CButton,
-  CSpinner, // Imported CSpinner for loading indicators
+  CSpinner,
 } from '@coreui/react';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
@@ -32,7 +32,7 @@ const ProductionMonitor = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [shiftData, setShiftData] = useState({ names: {}, numbers: [] });
   const [selectedDate, setSelectedDate] = useState('');
-  const [loading, setLoading] = useState(true); // Added loading state
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const getTodayDate = () => new Date().toISOString().split('T')[0];
@@ -54,7 +54,7 @@ const ProductionMonitor = () => {
 
   const fetchData = async (date) => {
     setError(null);
-    setLoading(true); // Set loading to true when fetching starts
+    setLoading(true);
     try {
       const response = await axios.post(
         `${BaseURL}data/production/`,
@@ -71,7 +71,7 @@ const ProductionMonitor = () => {
           const shiftTotals = {};
           const shiftArray = machine.shifts || [];
           shiftArray.forEach(shift => {
-            if (shift.shift_no !== 0 && ![4, 5, 6].includes(shift.shift_no)) {  // Exclude Shifts 4, 5, and 6
+            if (shift.shift_no !== 0 && ![4, 5, 6].includes(shift.shift_no)) {
               const shiftNumber = shift.shift_no;
               shiftNamesMap[shiftNumber] = shift.shift_name || `Shift ${shiftNumber}`;
               shiftNumbers.add(shiftNumber);
@@ -112,7 +112,7 @@ const ProductionMonitor = () => {
         setError(`Error: ${error.message || 'An unknown error occurred'}`);
       }
     } finally {
-      setLoading(false); // Set loading to false after fetching completes
+      setLoading(false);
     }
   };
 
@@ -122,9 +122,11 @@ const ProductionMonitor = () => {
   };
 
   const handleSearch = async () => {
-    const today = getTodayDate();
-    if (selectedDate && selectedDate !== today) {
+    console.log('Selected date:', selectedDate);
+    if (selectedDate) {
       await fetchData(selectedDate);
+    } else {
+      setError('Please select a date.');
     }
   };
 
@@ -170,6 +172,7 @@ const ProductionMonitor = () => {
               onChange={(e) => setSelectedDate(e.target.value)}
               placeholder="Select Date"
               style={{ width: '90px' }}
+              max={getTodayDate()}
             />
             <CButton
               type="button"
