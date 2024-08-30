@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';import {
+import React, { useState } from 'react';
+import {
   CButton,
   CCard,
   CCardBody,
@@ -43,7 +43,7 @@ const LoginDemo = () => {
 
       if (response.ok) {
         setResponseStatus('success');
-        setResponseMessage(`OTP generated: ${data.otp}`);
+        setResponseMessage(`OTP generated successfully.`);
         setOtp(data.otp);
       } else {
         setResponseStatus('danger');
@@ -92,6 +92,11 @@ const LoginDemo = () => {
                     {responseStatus && (
                       <CAlert color={responseStatus} className="mb-3">
                         {responseMessage}
+                      </CAlert>
+                    )}
+                    {otp && (
+                      <CAlert color="info" className="mb-3">
+                        OTP: {otp}
                       </CAlert>
                     )}
                     <CButton onClick={handleGenerateOTP} color="primary" className="px-4">

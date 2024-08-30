@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { cilTrash, cilPen, cilLockLocked } from '@coreui/icons';
 import {
@@ -49,15 +49,11 @@ const Users = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [passwordModalVisible, setPasswordModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-    const [loading, setLoading] = useState(false); // State to track loading
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         fetchUsers();
     }, []);
-
-    useEffect(() => {
-        handleSearch();
-    }, [searchQuery, users]);
 
     const applyHeaderStyles = () => {
         const headerCells = document.querySelectorAll('.custom-table-header th');
@@ -94,7 +90,7 @@ const Users = () => {
             });
     };
 
-    const handleSearch = () => {
+    const handleSearch = useCallback(() => {
         const query = document.getElementById('searchInput').value.toLowerCase();
         const filtered = users.filter(user => {
             const searchFields = [
@@ -111,7 +107,11 @@ const Users = () => {
             );
         });
         setFilteredUsers(filtered);
-    };
+    }, [users]);
+
+    useEffect(() => {
+        handleSearch();
+    }, [searchQuery, users, handleSearch]);
 
     const handleTableRowClick = (user) => {
         setSelectedUser(user);
@@ -240,7 +240,6 @@ const Users = () => {
             new_password: newPassword,
             confirm_password: confirmPassword,
         };
-        console.log("data", requestData)
 
         const token = localStorage.getItem('token');
         axios.post(`${BaseURL}Userauth/change-password/`, requestData, {

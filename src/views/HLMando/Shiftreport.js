@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom'; 
@@ -79,12 +79,12 @@ const Shiftreport = () => {
   const navigate = useNavigate(); 
   const [loading, setLoading] = useState(false);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     navigate('/login'); 
-  };
+  }, [navigate]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true); 
     try {
       const response = await axios.get(`${BaseURL}devices/machine/`, {
@@ -106,7 +106,7 @@ const Shiftreport = () => {
     } finally {
       setLoading(false); 
     }
-  };
+  }, [logout]);
 
   const handleSearchClick = async () => {
     if (!selectedMachine || !startDate) {
@@ -141,7 +141,7 @@ const Shiftreport = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   useEffect(() => {
     const applyHeaderStyles = () => {

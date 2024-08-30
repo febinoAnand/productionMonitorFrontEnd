@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   CCard,
   CCardBody,
@@ -17,7 +17,7 @@ import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
 import CIcon from '@coreui/icons-react';
 import { cilSearch } from '@coreui/icons';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -35,24 +35,9 @@ const ProductionMonitor = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const getTodayDate = () => new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
 
-  useEffect(() => {
-    const today = getTodayDate();
-    setSelectedDate(today);
-
-    const checkAuthAndFetchData = async () => {
-      if (!localStorage.getItem('token')) {
-        handleAuthError(); 
-        return;
-      }
-      await fetchData(today);
-    };
-
-    checkAuthAndFetchData();
-  }, []);
-
-  const fetchData = async (date) => {
+  const fetchData = useCallback(async (date) => {
     setError(null);
     setLoading(true);
     try {
@@ -106,7 +91,8 @@ const ProductionMonitor = () => {
       setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        handleAuthError();
+        localStorage.removeItem('token');
+        navigate('/login');
       } else {
         console.error('Error fetching data:', error);
         setError(`Error: ${error.message || 'An unknown error occurred'}`);
@@ -114,12 +100,26 @@ const ProductionMonitor = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
-  const handleAuthError = () => {
+  const handleAuthError = useCallback(() => {
     localStorage.removeItem('token');
-    navigate('/login'); 
-  };
+    navigate('/login');
+  }, [navigate]);
+
+  useEffect(() => {
+    setSelectedDate(today);
+
+    const checkAuthAndFetchData = async () => {
+      if (!localStorage.getItem('token')) {
+        handleAuthError(); 
+        return;
+      }
+      await fetchData(today);
+    };
+
+    checkAuthAndFetchData();
+  }, [fetchData, handleAuthError, today]);
 
   const handleSearch = async () => {
     console.log('Selected date:', selectedDate);
@@ -145,12 +145,12 @@ const ProductionMonitor = () => {
   if (loading) return (
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
       <CSpinner color="primary" variant="grow" />
-          <CSpinner color="secondary" variant="grow" />
-          <CSpinner color="success" variant="grow" />
-          <CSpinner color="danger" variant="grow" />
-          <CSpinner color="warning" variant="grow" />
-          <CSpinner color="info" variant="grow" />
-          <CSpinner color="dark" variant="grow" />
+      <CSpinner color="secondary" variant="grow" />
+      <CSpinner color="success" variant="grow" />
+      <CSpinner color="danger" variant="grow" />
+      <CSpinner color="warning" variant="grow" />
+      <CSpinner color="info" variant="grow" />
+      <CSpinner color="dark" variant="grow" />
     </div>
   );
 
@@ -172,7 +172,7 @@ const ProductionMonitor = () => {
               onChange={(e) => setSelectedDate(e.target.value)}
               placeholder="Select Date"
               style={{ width: '90px' }}
-              max={getTodayDate()}
+              max={today}
             />
             <CButton
               type="button"
@@ -196,56 +196,56 @@ const ProductionMonitor = () => {
             <CCardHeader>
               <h5>{group.group_name || 'Group Name'}</h5>
             </CCardHeader>
-              <CCardBody style={{ marginTop: '10px' }}>
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  <CTable striped hover>
-                    <CTableHead className="custom-table-header">
-                      <CTableRow>
-                        <CTableHeaderCell rowSpan="2" scope="col">WORK CENTER</CTableHeaderCell>
-                        {shiftNumbers.length > 0 && shiftNumbers.map((shiftNumber, index) => (
-                          <CTableHeaderCell key={index} colSpan="1" scope="col">
-                            {shiftNamesMap[shiftNumber] || `Shift ${shiftNumber}`}
-                          </CTableHeaderCell>
-                        ))}
-                        <CTableHeaderCell rowSpan="2" scope="col">Total</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {group.machines && group.machines.length > 0 ? (
-                        group.machines.map(machine => {
-                          const machineTotals = shiftNumbers.map(shiftNumber => machine.shiftTotals[shiftNumber] || 0);
-                          const total = machineTotals.reduce((sum, value) => sum + value, 0);
+            <CCardBody style={{ marginTop: '10px' }}>
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                <CTable striped hover>
+                  <CTableHead className="custom-table-header">
+                    <CTableRow>
+                      <CTableHeaderCell rowSpan="2" scope="col">WORK CENTER</CTableHeaderCell>
+                      {shiftNumbers.length > 0 && shiftNumbers.map((shiftNumber, index) => (
+                        <CTableHeaderCell key={index} colSpan="1" scope="col">
+                          {shiftNamesMap[shiftNumber] || `Shift ${shiftNumber}`}
+                        </CTableHeaderCell>
+                      ))}
+                      <CTableHeaderCell rowSpan="2" scope="col">Total</CTableHeaderCell>
+                    </CTableRow>
+                  </CTableHead>
+                  <CTableBody>
+                    {group.machines && group.machines.length > 0 ? (
+                      group.machines.map(machine => {
+                        const machineTotals = shiftNumbers.map(shiftNumber => machine.shiftTotals[shiftNumber] || 0);
+                        const total = machineTotals.reduce((sum, value) => sum + value, 0);
 
-                          return (
-                            <CTableRow key={machine.machine_id}>
-                              <CTableDataCell>{machine.machine_name}</CTableDataCell>
-                              {machineTotals.map((total, idx) => (
-                                <CTableDataCell key={idx}>{total}</CTableDataCell>
-                              ))}
-                              <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>{total}</CTableDataCell>
-                            </CTableRow>
-                          );
-                        })
-                      ) : (
-                        <CTableRow>
-                          <CTableDataCell colSpan={shiftNumbers.length + 2}>No machines available</CTableDataCell>
-                        </CTableRow>
-                      )}
+                        return (
+                          <CTableRow key={machine.machine_id}>
+                            <CTableDataCell>{machine.machine_name}</CTableDataCell>
+                            {machineTotals.map((total, idx) => (
+                              <CTableDataCell key={idx}>{total}</CTableDataCell>
+                            ))}
+                            <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>{total}</CTableDataCell>
+                          </CTableRow>
+                        );
+                      })
+                    ) : (
                       <CTableRow>
-                        <CTableDataCell><strong>Total</strong></CTableDataCell>
-                        {shiftNumbers.map((shiftNumber, idx) => (
-                          <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }} key={idx}>
-                            {group.machines.reduce((sum, machine) => sum + (machine.shiftTotals[shiftNumber] || 0), 0)}
-                          </CTableDataCell>
-                        ))}
-                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
-                          {group.machines.reduce((sum, machine) => sum + machine.total_shift_production_count, 0)}
-                        </CTableDataCell>
+                        <CTableDataCell colSpan={shiftNumbers.length + 2}>No machines available</CTableDataCell>
                       </CTableRow>
-                    </CTableBody>
-                  </CTable>
-                </div>
-              </CCardBody>
+                    )}
+                    <CTableRow>
+                      <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>Total</CTableDataCell>
+                      {shiftNumbers.map((shiftNumber, idx) => (
+                        <CTableDataCell key={idx} style={{fontWeight: 'bold', color: '#007bff' }}>
+                          {group.machines.reduce((sum, machine) => sum + (machine.shiftTotals[shiftNumber] || 0), 0)}
+                        </CTableDataCell>
+                      ))}
+                      <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
+                        {group.machines.reduce((sum, machine) => sum + machine.total_shift_production_count, 0)}
+                      </CTableDataCell>
+                    </CTableRow>
+                  </CTableBody>
+                </CTable>
+              </div>
+            </CCardBody>
           </CCard>
         ))
       )}
