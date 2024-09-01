@@ -75,9 +75,7 @@ const Download = () => {
   const handleMachineChange = (e) => {
     setSelectedMachine(e.target.value);
   };
-
   const generateShiftwisePDF = async () => {
-    
     try {
         const formattedDate = format(selectedDate, 'yyyy-MM-dd');
         const machineId = selectedMachine;
@@ -94,87 +92,104 @@ const Download = () => {
 
         const { date, machine_name, shifts } = response.data;
 
-        const doc = new jsPDF();
+        const doc = new jsPDF({
+            orientation: 'p', // Portrait mode
+            unit: 'mm',
+            format: 'a4' // A4 size paper
+        });
+
         const pageWidth = doc.internal.pageSize.width;
+        const margin = 10; // Margin from the edges
+        const contentWidth = pageWidth - 2 * margin; // Width available for table
+        const columnCount = 5; // Number of columns
+        const columnWidth = contentWidth / columnCount; // Width of each column
 
-        
-        doc.setFontSize(12);
-        doc.text(`Machine Name: ${machine_name}`, 14, 15);
-        doc.text(`Date: ${date}`, pageWidth - 50, 15, { align: 'right' });
-        doc.setFontSize(18);
-        doc.text('Shiftwise Report', pageWidth / 2, 25, { align: 'center' });
+        // Set up the PDF header
+        doc.setFontSize(10);
+        doc.text(`Machine Name: ${machine_name}`, margin, 10);
+        doc.text(`Date: ${date}`, pageWidth - margin, 10, { align: 'right' });
+        doc.setFontSize(14);
+        doc.text('Shiftwise Report', pageWidth / 2, 20, { align: 'center' });
         doc.setLineWidth(0.5);
-        doc.line(14, 28, pageWidth - 14, 28);
+        doc.line(margin, 23, pageWidth - margin, 23);
 
-        
-const tableData = [];
-const shiftMap = new Map();
+        // Prepare the table data
+        const tableData = [];
+        const shiftTotals = new Map();
+        const shiftLabels = new Map();
 
-shifts.forEach(shift => {
-    const shiftLabel = `Shift ${shift.shift_no}`;
-    const totalProduction = Object.values(shift.timing).reduce((sum, [proCount]) => sum + (proCount || 0), 0);
-    const totalTarget = Object.values(shift.timing).reduce((sum, [, targetCount]) => sum + (targetCount || 0), 0);
-    const timeRanges = Object.keys(shift.timing);
-    const productionCounts = Object.values(shift.timing);
+        shifts.forEach(shift => {
+            const shiftLabel = `Shift ${shift.shift_no}`;
+            let totalProduction = 0;
+            let totalTarget = 0;
 
-    timeRanges.forEach((timeRange, index) => {
-        const [proCount, targetCount] = productionCounts[index];
-        if (!shiftMap.has(shiftLabel)) {
-            shiftMap.set(shiftLabel, []);
-        }
-        shiftMap.get(shiftLabel).push([
-            timeRange,
-            `${proCount || 0}/${targetCount || 0}`,
-            (index === timeRanges.length - 1) ? `${totalProduction}/${totalTarget}` : ''
-        ]);
-    });
-});
+            Object.entries(shift.timing).forEach(([timeRange, [proCount, targetCount]]) => {
+                totalProduction += proCount || 0;
+                totalTarget += targetCount || 0;
 
+                if (!shiftLabels.has(shiftLabel)) {
+                    tableData.push([
+                        shiftLabel,
+                        timeRange,
+                        proCount || 0,
+                        targetCount || 0,
+                        (proCount || 0) - (targetCount || 0)
+                    ]);
+                    shiftLabels.set(shiftLabel, tableData.length - 1); 
+                } else {
+                    tableData.push([
+                        '',
+                        timeRange,
+                        proCount || 0,
+                        targetCount || 0,
+                        (proCount || 0) - (targetCount || 0)
+                    ]);
+                }
+            });
 
-shiftMap.forEach((rows, shiftLabel) => {
-    rows.forEach(([timeRange, proTargetCount, totalCount], index) => {
-        tableData.push([
-            index === 0 ? shiftLabel : '',
-            timeRange,
-            proTargetCount,
-            totalCount
-        ]);
-    });
-});
+            tableData.push([
+                'Total', 
+                '',
+                totalProduction,
+                totalTarget,
+                totalProduction - totalTarget
+            ]);
 
+            shiftTotals.set(shiftLabel, tableData.length - 1); 
+        });
 
-const totalProductionCount = tableData.reduce(([sumProCount, sumTargetCount], row) => {
-    const [proCount, targetCount] = row[2].split('/').map(Number);
-    return [sumProCount + (proCount || 0), sumTargetCount + (targetCount || 0)];
-}, [0, 0]);
-
-
-tableData.push(['TOTAL', '', '', `${totalProductionCount[0]}/${totalProductionCount[1]}`]);
-
-
-      
+        // Use autoTable to create the table in the PDF
         autoTable(doc, {
-          head: [['Shift', 'Time Range', 'Production Count ', 'Total Production Count']],
-          body: tableData,
-          startY: 40,
-          theme: 'grid',
-          headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255] },
-          styles: {
-              cellPadding: 4,
-              fontSize: 10,
-              valign: 'middle',
-              lineWidth: 0.5,
-              cellWidth: 'auto'
-          },
-          columnStyles: {
-              0: { cellWidth: (pageWidth - 40) / 4 },
-              1: { cellWidth: (pageWidth - 40) / 4 },
-              2: { cellWidth: (pageWidth - 40) / 4 },
-              3: { cellWidth: (pageWidth - 40) / 4 }
-          },
-      });
+            head: [['Shift', 'Time Range', 'Production Count', 'Target Count', 'Differences']],
+            body: tableData,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255] },
+            styles: {
+                cellPadding: 1, // Reduced padding
+                fontSize: 7, // Smaller font size
+                valign: 'middle',
+                lineWidth: 0.5
+            },
+            columnStyles: {
+                0: { cellWidth: columnWidth }, // Adjust column width
+                1: { cellWidth: columnWidth }, // Adjust column width
+                2: { cellWidth: columnWidth }, // Adjust column width
+                3: { cellWidth: columnWidth }, // Adjust column width
+                4: { cellWidth: columnWidth }  // Adjust column width
+            },
+            tableWidth: contentWidth, // Set table width
+            didDrawCell: function (data) {
+                const shiftTotalIndex = shiftTotals.get(data.row.raw[0]);
 
-        
+                if (shiftTotalIndex !== undefined && data.row.index === shiftTotalIndex) {
+                    doc.setFillColor(240, 240, 240); // Light gray background for total rows
+                    doc.setTextColor(0, 0, 0); // Black text color
+                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                }
+            }
+        });
+
         const currentDate = format(new Date(), 'yyyy-MM-dd');
         doc.save(`shiftwise_report_${currentDate}.pdf`);
     } catch (error) {
@@ -184,26 +199,27 @@ tableData.push(['TOTAL', '', '', `${totalProductionCount[0]}/${totalProductionCo
     }
 };
 
-  
-  
 
- 
+
+
+
 
 const generateSummaryPDF = async () => {
   try {
     const formattedDate = format(selectedDate, 'yyyy-MM-dd');
     const currentDate = format(new Date(), 'yyyy-MM-dd');
 
-    const response = await axios.post(`${BaseURL}data/production/`, {
-      date: formattedDate
-    }, { headers: getAuthHeaders() });
+    // Fetch production data from API
+    const response = await axios.post(
+      `${BaseURL}data/production/`,
+      { date: formattedDate },
+      { headers: getAuthHeaders() }
+    );
 
     if (response.status === 401) {
-      logout(navigate); 
+      logout(navigate);
       return;
     }
-
-    console.log('API Response:', response.data);
 
     const { machine_groups } = response.data;
 
@@ -214,19 +230,19 @@ const generateSummaryPDF = async () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
 
+    // Function to add a header on each page
     const addPageHeader = () => {
       doc.setFontSize(12);
       doc.text(`Date: ${formattedDate}`, 14, 15);
       doc.setFontSize(18);
-      doc.text('Production Summary Report', pageWidth / 2, 15, { align: 'center' });
-      doc.setLineWidth(0.5);
-      doc.line(14, 22, pageWidth - 14, 22);
+      doc.text('Summary Report', pageWidth / 2, 15, { align: 'center' });
     };
 
+    // Collect unique shift names from data
     const shiftNames = new Set();
-    machine_groups.forEach(group => {
-      group.machines.forEach(machine => {
-        machine.shifts.forEach(shift => {
+    machine_groups.forEach((group) => {
+      group.machines.forEach((machine) => {
+        machine.shifts.forEach((shift) => {
           shiftNames.add(shift.shift_name || `Shift ${shift.shift_no}`);
         });
       });
@@ -238,91 +254,108 @@ const generateSummaryPDF = async () => {
       return shiftNumberA - shiftNumberB;
     });
 
-    const headers = ['Groups', 'Work Centre', ...shiftNamesArray, 'Production Count', 'Target Count'];
+    // Define table headers
+    const headers = [
+      { content: 'Group', styles: { halign: 'center', fillColor: [0, 123, 255], fontStyle: 'bold', textColor: [255, 255, 255] } },
+      { content: 'Work Center', styles: { halign: 'center', fillColor: [0, 123, 255], fontStyle: 'bold', textColor: [255, 255, 255] } },
+      ...shiftNamesArray.map(shift => ({
+        content: shift,
+        styles: { halign: 'center', fillColor: [0, 123, 255], fontStyle: 'bold', textColor: [255, 255, 255] }
+      })),
+      { content: 'Production Count', styles: { halign: 'center', fillColor: [0, 123, 255], fontStyle: 'bold', textColor: [255, 255, 255] } },
+      { content: 'Total Production Count', styles: { halign: 'center', fillColor: [0, 123, 255], fontStyle: 'bold', textColor: [255, 255, 255] } }
+    ];
 
     const tableData = [];
-    let grandTotalProductionCount = 0;
-    let grandTotalTargetCount = 0;
 
-    machine_groups.forEach(group => {
-      let groupTotalCount = 0;
-      let groupTotalTarget = 0;
+    // Prepare data for the table
+    machine_groups.forEach((group) => {
+      let groupTotalProduction = 0; // Initialize group total production
 
       group.machines.forEach((machine, index) => {
         const row = [];
         let rowTotalProduction = 0;
-        let rowTotalTarget = 0;
 
+        // Add group name only for the first machine in the group
         if (index === 0) {
-          row.push({ content: group.group_name, styles: { fontStyle: 'bold' } });
+          row.push(group.group_name); // Group name
         } else {
-          row.push('');
+          row.push(''); // Empty cell for other machines
         }
 
+        // Insert machine name under 'Work Center'
         row.push(machine.machine_name);
 
-        shiftNamesArray.forEach(shiftName => {
-          const shift = machine.shifts.find(s => s.shift_name === shiftName || `Shift ${s.shift_no}` === shiftName);
-          const productionCountForShift = shift && !isNaN(shift.total_shift_production_count) ? shift.total_shift_production_count : 0;
-          const targetCountForShift = shift && !isNaN(shift.target_count) ? shift.target_count : 0;
-          row.push(`${productionCountForShift}/${targetCountForShift}`);
+        // Insert shift production counts for each shift
+        shiftNamesArray.forEach((shiftName) => {
+          const shift = machine.shifts.find(
+            (s) => s.shift_name === shiftName || `Shift ${s.shift_no}` === shiftName
+          );
+          const productionCountForShift =
+            shift && !isNaN(shift.total_shift_production_count)
+              ? shift.total_shift_production_count
+              : 0;
+          row.push(productionCountForShift);
           rowTotalProduction += productionCountForShift;
-          rowTotalTarget += targetCountForShift;
         });
 
-        row.push(`${rowTotalProduction}/${rowTotalTarget}`);
-        groupTotalCount += rowTotalProduction;
-        groupTotalTarget += rowTotalTarget;
+        // Insert total production count for the machine
+        row.push(rowTotalProduction);
 
+        // Update group total production count
+        groupTotalProduction += rowTotalProduction;
+
+        // Push the row to table data
         tableData.push(row);
-
-        grandTotalProductionCount += rowTotalProduction;
-        grandTotalTargetCount += rowTotalTarget;
       });
 
-      // Group total row with fractions
-      tableData[tableData.length - 1].push(`${groupTotalCount}/${groupTotalTarget}`);
+      // Add the 'Total Production Count' for the group in the last row of the group
+      if (tableData.length > 0) {
+        const lastRowOfGroup = tableData[tableData.length - 1];
+        lastRowOfGroup.push(groupTotalProduction); // Add the group total production to the last row of the group
+      }
     });
 
-    
-    const totalRow = new Array(headers.length).fill('');
-    totalRow[0] = 'Total';
-    totalRow[headers.length - 2] = `${grandTotalProductionCount}/${grandTotalTargetCount}`;
-    totalRow[headers.length - 1] = `${grandTotalProductionCount}/${grandTotalTargetCount}`;
-    tableData.push(totalRow);
-
+    // Generate table using autoTable plugin
     autoTable(doc, {
       head: [headers],
       body: tableData,
       startY: 30,
       theme: 'grid',
       headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255] },
-      styles: { 
-        cellPadding: 1, 
-        fontSize: 5, 
-        valign: 'middle', 
-        lineWidth: 0.5 
+      styles: {
+        cellPadding: 2,
+        fontSize: 7,
+        valign: 'middle',
+        lineWidth: 0.5,
+        halign: 'center',
       },
       columnStyles: {
-        0: { fontStyle: 'bold', fillColor: [240, 240, 240] }, 
-        1: { fontStyle: 'italic' }, 
+        0: { cellWidth: 30, fontStyle: 'bold' }, // Group column
+        1: { cellWidth: 40 }, // Work Center column
         ...shiftNamesArray.reduce((styles, shiftName, index) => {
-          styles[index + 2] = { columnWidth: 'auto' };
+          styles[index + 2] = { cellWidth: 20 }; // Shift columns
           return styles;
-        }, {})
+        }, {}),
+        [headers.length - 2]: { cellWidth: 30 }, // Production Count column
+        [headers.length - 1]: { cellWidth: 30, fontStyle: 'bold' } // Total Production Count column (bold)
       },
-      margin: { top: 10 },
+      margin: { top: 20 },
       didDrawPage: (data) => {
-        if (data.pageCount === 1) {
-          addPageHeader(); 
-        }
+        addPageHeader();
       },
       alternateRowStyles: {
-        fillColor: [245, 245, 245] 
+        fillColor: [245, 245, 245],
+      },
+      drawCell: (data) => {
+        // Remove borders for 'Group' column and 'Total Production Count' column
+        if (data.column.index === 0 || data.column.index === headers.length - 1) {
+          data.cell.styles.lineWidth = 0; // Remove border
+        }
       }
     });
-    
 
+    // Save the generated PDF
     const fileName = `Production_Summary_Report_${currentDate}.pdf`;
     doc.save(fileName);
   } catch (error) {
@@ -330,6 +363,7 @@ const generateSummaryPDF = async () => {
     setErrorMessage('Error generating PDF. Please check the console for details.');
   }
 };
+
 
   return (
     <div className="page">

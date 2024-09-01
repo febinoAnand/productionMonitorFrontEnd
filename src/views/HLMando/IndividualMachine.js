@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
 import CIcon from '@coreui/icons-react';
-import { cilFeaturedPlaylist } from '@coreui/icons';
+import { cilMemory } from '@coreui/icons';
 import {
   CCard,
   CCardBody,
@@ -26,16 +26,24 @@ const Machine = () => {
 
   const [machine, setMachine] = useState(null);
   const [currentDate, setCurrentDate] = useState('');
-  const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
     const fetchMachineData = async () => {
       try {
-        const response = await axios.get(`${BaseURL}data/individual-report/`, {
-          headers: getAuthHeaders(),
-        });
-        const machineData = response.data.machines.find(machine => machine.machine_id === machineId);
-        setMachine(machineData);
+        const response = await axios.post(
+          `${BaseURL}data/individual-report/`,
+          {
+            date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+            machine_id: machineId,
+          },
+          {
+            headers: getAuthHeaders(),
+          }
+        );
+
+        console.log('API Response:', response.data); // Debugging line
+
+        setMachine(response.data);
       } catch (error) {
         console.error('Error fetching machine data:', error);
       }
@@ -43,7 +51,7 @@ const Machine = () => {
 
     if (machineId) {
       fetchMachineData();
-      const dataFetchInterval = setInterval(fetchMachineData, 10000);
+      const dataFetchInterval = setInterval(fetchMachineData, 10000); // Refresh every 10 seconds
       return () => clearInterval(dataFetchInterval);
     }
   }, [machineId]);
@@ -51,16 +59,8 @@ const Machine = () => {
   useEffect(() => {
     const updateDateTime = () => {
       const now = new Date();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-      const seconds = now.getSeconds();
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      const formattedHours = hours % 12 || 12;
-      const formattedMinutes = minutes.toString().padStart(2, '0');
-      const formattedSeconds = seconds.toString().padStart(2, '0');
-      const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+      const formattedDate = now.toISOString().split('T')[0];
 
-      setCurrentTime(`${formattedHours}:${formattedMinutes}:${formattedSeconds} ${ampm}`);
       setCurrentDate(formattedDate);
     };
 
@@ -80,12 +80,12 @@ const Machine = () => {
     };
 
     applyHeaderStyles();
-  }, [machine]); // Ensure it runs when machine data changes
+  }, [machine]);
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
     return {
-      'Authorization': `Token ${token}`,
+      Authorization: `Token ${token}`,
       'Content-Type': 'application/json',
     };
   };
@@ -104,8 +104,20 @@ const Machine = () => {
     );
   }
 
-  const productionData = machine.shifts_data || {};
-  const shiftNames = Object.keys(productionData); // Get all shift names
+  const filteredShifts = machine.shifts.filter((shift) => {
+    return shift.timing && Object.keys(shift.timing).length > 0;
+  });
+
+  const latestShift = filteredShifts.reduce((latest, shift) => {
+    const shiftTime = new Date(shift.shift_start_time); 
+    return shiftTime > latest ? shiftTime : latest;
+  }, new Date(0)); 
+
+
+  const latestShiftData = filteredShifts.find((shift) => {
+    const shiftTime = new Date(shift.shift_start_time); 
+    return shiftTime.getTime() === latestShift.getTime();
+  });
 
   return (
     <div
@@ -118,44 +130,58 @@ const Machine = () => {
         paddingTop: '50px',
       }}
     >
-      <CCard style={{ maxWidth: '450px', width: '100%', marginBottom: '15px' }}>
-        <CCardBody style={{ textAlign: 'center' }}>
-          <CIcon icon={cilFeaturedPlaylist} size="4xl" style={{ color: '#047BC4', marginBottom: '20px' }} />
-          <h2 style={{ textAlign: 'center', color: '#047BC4' }}>{machine.machine_name}</h2>
-          <CTable striped hover style={{ fontSize: '0.9rem', marginTop: '20px', textAlign: 'left' }}>
-            <CTableBody>
-              {shiftNames.length > 0 && (
-                <>
-                  {shiftNames.map(shiftName => {
-                    const shiftData = productionData[shiftName];
-                    const shiftTimes = Object.keys(shiftData);
-                    const currentShiftData = shiftTimes.find(time => shiftData[time]);
-
-                    return (
-                      <React.Fragment key={shiftName}>
-                        <CTableRow>
-                          <CTableDataCell style={{ fontWeight: 'bold' }}>Production Count for {shiftName}</CTableDataCell>
-                          <CTableDataCell>{currentShiftData ? shiftData[currentShiftData].actual_production : 'N/A'}</CTableDataCell>
-                        </CTableRow>
-                        <CTableRow>
-                          <CTableDataCell style={{ fontWeight: 'bold' }}>Shift Time</CTableDataCell>
-                          <CTableDataCell>{currentShiftData || 'N/A'}</CTableDataCell>
-                        </CTableRow>
-                      </React.Fragment>
-                    );
-                  })}
-                </>
-              )}
-              <CTableRow>
-                <CTableDataCell style={{ fontWeight: 'bold' }}>Date</CTableDataCell>
-                <CTableDataCell>{currentDate}</CTableDataCell>
-              </CTableRow>
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
-
-      {/* Shift Report Table */}
+      {latestShiftData && (
+        <CCard style={{ maxWidth: '450px', width: '100%', marginBottom: '15px' }}>
+          <CCardBody style={{ textAlign: 'center' }}>
+            <CIcon
+              icon={cilMemory}
+              size="4xl"
+              style={{ color: '#047BC4', marginBottom: '20px' }}
+            />
+            <h2 style={{ textAlign: 'center', color: '#047BC4' }}>
+              {machine.machine_name}
+            </h2>
+            <CTable
+              striped
+              hover
+              style={{ fontSize: '0.9rem', marginTop: '20px', textAlign: 'left' }}
+            >
+              <CTableBody>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Production Count
+                  </CTableDataCell>
+                  <CTableDataCell>
+                    {latestShiftData.timing && Object.keys(latestShiftData.timing).length > 0
+                      ? latestShiftData.timing[Object.keys(latestShiftData.timing)[0]].actual_production
+                      : 'N/A'}
+                  </CTableDataCell>
+                </CTableRow>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Shift Name
+                  </CTableDataCell>
+                  <CTableDataCell>
+                    {latestShiftData.shift_name || `Shift ${latestShiftData.shift_no}`}
+                  </CTableDataCell>
+                </CTableRow>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Shift Time
+                  </CTableDataCell>
+                  <CTableDataCell>
+                    {Object.keys(latestShiftData.timing)[0] || 'N/A'}
+                  </CTableDataCell>
+                </CTableRow>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>Date</CTableDataCell>
+                  <CTableDataCell>{currentDate}</CTableDataCell>
+                </CTableRow>
+              </CTableBody>
+            </CTable>
+          </CCardBody>
+        </CCard>
+      )}
       <div style={{ width: '100%' }}>
         <CRow>
           <CCol xs={12}>
@@ -164,9 +190,9 @@ const Machine = () => {
                 <strong>Shift Wise Report</strong>
               </CCardHeader>
               <CCardBody>
-                {shiftNames.map(shiftName => (
-                  <div key={shiftName} style={{ marginBottom: '20px' }}>
-                    <strong>{shiftName}</strong>
+                {filteredShifts.map((shift) => (
+                  <div key={shift.shift_no} style={{ marginBottom: '20px' }}>
+                    <strong>{`Shift ${shift.shift_no}`}</strong>
                     <CTable striped hover>
                       <CTableHead className="custom-table-header">
                         <CTableRow>
@@ -175,10 +201,12 @@ const Machine = () => {
                         </CTableRow>
                       </CTableHead>
                       <CTableBody>
-                        {Object.keys(productionData[shiftName]).map(timeRange => (
+                        {Object.keys(shift.timing).map((timeRange) => (
                           <CTableRow key={timeRange}>
                             <CTableDataCell>{timeRange}</CTableDataCell>
-                            <CTableDataCell>{productionData[shiftName][timeRange].actual_production}</CTableDataCell>
+                            <CTableDataCell>
+                              {shift.timing[timeRange].actual_production}
+                            </CTableDataCell>
                           </CTableRow>
                         ))}
                       </CTableBody>
