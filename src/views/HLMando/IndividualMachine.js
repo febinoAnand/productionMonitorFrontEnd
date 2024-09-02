@@ -238,17 +238,17 @@ const Machine = () => {
                         </CTableRow>
                       ))}
                       <CTableRow>
-                        <CTableDataCell style={{ fontWeight: 'bold' }}>
+                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
                           Total
                         </CTableDataCell>
-                        <CTableDataCell style={{ fontWeight: 'bold' }}>
+                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
                           {Object.values(shift.timing).reduce(
                             (total, current) =>
                               total + (current.actual_production || 0),
                             0
                           )}
                         </CTableDataCell>
-                        <CTableDataCell style={{ fontWeight: 'bold' }}>
+                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
                           {Object.values(shift.timing).reduce(
                             (total, current) =>
                               total + (current.target_production || 0),
