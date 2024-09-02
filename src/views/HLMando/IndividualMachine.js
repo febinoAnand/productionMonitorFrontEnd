@@ -126,6 +126,12 @@ const Machine = () => {
       )
     : 0;
 
+  // Get the latest time of the latest shift
+  const latestShiftTime =
+    latestShiftData && Object.keys(latestShiftData.timing).length > 0
+      ? Object.keys(latestShiftData.timing).sort().pop()
+      : 'N/A';
+
   return (
     <div
       className="page"
@@ -171,17 +177,14 @@ const Machine = () => {
                     Shift Name
                   </CTableDataCell>
                   <CTableDataCell>
-                    {latestShiftData.shift_name ||
-                      `Shift ${latestShiftData.shift_no}`}
+                    {latestShiftData.shift_name || `Shift ${latestShiftData.shift_no}`}
                   </CTableDataCell>
                 </CTableRow>
                 <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
                     Shift Time
                   </CTableDataCell>
-                  <CTableDataCell>
-                    {Object.keys(latestShiftData.timing)[0] || 'N/A'}
-                  </CTableDataCell>
+                  <CTableDataCell>{latestShiftTime}</CTableDataCell>
                 </CTableRow>
                 <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
