@@ -73,7 +73,7 @@ const Machine = () => {
   useEffect(() => {
     const applyHeaderStyles = () => {
       const headerCells = document.querySelectorAll('.custom-table-header th');
-      headerCells.forEach(cell => {
+      headerCells.forEach((cell) => {
         cell.style.backgroundColor = '#047BC4';
         cell.style.color = 'white';
       });
@@ -109,15 +109,22 @@ const Machine = () => {
   });
 
   const latestShift = filteredShifts.reduce((latest, shift) => {
-    const shiftTime = new Date(shift.shift_start_time); 
+    const shiftTime = new Date(shift.shift_start_time);
     return shiftTime > latest ? shiftTime : latest;
-  }, new Date(0)); 
-
+  }, new Date(0));
 
   const latestShiftData = filteredShifts.find((shift) => {
-    const shiftTime = new Date(shift.shift_start_time); 
+    const shiftTime = new Date(shift.shift_start_time);
     return shiftTime.getTime() === latestShift.getTime();
   });
+
+  // Calculate the total production count for the latest shift
+  const totalProductionCountLatestShift = latestShiftData
+    ? Object.values(latestShiftData.timing).reduce(
+        (total, current) => total + (current.actual_production || 0),
+        0
+      )
+    : 0;
 
   return (
     <div
@@ -131,7 +138,9 @@ const Machine = () => {
       }}
     >
       {latestShiftData && (
-        <CCard style={{ maxWidth: '450px', width: '100%', marginBottom: '15px' }}>
+        <CCard
+          style={{ maxWidth: '450px', width: '100%', marginBottom: '15px' }}
+        >
           <CCardBody style={{ textAlign: 'center' }}>
             <CIcon
               icon={cilMemory}
@@ -144,25 +153,26 @@ const Machine = () => {
             <CTable
               striped
               hover
-              style={{ fontSize: '0.9rem', marginTop: '20px', textAlign: 'left' }}
+              style={{
+                fontSize: '0.9rem',
+                marginTop: '20px',
+                textAlign: 'left',
+              }}
             >
               <CTableBody>
                 <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
                     Production Count
                   </CTableDataCell>
-                  <CTableDataCell>
-                    {latestShiftData.timing && Object.keys(latestShiftData.timing).length > 0
-                      ? latestShiftData.timing[Object.keys(latestShiftData.timing)[0]].actual_production
-                      : 'N/A'}
-                  </CTableDataCell>
+                  <CTableDataCell>{totalProductionCountLatestShift}</CTableDataCell>
                 </CTableRow>
                 <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
                     Shift Name
                   </CTableDataCell>
                   <CTableDataCell>
-                    {latestShiftData.shift_name || `Shift ${latestShiftData.shift_no}`}
+                    {latestShiftData.shift_name ||
+                      `Shift ${latestShiftData.shift_no}`}
                   </CTableDataCell>
                 </CTableRow>
                 <CTableRow>
@@ -174,7 +184,9 @@ const Machine = () => {
                   </CTableDataCell>
                 </CTableRow>
                 <CTableRow>
-                  <CTableDataCell style={{ fontWeight: 'bold' }}>Date</CTableDataCell>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Date
+                  </CTableDataCell>
                   <CTableDataCell>{currentDate}</CTableDataCell>
                 </CTableRow>
               </CTableBody>
@@ -197,7 +209,9 @@ const Machine = () => {
                       <CTableHead className="custom-table-header">
                         <CTableRow>
                           <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                          <CTableHeaderCell scope="col">Production Count</CTableHeaderCell>
+                          <CTableHeaderCell scope="col">
+                            Production Count
+                          </CTableHeaderCell>
                         </CTableRow>
                       </CTableHead>
                       <CTableBody>
@@ -209,6 +223,18 @@ const Machine = () => {
                             </CTableDataCell>
                           </CTableRow>
                         ))}
+                        <CTableRow>
+                          <CTableDataCell style={{ fontWeight: 'bold' }}>
+                            Total
+                          </CTableDataCell>
+                          <CTableDataCell style={{ fontWeight: 'bold' }}>
+                            {Object.values(shift.timing).reduce(
+                              (total, current) =>
+                                total + (current.actual_production || 0),
+                              0
+                            )}
+                          </CTableDataCell>
+                        </CTableRow>
                       </CTableBody>
                     </CTable>
                   </div>
