@@ -66,6 +66,15 @@ const Users = () => {
     useEffect(() => {
         applyHeaderStyles();
     }, []);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (successMessage) {
+                setSuccessMessage('');
+            }
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [successMessage]);
 
     const fetchUsers = () => {
         setLoading(true); 
@@ -112,6 +121,8 @@ const Users = () => {
     useEffect(() => {
         handleSearch();
     }, [searchQuery, users, handleSearch]);
+
+    
 
     const handleTableRowClick = (user) => {
         setSelectedUser(user);
@@ -160,24 +171,27 @@ const Users = () => {
     };
 
     const handleDeleteSelectedUsers = () => {
-        const token = localStorage.getItem('token');
-        selectedUsers.forEach(userId => {
-            axios.delete(`${BaseURL}Userauth/delete-user/${userId}/`, {
-                headers: {
-                    'Authorization': `Token ${token}`
-                }
-            })
-                .then(response => {
-                    fetchUsers();
-                    setSuccessMessage('User deleted successfully');
+        const confirmDelete = window.confirm("Are you sure you want to delete the selected users?");
+        if (confirmDelete) {
+            const token = localStorage.getItem('token');
+            selectedUsers.forEach(userId => {
+                axios.delete(`${BaseURL}Userauth/delete-user/${userId}/`, {
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
                 })
-                .catch(error => {
-                    handleAuthError(error);
-                });
-        });
-        setSelectedUsers([]);
+                    .then(response => {
+                        fetchUsers();
+                        setSuccessMessage('Users deleted successfully');
+                    })
+                    .catch(error => {
+                        handleAuthError(error);
+                    });
+            });
+            setSelectedUsers([]);
+        }
     };
-
+    
     const handleUpdateUser = () => {
         if (!selectedUser || !selectedUser.userdetail_id) {
             console.error('Error: No user selected for update.');
@@ -259,20 +273,24 @@ const Users = () => {
     };
 
     const handleDeleteUser = (userId) => {
-        const token = localStorage.getItem('token');
-        axios.delete(`${BaseURL}Userauth/delete-user/${userId}/`, {
-            headers: {
-                'Authorization': `Token ${token}`
-            }
-        })
-            .then(response => {
-                fetchUsers();
-                setSuccessMessage('User deleted successfully');
+        const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+        if (confirmDelete) {
+            const token = localStorage.getItem('token');
+            axios.delete(`${BaseURL}Userauth/delete-user/${userId}/`, {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
             })
-            .catch(error => {
-                handleAuthError(error);
-            });
+                .then(response => {
+                    fetchUsers();
+                    setSuccessMessage('User deleted successfully');
+                })
+                .catch(error => {
+                    handleAuthError(error);
+                });
+        }
     };
+    
 
     return (
         <div className="page">
