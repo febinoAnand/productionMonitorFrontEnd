@@ -108,6 +108,22 @@ const Machine = () => {
     return shift.timing && Object.keys(shift.timing).length > 0;
   });
 
+  // Calculate the total production count across all shifts
+  const totalProductionCountAllShifts = filteredShifts.reduce((total, shift) => {
+    return total + Object.values(shift.timing).reduce(
+      (shiftTotal, current) => shiftTotal + (current.actual_production || 0),
+      0
+    );
+  }, 0);
+
+  // Calculate the total target count across all shifts
+  //const totalTargetCountAllShifts = filteredShifts.reduce((total, shift) => {
+    //return total + Object.values(shift.timing).reduce(
+     // (shiftTotal, current) => shiftTotal + (current.target_production || 0),
+      //0
+    //);
+  //}, 0);
+
   const latestShift = filteredShifts.reduce((latest, shift) => {
     const shiftTime = new Date(shift.shift_start_time);
     return shiftTime > latest ? shiftTime : latest;
@@ -118,15 +134,6 @@ const Machine = () => {
     return shiftTime.getTime() === latestShift.getTime();
   });
 
-  // Calculate the total production count for the latest shift
-  const totalProductionCountLatestShift = latestShiftData
-    ? Object.values(latestShiftData.timing).reduce(
-        (total, current) => total + (current.actual_production || 0),
-        0
-      )
-    : 0;
-
-  // Get the latest time of the latest shift
   const latestShiftTime =
     latestShiftData && Object.keys(latestShiftData.timing).length > 0
       ? Object.keys(latestShiftData.timing).sort().pop()
@@ -168,9 +175,9 @@ const Machine = () => {
               <CTableBody>
                 <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
-                    Production Count
+                    Total Production Count
                   </CTableDataCell>
-                  <CTableDataCell>{totalProductionCountLatestShift}</CTableDataCell>
+                  <CTableDataCell>{totalProductionCountAllShifts}</CTableDataCell>
                 </CTableRow>
                 <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
@@ -200,50 +207,60 @@ const Machine = () => {
       <div style={{ width: '100%' }}>
         <CRow>
           <CCol xs={12}>
-            <CCard className="mb-4">
-              <CCardHeader>
-                <strong>Shift Wise Report</strong>
-              </CCardHeader>
-              <CCardBody>
-                {filteredShifts.map((shift) => (
-                  <div key={shift.shift_no} style={{ marginBottom: '20px' }}>
-                    <strong>{`Shift ${shift.shift_no}`}</strong>
-                    <CTable striped hover>
-                      <CTableHead className="custom-table-header">
-                        <CTableRow>
-                          <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                          <CTableHeaderCell scope="col">
-                            Production Count
-                          </CTableHeaderCell>
-                        </CTableRow>
-                      </CTableHead>
-                      <CTableBody>
-                        {Object.keys(shift.timing).map((timeRange) => (
-                          <CTableRow key={timeRange}>
-                            <CTableDataCell>{timeRange}</CTableDataCell>
-                            <CTableDataCell>
-                              {shift.timing[timeRange].actual_production}
-                            </CTableDataCell>
-                          </CTableRow>
-                        ))}
-                        <CTableRow>
-                          <CTableDataCell style={{ fontWeight: 'bold' }}>
-                            Total
+            {filteredShifts.map((shift) => (
+              <CCard className="mb-4" key={shift.shift_no}>
+                <CCardHeader>
+                  <strong>{`Shift ${shift.shift_no}`}</strong>
+                </CCardHeader>
+                <CCardBody>
+                  <CTable striped hover>
+                    <CTableHead className="custom-table-header">
+                      <CTableRow>
+                        <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">
+                          Production Count
+                        </CTableHeaderCell>
+                        <CTableHeaderCell scope="col">
+                          Target Count
+                        </CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      {Object.keys(shift.timing).map((timeRange) => (
+                        <CTableRow key={timeRange}>
+                          <CTableDataCell>{timeRange}</CTableDataCell>
+                          <CTableDataCell>
+                            {shift.timing[timeRange].actual_production}
                           </CTableDataCell>
-                          <CTableDataCell style={{ fontWeight: 'bold' }}>
-                            {Object.values(shift.timing).reduce(
-                              (total, current) =>
-                                total + (current.actual_production || 0),
-                              0
-                            )}
+                          <CTableDataCell>
+                            {shift.timing[timeRange].target_production}
                           </CTableDataCell>
                         </CTableRow>
-                      </CTableBody>
-                    </CTable>
-                  </div>
-                ))}
-              </CCardBody>
-            </CCard>
+                      ))}
+                      <CTableRow>
+                        <CTableDataCell style={{ fontWeight: 'bold' }}>
+                          Total
+                        </CTableDataCell>
+                        <CTableDataCell style={{ fontWeight: 'bold' }}>
+                          {Object.values(shift.timing).reduce(
+                            (total, current) =>
+                              total + (current.actual_production || 0),
+                            0
+                          )}
+                        </CTableDataCell>
+                        <CTableDataCell style={{ fontWeight: 'bold' }}>
+                          {Object.values(shift.timing).reduce(
+                            (total, current) =>
+                              total + (current.target_production || 0),
+                            0
+                          )}
+                        </CTableDataCell>
+                      </CTableRow>
+                    </CTableBody>
+                  </CTable>
+                </CCardBody>
+              </CCard>
+            ))}
           </CCol>
         </CRow>
       </div>
