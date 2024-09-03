@@ -19,6 +19,17 @@ import {
   CSpinner,
 } from '@coreui/react';
 
+const formatTime = (date) => {
+  const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+};
+
+const calculateEndTime = (startTime) => {
+  const start = new Date(startTime);
+  const end = new Date(start.getTime() + 8 * 60 * 60 * 1000); // Add 8 hours
+  return `${formatTime(start)} - ${formatTime(end)}`;
+};
+
 const Machine = () => {
   const location = useLocation();
   const { state } = location;
@@ -108,22 +119,7 @@ const Machine = () => {
     return shift.timing && Object.keys(shift.timing).length > 0;
   });
 
-  // Calculate the total production count across all shifts
-  const totalProductionCountAllShifts = filteredShifts.reduce((total, shift) => {
-    return total + Object.values(shift.timing).reduce(
-      (shiftTotal, current) => shiftTotal + (current.actual_production || 0),
-      0
-    );
-  }, 0);
-
-  // Calculate the total target count across all shifts
-  //const totalTargetCountAllShifts = filteredShifts.reduce((total, shift) => {
-    //return total + Object.values(shift.timing).reduce(
-     // (shiftTotal, current) => shiftTotal + (current.target_production || 0),
-      //0
-    //);
-  //}, 0);
-
+  // Declare latestShiftData before using it
   const latestShift = filteredShifts.reduce((latest, shift) => {
     const shiftTime = new Date(shift.shift_start_time);
     return shiftTime > latest ? shiftTime : latest;
@@ -134,10 +130,21 @@ const Machine = () => {
     return shiftTime.getTime() === latestShift.getTime();
   });
 
-  const latestShiftTime =
-    latestShiftData && Object.keys(latestShiftData.timing).length > 0
-      ? Object.keys(latestShiftData.timing).sort().pop()
-      : 'N/A';
+  // Calculate the total production count for the current shift
+  const totalProductionCountCurrentShift = latestShiftData
+    ? Object.values(latestShiftData.timing).reduce(
+        (total, current) => total + (current.actual_production || 0),
+        0
+      )
+    : 0;
+
+  // Calculate the total production count across all shifts
+  const totalProductionCountAllShifts = filteredShifts.reduce((total, shift) => {
+    return total + Object.values(shift.timing).reduce(
+      (shiftTotal, current) => shiftTotal + (current.actual_production || 0),
+      0
+    );
+  }, 0);
 
   return (
     <div
@@ -175,7 +182,7 @@ const Machine = () => {
               <CTableBody>
                 <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
-                    Total Production Count
+                    Total Production Count 
                   </CTableDataCell>
                   <CTableDataCell>{totalProductionCountAllShifts}</CTableDataCell>
                 </CTableRow>
@@ -189,9 +196,19 @@ const Machine = () => {
                 </CTableRow>
                 <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Current Shift Total
+                  </CTableDataCell>
+                  <CTableDataCell>{totalProductionCountCurrentShift}</CTableDataCell>
+                </CTableRow>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
                     Shift Time
                   </CTableDataCell>
-                  <CTableDataCell>{latestShiftTime}</CTableDataCell>
+                  <CTableDataCell>
+                    {latestShiftData.shift_start_time
+                      ? calculateEndTime(latestShiftData.shift_start_time)
+                      : 'N/A'}
+                  </CTableDataCell>
                 </CTableRow>
                 <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
@@ -230,10 +247,10 @@ const Machine = () => {
                         <CTableRow key={timeRange}>
                           <CTableDataCell>{timeRange}</CTableDataCell>
                           <CTableDataCell>
-                            {shift.timing[timeRange].actual_production}
+                            {shift.timing[timeRange]?.actual_production || 0}
                           </CTableDataCell>
                           <CTableDataCell>
-                            {shift.timing[timeRange].target_production}
+                            {shift.timing[timeRange]?.target_production || 0}
                           </CTableDataCell>
                         </CTableRow>
                       ))}
@@ -243,15 +260,13 @@ const Machine = () => {
                         </CTableDataCell>
                         <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
                           {Object.values(shift.timing).reduce(
-                            (total, current) =>
-                              total + (current.actual_production || 0),
+                            (total, current) => total + (current.actual_production || 0),
                             0
                           )}
                         </CTableDataCell>
                         <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
                           {Object.values(shift.timing).reduce(
-                            (total, current) =>
-                              total + (current.target_production || 0),
+                            (total, current) => total + (current.target_production || 0),
                             0
                           )}
                         </CTableDataCell>

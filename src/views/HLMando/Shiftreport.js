@@ -281,7 +281,7 @@ const Shiftreport = () => {
                         </CTableRow>
                       ))}
                       <CTableRow>
-                        <CTableDataCell style={{ fontWeight: 'bold' }}>Total</CTableDataCell>
+                        <CTableDataCell style={{ fontWeight: 'bold',color: '#007bff' }}>Total</CTableDataCell>
                         <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
                           {calculateTotal(shift.timing, 0)}
                         </CTableDataCell>
