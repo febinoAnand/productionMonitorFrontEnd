@@ -48,15 +48,7 @@ const Dashboard = () => {
     return () => clearInterval(intervalId);
   }, [fetchDashboardData]);
 
-  const colors = [
-    '#4a90e2', '#33FF57', '#3357FF', '#FF33A1', '#FF8C00', '#F1C40F',
-    '#E67E22', '#9B59B6', '#1ABC9C', '#2ECC71', '#3498DB', '#E74C3C',
-    '#F39C12', '#D35400', '#7F8C8D', '#BDC3C7', '#9B59B6', '#FF6F61'
-  ];
-
   const widgetStyles = {
-    backgroundColor: '#4a90e2',
-    color: '#fff',
     borderRadius: '12px',
     padding: '20px',
     width: '250px',
@@ -110,7 +102,7 @@ const Dashboard = () => {
                 <CCardHeader style={{
                   backgroundColor: '#f8f9fa',
                   color: '#343a40',
-                  fontSize: '16px',
+                  fontSize: '20px',
                   fontWeight: '700',
                   padding: '10px 20px',
                   borderBottom: '2px solid #e9ecef',
@@ -120,40 +112,57 @@ const Dashboard = () => {
                 </CCardHeader>
                 <CCardBody>
                   <CRow>
-                    {group.machines.map((machine, index) => (
-                      <CCol xs={12} md={3} key={machine.machine_id}>
-                        <CWidgetStatsA
-                          className="mb-4"
-                          style={{
-                            ...widgetStyles,
-                            backgroundColor: colors[index % colors.length],
-                            cursor: 'pointer'
-                          }}
-                          onClick={() => handleClick(group.group_name, machine)}
-                          value={
-                            <span style={{
-                              display: 'block',
-                              fontSize: '18px',
-                              fontWeight: 'bold',
-                              lineHeight: '1.2',
-                              color: '#fff'
-                            }}>
-                              {`${machine.production_count || 0} / ${machine.target_production || 0}`}
-                            </span>
-                          }
-                          title={
-                            <span style={{
-                              fontSize: '18px',
-                              fontWeight: '600',
-                              lineHeight: '1.2',
-                              color: '#fff'
-                            }}>
-                              {machine.machine_name}
-                            </span>
-                          }
-                        />
-                      </CCol>
-                    ))}
+                    {group.machines.map((machine, index) => {
+                      // Calculate percentage
+                      const productionCount = machine.production_count || 0;
+                      const targetProduction = machine.target_production || 0;
+                      const percentage = targetProduction > 0 ? (productionCount / targetProduction) * 100 : 0;
+
+                      // Determine color based on percentage
+                      let backgroundColor;
+                      if (percentage >= 95) {
+                        backgroundColor = '#80ff80';
+                      } else if (percentage >= 85) {
+                        backgroundColor = '#ffff66';
+                      } else {
+                        backgroundColor = '#ff4d4d';
+                      }
+
+                      return (
+                        <CCol xs={12} md={3} key={machine.machine_id}>
+                          <CWidgetStatsA
+                            className="mb-4"
+                            style={{
+                              ...widgetStyles,
+                              backgroundColor: backgroundColor,
+                              cursor: 'pointer'
+                            }}
+                            onClick={() => handleClick(group.group_name, machine)}
+                            value={
+                              <span style={{
+                                display: 'block',
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                lineHeight: '1.2',
+                                color: '#000' // Black text color
+                              }}>
+                                {`${machine.production_count || 0} / ${machine.target_production || 0}`}
+                              </span>
+                            }
+                            title={
+                              <span style={{
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                lineHeight: '1.2',
+                                color: '#000' // Black text color
+                              }}>
+                                {machine.machine_name}
+                              </span>
+                            }
+                          />
+                        </CCol>
+                      );
+                    })}
                   </CRow>
                 </CCardBody>
               </CCard>
