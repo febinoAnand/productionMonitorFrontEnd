@@ -336,6 +336,7 @@ const Users = () => {
                                     </CButton>
                                 </CInputGroup>
                             </CCol>
+                            <div style={{ overflowX: 'auto' }}>
                             <CTable striped hover>
                             <CTableHead className="custom-table-header">
                                     <CTableRow color="dark">
@@ -358,7 +359,7 @@ const Users = () => {
                                 <CTableBody>
                                     {filteredUsers.length === 0 ? (
                                         <CTableRow>
-                                            <CTableDataCell colSpan="9" className="text-center">
+                                            <CTableDataCell colSpan="8" className="text-center">
                                                 No users available
                                             </CTableDataCell>
                                         </CTableRow>
@@ -400,6 +401,7 @@ const Users = () => {
                                     )}
                                 </CTableBody>
                             </CTable>
+                            </div>
                         </CCardBody>
                     </CCard>
                 </CCol>
