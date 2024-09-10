@@ -13,7 +13,7 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
     return {
       'Authorization': `Token ${token}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
   };
 
@@ -25,7 +25,7 @@ const Dashboard = () => {
   const fetchDashboardData = useCallback(async () => {
     try {
       const response = await axios.get(BaseURL + 'data/dashboard-data/', { headers: getAuthHeaders() });
-      setDashboardData(response.data.groups.reverse()); 
+      setDashboardData(response.data.groups.reverse());
       console.log(response.data.groups);
     } catch (error) {
       if (error.response && error.response.status === 401) {
@@ -40,13 +40,36 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-
-    const intervalId = setInterval(() => {
-      fetchDashboardData();
-    }, 20000);
-
-    return () => clearInterval(intervalId);
   }, [fetchDashboardData]);
+
+  useEffect(() => {
+    const wsUrl = 'wss://productionb.univa.cloud/ws/data/dashboard-data/';
+    const socket = new WebSocket(wsUrl);
+
+    socket.onopen = () => {
+      console.log('WebSocket connected');
+    };
+
+    socket.onmessage = (event) => {
+      
+      const updatedData = JSON.parse(event.data);
+      setDashboardData(updatedData.groups.reverse()); 
+      console.log('WebSocket message received:', updatedData.groups);
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    return () => {
+      socket.close();
+      console.log('WebSocket closed');
+    };
+  }, []); 
 
   const widgetStyles = {
     borderRadius: '12px',
@@ -113,12 +136,10 @@ const Dashboard = () => {
                 <CCardBody>
                   <CRow>
                     {group.machines.map((machine, index) => {
-                      // Calculate percentage
                       const productionCount = machine.production_count || 0;
                       const targetProduction = machine.target_production || 0;
                       const percentage = targetProduction > 0 ? (productionCount / targetProduction) * 100 : 0;
 
-                      // Determine color based on percentage
                       let backgroundColor;
                       if (percentage >= 95) {
                         backgroundColor = '#80ff80';
@@ -144,7 +165,7 @@ const Dashboard = () => {
                                 fontSize: '20px',
                                 fontWeight: 'bold',
                                 lineHeight: '1.2',
-                                color: '#000' // Black text color
+                                color: '#000'
                               }}>
                                 {`${machine.production_count || 0} / ${machine.target_production || 0}`}
                               </span>
@@ -154,7 +175,7 @@ const Dashboard = () => {
                                 fontSize: '20px',
                                 fontWeight: 'bold',
                                 lineHeight: '1.2',
-                                color: '#000' // Black text color
+                                color: '#000' 
                               }}>
                                 {machine.machine_name}
                               </span>
