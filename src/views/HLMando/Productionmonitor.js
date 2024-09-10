@@ -160,7 +160,7 @@ const ProductionMonitor = () => {
 
   return (
     <div>
-      <CCard className="mb-4">
+      <CCard className="mb-4" style={{ maxWidth: '100%', overflowX: 'auto' }}>
         <CCardHeader>
           <h5>Production</h5>
         </CCardHeader>
