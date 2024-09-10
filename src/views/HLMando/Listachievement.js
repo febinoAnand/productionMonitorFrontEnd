@@ -51,8 +51,7 @@ const Listachievement = () => {
   const [formData, setFormData] = useState({});
   const [shiftHeaders, setShiftHeaders] = useState([]);
   const [groupedData, setGroupedData] = useState({});
-  const [loading, setLoading] = useState(true);  // Added this state to manage loading
-
+  const [loading, setLoading] = useState(true);  
   useEffect(() => {
     const fetchData = async () => {
       console.log('Fetching data...');
@@ -111,12 +110,19 @@ const Listachievement = () => {
     applyHeaderStyles();
   }, [data, shiftHeaders]);
 
-  const handleEdit = (item) => {
+  const handleEdit = (item, groupName) => {
     setCurrentItem(item);
-    setFormData({ ...item });
-    setModalVisible(true);
+  
+    
+    const prefilledFormData = {
+      date: item.date,
+      ...item.shifts, 
+    };
+  
+    setFormData(prefilledFormData);  
+    setModalVisible(true);  
   };
-
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -228,32 +234,23 @@ const Listachievement = () => {
                 />
               </CForm>
             </CCol>
-            <CCol xs={12} sm={6} md={3}>
-              <CForm>
-                <CFormLabel htmlFor="groupName">Group Name</CFormLabel>
-                <CFormInput
-                  id="groupName"
-                  name="groupName"
-                  type="text"
-                  value={formData.groupName || ''}
-                  onChange={handleChange}
-                />
-              </CForm>
-            </CCol>
             {shiftHeaders.map((shift, index) => (
-              <CCol key={index} xs={12} sm={6} md={3}>
-                <CForm>
-                  <CFormLabel htmlFor={`shift${shift}`}>{`Shift ${shift}`}</CFormLabel>
-                  <CFormInput
-                    id={`shift${shift}`}
-                    name={`shift${shift}`}
-                    type="number"
-                    value={formData[`shift${shift}`] || ''}
-                    onChange={handleChange}
-                  />
-                </CForm>
-              </CCol>
-            ))}
+  <CCol key={index} xs={12} sm={6} md={3}>
+    <CForm>
+      <CFormLabel htmlFor={`shift${shift}`}>{`Shift ${shift}`}</CFormLabel>
+      <CFormInput
+        id={`shift${shift}`}
+        name={`shift${shift}`}
+        type="number"
+        value={formData[`shift${shift}`] !== undefined && formData[`shift${shift}`] !== null 
+                ? formData[`shift${shift}`] 
+                : '0'} 
+        onChange={handleChange}
+      />
+    </CForm>
+  </CCol>
+))}
+
           </CRow>
         </CModalBody>
         <CModalFooter>
