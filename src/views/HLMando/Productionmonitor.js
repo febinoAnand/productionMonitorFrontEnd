@@ -33,11 +33,10 @@ const ProductionMonitor = () => {
   const [shiftData, setShiftData] = useState({ names: {}, numbers: [] });
   const [selectedDate, setSelectedDate] = useState('');
   const [loading, setLoading] = useState(true);
+  const [apiDate, setApiDate] = useState(''); 
   const navigate = useNavigate();
 
-  const today = new Date().toISOString().split('T')[0];
-
-  const fetchData = useCallback(async (date) => {
+  const fetchData = useCallback(async (date = '') => {
     setError(null);
     setLoading(true);
     try {
@@ -47,7 +46,10 @@ const ProductionMonitor = () => {
         { headers: getAuthHeaders() }
       );
 
-      const { machine_groups } = response.data;
+      const { machine_groups, date: responseDate } = response.data;
+
+      setApiDate(responseDate); 
+      setSelectedDate(responseDate); 
 
       const shiftNamesMap = {};
       const shiftNumbers = new Set();
@@ -68,7 +70,7 @@ const ProductionMonitor = () => {
             ...machine,
             total_shift_production_count: Object.values(shiftTotals).reduce((sum, count) => sum + count, 0),
             shiftTotals,
-            production_date: date
+            production_date: responseDate
           };
         });
 
@@ -83,7 +85,7 @@ const ProductionMonitor = () => {
       const hasData = formattedGroups.some(group => group.machines.length > 0);
 
       if (!hasData) {
-        setFilteredData([]); 
+        setFilteredData([]);
       } else {
         setFilteredData(formattedGroups);
       }
@@ -102,27 +104,18 @@ const ProductionMonitor = () => {
     }
   }, [navigate]);
 
-  const handleAuthError = useCallback(() => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  }, [navigate]);
-
   useEffect(() => {
-    setSelectedDate(today);
-
     const checkAuthAndFetchData = async () => {
       if (!localStorage.getItem('token')) {
-        handleAuthError(); 
         return;
       }
-      await fetchData(today);
+      await fetchData(); 
     };
 
     checkAuthAndFetchData();
-  }, [fetchData, handleAuthError, today]);
+  }, [fetchData]);
 
   const handleSearch = async () => {
-    console.log('Selected date:', selectedDate);
     if (selectedDate) {
       await fetchData(selectedDate);
     } else {
@@ -170,9 +163,9 @@ const ProductionMonitor = () => {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              placeholder="Select Date"
+              placeholder={apiDate} 
               style={{ width: '90px' }}
-              max={today}
+              max={new Date().toISOString().split('T')[0]}
             />
             <CButton
               type="button"
@@ -233,8 +226,8 @@ const ProductionMonitor = () => {
                     )}
                     <CTableRow>
                       <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>Total</CTableDataCell>
-                      {shiftNumbers.map((shiftNumber, idx) => (
-                        <CTableDataCell key={idx} style={{fontWeight: 'bold', color: '#007bff' }}>
+                      {shiftNumbers.map((shiftNumber, index) => (
+                        <CTableDataCell key={index} style={{fontWeight: 'bold', color: '#007bff' }}>
                           {group.machines.reduce((sum, machine) => sum + (machine.shiftTotals[shiftNumber] || 0), 0)}
                         </CTableDataCell>
                       ))}
