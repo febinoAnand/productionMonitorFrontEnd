@@ -26,7 +26,7 @@ const formatTime = (date) => {
 
 const calculateEndTime = (startTime) => {
   const start = new Date(startTime);
-  const end = new Date(start.getTime() + 8 * 60 * 60 * 1000); // Add 8 hours
+  const end = new Date(start.getTime() + 8 * 60 * 60 * 1000); 
   return `${formatTime(start)} - ${formatTime(end)}`;
 };
 
@@ -44,7 +44,7 @@ const Machine = () => {
         const response = await axios.post(
           `${BaseURL}data/individual-report/`,
           {
-            date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+            date: new Date().toISOString().split('T')[0], 
             machine_id: machineId,
           },
           {
@@ -52,8 +52,7 @@ const Machine = () => {
           }
         );
 
-        console.log('API Response:', response.data); // Debugging line
-
+        console.log('API Response:', response.data); 
         setMachine(response.data);
       } catch (error) {
         console.error('Error fetching machine data:', error);
@@ -62,7 +61,7 @@ const Machine = () => {
 
     if (machineId) {
       fetchMachineData();
-      const dataFetchInterval = setInterval(fetchMachineData, 10000); // Refresh every 10 seconds
+      const dataFetchInterval = setInterval(fetchMachineData, 10000);
       return () => clearInterval(dataFetchInterval);
     }
   }, [machineId]);
@@ -119,7 +118,6 @@ const Machine = () => {
     return shift.timing && Object.keys(shift.timing).length > 0;
   });
 
-  // Declare latestShiftData before using it
   const latestShift = filteredShifts.reduce((latest, shift) => {
     const shiftTime = new Date(shift.shift_start_time);
     return shiftTime > latest ? shiftTime : latest;
@@ -130,21 +128,24 @@ const Machine = () => {
     return shiftTime.getTime() === latestShift.getTime();
   });
 
-  // Calculate the total production count for the current shift
   const totalProductionCountCurrentShift = latestShiftData
     ? Object.values(latestShiftData.timing).reduce(
         (total, current) => total + (current.actual_production || 0),
         0
       )
-    : 0;
+    : 'N/A';
 
-  // Calculate the total production count across all shifts
-  const totalProductionCountAllShifts = filteredShifts.reduce((total, shift) => {
-    return total + Object.values(shift.timing).reduce(
-      (shiftTotal, current) => shiftTotal + (current.actual_production || 0),
-      0
-    );
-  }, 0);
+  const totalProductionCountAllShifts = filteredShifts.length
+    ? filteredShifts.reduce((total, shift) => {
+        return (
+          total +
+          Object.values(shift.timing).reduce(
+            (shiftTotal, current) => shiftTotal + (current.actual_production || 0),
+            0
+          )
+        );
+      }, 0)
+    : 'N/A';
 
   return (
     <div
@@ -157,125 +158,143 @@ const Machine = () => {
         paddingTop: '50px',
       }}
     >
-      {latestShiftData && (
-        <CCard
-          style={{ maxWidth: '450px', width: '100%', marginBottom: '15px' }}
-        >
-          <CCardBody style={{ textAlign: 'center' }}>
-            <CIcon
-              icon={cilMemory}
-              size="4xl"
-              style={{ color: '#047BC4', marginBottom: '20px' }}
-            />
-            <h2 style={{ textAlign: 'center', color: '#047BC4' }}>
-              {machine.machine_name}
-            </h2>
-            <CTable
-              striped
-              hover
-              style={{
-                fontSize: '0.9rem',
-                marginTop: '20px',
-                textAlign: 'left',
-              }}
-            >
-              <CTableBody>
-                <CTableRow>
-                  <CTableDataCell style={{ fontWeight: 'bold' }}>
-                    Total Production Count 
-                  </CTableDataCell>
-                  <CTableDataCell>{totalProductionCountAllShifts}</CTableDataCell>
-                </CTableRow>
-                <CTableRow>
-                  <CTableDataCell style={{ fontWeight: 'bold' }}>
-                    Shift Name
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {latestShiftData.shift_name || `Shift ${latestShiftData.shift_no}`}
-                  </CTableDataCell>
-                </CTableRow>
-                <CTableRow>
-                  <CTableDataCell style={{ fontWeight: 'bold' }}>
-                    Current Shift Total
-                  </CTableDataCell>
-                  <CTableDataCell>{totalProductionCountCurrentShift}</CTableDataCell>
-                </CTableRow>
-                <CTableRow>
-                  <CTableDataCell style={{ fontWeight: 'bold' }}>
-                    Shift Time
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {latestShiftData.shift_start_time
-                      ? calculateEndTime(latestShiftData.shift_start_time)
-                      : 'N/A'}
-                  </CTableDataCell>
-                </CTableRow>
-                <CTableRow>
-                  <CTableDataCell style={{ fontWeight: 'bold' }}>
-                    Date
-                  </CTableDataCell>
-                  <CTableDataCell>{currentDate}</CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-            </CTable>
-          </CCardBody>
-        </CCard>
-      )}
+      <CCard
+        style={{ maxWidth: '450px', width: '100%', marginBottom: '15px' }}
+      >
+        <CCardBody style={{ textAlign: 'center' }}>
+          <CIcon
+            icon={cilMemory}
+            size="4xl"
+            style={{ color: '#047BC4', marginBottom: '20px' }}
+          />
+          <h2 style={{ textAlign: 'center', color: '#047BC4' }}>
+            {machine.machine_name}
+          </h2>
+          <CTable
+            striped
+            hover
+            style={{
+              fontSize: '0.9rem',
+              marginTop: '20px',
+              textAlign: 'left',
+            }}
+          >
+            <CTableBody>
+              <CTableRow>
+                <CTableDataCell style={{ fontWeight: 'bold' }}>
+                  Total Production Count 
+                </CTableDataCell>
+                <CTableDataCell>{totalProductionCountAllShifts}</CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableDataCell style={{ fontWeight: 'bold' }}>
+                  Shift Name
+                </CTableDataCell>
+                <CTableDataCell>
+                  {latestShiftData?.shift_name || `Shift ${latestShiftData?.shift_no}` || 'N/A'}
+                </CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableDataCell style={{ fontWeight: 'bold' }}>
+                  Current Shift Total
+                </CTableDataCell>
+                <CTableDataCell>{totalProductionCountCurrentShift}</CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableDataCell style={{ fontWeight: 'bold' }}>
+                  Shift Time
+                </CTableDataCell>
+                <CTableDataCell>
+                  {latestShiftData?.shift_start_time
+                    ? calculateEndTime(latestShiftData.shift_start_time)
+                    : 'N/A'}
+                </CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableDataCell style={{ fontWeight: 'bold' }}>
+                  Date
+                </CTableDataCell>
+                <CTableDataCell>{currentDate}</CTableDataCell>
+              </CTableRow>
+            </CTableBody>
+          </CTable>
+        </CCardBody>
+      </CCard>
       <div style={{ width: '100%' }}>
         <CRow>
           <CCol xs={12}>
-            {filteredShifts.map((shift) => (
-              <CCard className="mb-4" key={shift.shift_no}>
-                <CCardHeader>
-                  <strong>{`Shift ${shift.shift_no}`}</strong>
-                </CCardHeader>
-                <CCardBody>
-                  <CTable striped hover>
-                    <CTableHead className="custom-table-header">
-                      <CTableRow>
-                        <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">
-                          Production Count
-                        </CTableHeaderCell>
-                        <CTableHeaderCell scope="col">
-                          Target Count
-                        </CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {Object.keys(shift.timing).map((timeRange) => (
-                        <CTableRow key={timeRange}>
-                          <CTableDataCell>{timeRange}</CTableDataCell>
-                          <CTableDataCell>
-                            {shift.timing[timeRange]?.actual_production || 0}
+            <CCard className="mb-4">
+              <CCardHeader>
+                <strong>Shift Reports</strong>
+              </CCardHeader>
+              <CCardBody>
+                <CTable striped hover>
+                  <CTableHead className="custom-table-header">
+                    <CTableRow>
+                      <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">
+                        Production Count
+                      </CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Target Count</CTableHeaderCell>
+                    </CTableRow>
+                  </CTableHead>
+                  <CTableBody>
+                    {filteredShifts.length > 0 ? (
+                      <>
+                        {filteredShifts.map((shift) => (
+                          Object.keys(shift.timing).map((timeRange) => (
+                            <CTableRow key={timeRange}>
+                              <CTableDataCell>{timeRange}</CTableDataCell>
+                              <CTableDataCell>
+                                {shift.timing[timeRange]?.actual_production ||
+                                  'No data available'}
+                              </CTableDataCell>
+                              <CTableDataCell>
+                                {shift.timing[timeRange]?.target_production ||
+                                  'No data available'}
+                              </CTableDataCell>
+                            </CTableRow>
+                          ))
+                        ))}
+                        <CTableRow>
+                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                            Total
                           </CTableDataCell>
-                          <CTableDataCell>
-                            {shift.timing[timeRange]?.target_production || 0}
+                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                            {filteredShifts.reduce(
+                              (sum, shift) =>
+                                sum +
+                                Object.values(shift.timing).reduce(
+                                  (total, current) => total + (current.actual_production || 0),
+                                  0
+                                ),
+                              0
+                            )}
+                          </CTableDataCell>
+                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                            {filteredShifts.reduce(
+                              (sum, shift) =>
+                                sum +
+                                Object.values(shift.timing).reduce(
+                                  (total, current) => total + (current.target_production || 0),
+                                  0
+                                ),
+                              0
+                            )}
                           </CTableDataCell>
                         </CTableRow>
-                      ))}
+                      </>
+                    ) : (
                       <CTableRow>
-                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
-                          Total
-                        </CTableDataCell>
-                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
-                          {Object.values(shift.timing).reduce(
-                            (total, current) => total + (current.actual_production || 0),
-                            0
-                          )}
-                        </CTableDataCell>
-                        <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>
-                          {Object.values(shift.timing).reduce(
-                            (total, current) => total + (current.target_production || 0),
-                            0
-                          )}
+                        <CTableDataCell colSpan="3" style={{ textAlign: 'center' }}>
+                          No data available
                         </CTableDataCell>
                       </CTableRow>
-                    </CTableBody>
-                  </CTable>
-                </CCardBody>
-              </CCard>
-            ))}
+                    )}
+                  </CTableBody>
+                </CTable>
+              </CCardBody>
+            </CCard>
           </CCol>
         </CRow>
       </div>
