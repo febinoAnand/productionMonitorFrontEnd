@@ -381,7 +381,7 @@ class MachineDetails extends React.Component {
           </CModalBody>
           <CModalFooter>
             <CButton color="secondary" size='sm' onClick={this.closeAddModal}>Close</CButton>
-            <CButton color="primary" variant='outline' size='sm' onClick={this.machinePostData}>Add Machine</CButton>
+            <CButton color="primary" variant='outline' size='sm' onClick={this.machinePostData}>Save</CButton>
           </CModalFooter>
         </CModal>
 

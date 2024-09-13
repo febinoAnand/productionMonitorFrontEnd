@@ -43,12 +43,13 @@ const Dashboard = () => {
   }, [fetchDashboardData]);
 
   useEffect(() => {
-    const wsUrl = 'wss://productionb.univa.cloud/ws/data/dashboard-data/';
+    const wsUrl = `${BaseURL.replace('https', 'wss')}data/dashboard-data/`; 
     const socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
       console.log('WebSocket connected');
     };
+
 
     socket.onmessage = (event) => {
       
