@@ -7,8 +7,8 @@ import { cilMemory } from '@coreui/icons';
 import {
   CCard,
   CCardBody,
-  CRow,
-  CCol,
+  //CRow,
+  //CCol,
   CTableHead,
   CTableHeaderCell,
   CTable,
@@ -220,84 +220,75 @@ const Machine = () => {
           </CTable>
         </CCardBody>
       </CCard>
-      <div style={{ width: '100%' }}>
-        <CRow>
-          <CCol xs={12}>
-            <CCard className="mb-4">
-              <CCardHeader>
-                <strong>Shift Reports</strong>
-              </CCardHeader>
-              <CCardBody>
-                <CTable striped hover>
-                  <CTableHead className="custom-table-header">
-                    <CTableRow>
-                      <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">
-                        Production Count
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Target Count</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    {filteredShifts.length > 0 ? (
-                      <>
-                        {filteredShifts.map((shift) => (
-                          Object.keys(shift.timing).map((timeRange) => (
-                            <CTableRow key={timeRange}>
-                              <CTableDataCell>{timeRange}</CTableDataCell>
-                              <CTableDataCell>
-                                {shift.timing[timeRange]?.actual_production ||
-                                  'No data available'}
-                              </CTableDataCell>
-                              <CTableDataCell>
-                                {shift.timing[timeRange]?.target_production ||
-                                  'No data available'}
-                              </CTableDataCell>
-                            </CTableRow>
-                          ))
-                        ))}
+      <CCard style={{ width: '100%' }}>
+        <CCardHeader>
+          <strong>Shift Reports</strong>
+        </CCardHeader>
+        <CCardBody>
+          {filteredShifts.length > 0 ? (
+            filteredShifts.map((shift) => (
+              <CCard className="mb-4" key={shift.shift_start_time}>
+                <CCardHeader>
+                  <strong>{shift.shift_name || `Shift ${shift.shift_no}`}</strong>
+                </CCardHeader>
+                <CCardBody>
+                  <CTable striped hover>
+                    <CTableHead className="custom-table-header">
+                      <CTableRow>
+                        <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Production Count</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Target Count</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      {Object.keys(shift.timing).length > 0 ? (
+                        Object.keys(shift.timing).map((timeRange) => (
+                          <CTableRow key={timeRange}>
+                            <CTableDataCell>{timeRange}</CTableDataCell>
+                            <CTableDataCell>
+                              {shift.timing[timeRange]?.actual_production || '0'}
+                            </CTableDataCell>
+                            <CTableDataCell>
+                              {shift.timing[timeRange]?.target_production || '0'}
+                            </CTableDataCell>
+                          </CTableRow>
+                        ))
+                      ) : (
                         <CTableRow>
-                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
-                            Total
-                          </CTableDataCell>
-                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
-                            {filteredShifts.reduce(
-                              (sum, shift) =>
-                                sum +
-                                Object.values(shift.timing).reduce(
-                                  (total, current) => total + (current.actual_production || 0),
-                                  0
-                                ),
-                              0
-                            )}
-                          </CTableDataCell>
-                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
-                            {filteredShifts.reduce(
-                              (sum, shift) =>
-                                sum +
-                                Object.values(shift.timing).reduce(
-                                  (total, current) => total + (current.target_production || 0),
-                                  0
-                                ),
-                              0
-                            )}
+                          <CTableDataCell colSpan="3" style={{ textAlign: 'center' }}>
+                            No data available
                           </CTableDataCell>
                         </CTableRow>
-                      </>
-                    ) : (
+                      )}
                       <CTableRow>
-                        <CTableDataCell colSpan="3" style={{ textAlign: 'center' }}>
-                          No data available
+                        <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                          Total
+                        </CTableDataCell>
+                        <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                          {Object.values(shift.timing).reduce(
+                            (sum, timing) => sum + (timing.actual_production || 0),
+                            0
+                          )}
+                        </CTableDataCell>
+                        <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                          {Object.values(shift.timing).reduce(
+                            (sum, timing) => sum + (timing.target_production || 0),
+                            0
+                          )}
                         </CTableDataCell>
                       </CTableRow>
-                    )}
-                  </CTableBody>
-                </CTable>
-              </CCardBody>
-            </CCard>
-          </CCol>
-        </CRow>
-      </div>
+                    </CTableBody>
+                  </CTable>
+                </CCardBody>
+              </CCard>
+            ))
+          ) : (
+            <CCardBody style={{ textAlign: 'center' }}>
+              No shifts available
+            </CCardBody>
+          )}
+        </CCardBody>
+      </CCard>
     </div>
   );
 };

@@ -29,6 +29,12 @@ import {
 import axios from 'axios';
 import CIcon from '@coreui/icons-react';
 
+
+const username = localStorage.getItem('username');
+const password = localStorage.getItem('password');
+
+const isAdmin = username === 'admin' && password === 'admin';
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return {
@@ -287,7 +293,9 @@ class MachineDetails extends React.Component {
       }}>
               <CCardHeader>
                 <strong>Machine List</strong>
+                {isAdmin && (
                 <CButton color='success' variant='outline' size='sm' className='float-end' onClick={this.openAddModal}>Add Machine</CButton>
+  )}
               </CCardHeader>
               <CCardBody>
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
@@ -300,7 +308,7 @@ class MachineDetails extends React.Component {
                         <CTableHeaderCell scope="col">Manufacture</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Line</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Production PerHour</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Action</CTableHeaderCell>
+                        {isAdmin && <CTableHeaderCell scope="col">Action</CTableHeaderCell>}
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
@@ -319,6 +327,7 @@ class MachineDetails extends React.Component {
                             <CTableDataCell>{machine.manufacture}</CTableDataCell>
                             <CTableDataCell>{machine.line}</CTableDataCell>
                             <CTableDataCell>{machine.production_per_hour}</CTableDataCell>
+                            {isAdmin && (
                            <CTableDataCell>
                               <div className="d-flex gap-2">
                                 <CButton color="primary" size='sm' onClick={() => this.getRowData(machine)}>
@@ -329,6 +338,8 @@ class MachineDetails extends React.Component {
                                 </CButton>
                               </div>
                             </CTableDataCell>
+                            )}
+                           
                           </CTableRow>
                         ))
                       )}

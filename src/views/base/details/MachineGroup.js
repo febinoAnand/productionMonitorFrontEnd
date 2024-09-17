@@ -32,6 +32,7 @@ import axios from 'axios';
 import CIcon from '@coreui/icons-react';
 import BaseURL from 'src/assets/contants/BaseURL';
 
+
 const handleAuthError = (error) => {
     if (error.response && error.response.status === 401) {
         localStorage.removeItem('token');
@@ -270,6 +271,11 @@ const Groups = () => {
         }
     }, [successMessage, deleteMessage]);
 
+    const username = localStorage.getItem('username');
+    const password = localStorage.getItem('password');
+
+    const isAdmin = username === 'admin' && password === 'admin';
+
     return (
         <div className="page">
           {loading && (
@@ -306,11 +312,13 @@ const Groups = () => {
       }}>
                         <CCardHeader className="d-flex justify-content-between align-items-center">
                             <strong>Group LIST</strong>
+                            {isAdmin && (
                             <CTooltip content="Create new Group">
                                 <CButton type="button" color="success" variant='outline' size='sm' onClick={() => setNewGroupModalVisible(true)}>
                                     Create Group
                                 </CButton>
                             </CTooltip>
+)}
                         </CCardHeader>
                         <CCardBody>
                             <CCol md={4}>
@@ -334,7 +342,7 @@ const Groups = () => {
                                             <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Group</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Machines</CTableHeaderCell>
-                                            <CTableHeaderCell scope="col">Action</CTableHeaderCell>
+                                            {isAdmin && <CTableHeaderCell>Action</CTableHeaderCell>}
                                         </CTableRow>
                                     </CTableHead>
                                     <CTableBody>
@@ -350,6 +358,7 @@ const Groups = () => {
                                                     <CTableDataCell>
                                                         {group.machines.map(machine => machine.machine_name).join(', ')}
                                                     </CTableDataCell>
+                                                    {isAdmin && (
                                                     <CTableDataCell>
                                                         <CTooltip content="Edit Group">
                                                             <CButton
@@ -371,6 +380,7 @@ const Groups = () => {
                                                             </CButton>
                                                         </CTooltip>
                                                     </CTableDataCell>
+                                                    )}
                                                 </CTableRow>
                                             ))
                                         )}

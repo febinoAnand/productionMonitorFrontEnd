@@ -51,6 +51,10 @@ import {
 import {CNavItem, CNavTitle } from '@coreui/react'
 
 
+const username = localStorage.getItem('username');
+const password = localStorage.getItem('password');
+
+const isAdmin = username === 'admin' && password === 'admin';
 
 const _nav = [
   {
@@ -343,13 +347,13 @@ const _nav = [
     //icon: <CIcon icon={cilEqualizer} customClassName="nav-icon" />,
   
   //},
-  {
+  isAdmin && {
     component: CNavTitle,
      name: 'User Management',
      style: {color: '#FFFFFF' },
      
    },
-   {
+   isAdmin && {
      component: CNavItem,
      name: <span style={{ color: 'white' }}>Employees</span>,
      to: '/users/users',
@@ -409,6 +413,6 @@ const _nav = [
             //   icon: <CIcon icon={cilLan} customClassName="nav-icon" />,
             // },
   
-]
+          ].filter(Boolean); // Filter out false values
 
 export default _nav
