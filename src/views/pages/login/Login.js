@@ -27,11 +27,14 @@ const useAuth = () => {
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
+
   const handleLogin = async (event) => {
     event.preventDefault();
+    setIsSubmitting(true); 
 
     try {
       const response = await fetch(BaseURL + 'Userauth/weblogin/', {
@@ -61,53 +64,73 @@ const Login = () => {
     } catch (error) {
       console.error('An error occurred during login:', error);
       alert('An error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false); 
     }
   };
 
   return (
+   <div
+  className="bg-light d-flex align-items-center justify-content-center"
+  style={{ minHeight: '100vh', width: '100%', overflow: 'hidden' }}
+>
+
+  <CContainer
+    className="d-flex align-items-center justify-content-center"
+    style={{
+      maxWidth: '1200px',     
+      height: 'auto',         
+      margin: '0 auto',        
+      padding: '0',
+      transform: 'translate(175px)',             
+    }}
+  >
     <div
-      className="bg-light min-vh-100 d-flex align-items-center justify-content-center"
-      style={{ minHeight: '100vh' }}
+      className="d-flex flex-row"
+      style={{ 
+        width: '100%',         
+        height: 'auto',
+        maxHeight: '400px',
+      }}
     >
-      <CContainer
-        className="d-flex align-items-center justify-content-center"
-        style={{ maxWidth: '1200px', height: 'auto', padding: '100px',marginRight:'10px' }}
+      
+      <div
+        style={{
+          flex: '1 1 50%',     
+          maxWidth: '50%',
+          minWidth: '300px',
+          display: 'flex',      
+          justifyContent: 'center',  
+          alignItems: 'center',     
+        }}
       >
-        <div
-          className="d-flex flex-row"
-          style={{ width: '100%', height: 'auto', maxHeight: '600px' }}
-        >
-          <div
-            style={{
-              flex: '0 0 50%',
-              maxWidth: '50%',
-              minWidth: '300px',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <img
-              src="/mando company.jpg"
-              alt="Company Logo"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                borderRadius: '0',
-              }}
-            />
-          </div>
-          <CCard
-            className="p-4"
-            style={{
-              flex: '0 0 250px', // Adjusted width for the card
-              backgroundColor: '#047BC4',
-              borderRadius: '0',
-              padding: '20px',
-              
-            }}
-          >
+        <img
+          src="/mando company.jpg"
+          alt="Company Logo"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',    
+            borderRadius: '0',     
+          }}
+        />
+      </div>
+
+     
+      <CCard
+        className="p-4"
+        style={{
+          flex: '1 1 50%',  
+          maxWidth: '250px', 
+          minWidth: '250px',  
+          backgroundColor: '#047BC4',
+          borderRadius: '0',   
+          padding: '20px',
+          display: 'flex',
+          justifyContent: 'center',  
+          alignItems: 'center',     
+        }}
+      >
             <CForm onSubmit={handleLogin} style={{ width: '100%' }}>
               <h1 style={{ color: '#FFFFFF', textAlign: 'center' }}>Login</h1>
               <CInputGroup className="mb-3" style={{ marginTop: '30px' }}>
@@ -144,6 +167,7 @@ const Login = () => {
                   borderRadius: '10px',
                   padding: '10px',
                 }}
+                disabled={isSubmitting}
               >
                 <CIcon icon={cilExitToApp} /> Sign In
               </CButton>
