@@ -29,24 +29,27 @@ const logout = (navigate) => {
   navigate('/login');
 };
 
-const generateCSV = (data, headers, fileName) => {
+const generateCSV = (data, fileName) => {
   const csvRows = [];
-  csvRows.push(headers.join(','));
+
 
   data.forEach(row => {
     csvRows.push(row.join(','));
   });
 
+  
   const csvString = csvRows.join('\n');
   const blob = new Blob([csvString], { type: 'text/csv' });
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', fileName);
+  link.setAttribute('download', fileName); 
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 };
+
+
 
 const Download = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -432,43 +435,43 @@ const shiftNames = new Set();
         });
 
         doc.save(`Production_Summary_Report_${currentDate}.pdf`);
-      }  else if (selectedFileFormat === 'csv') {
+      } else if (selectedFileFormat === 'csv') {
         const csvRows = [];
         const csvHeader = ['Group', 'Work Center', ...shiftNamesArray, 'Production Count', 'Total Production Count'];
-        csvRows.push(csvHeader); 
         
+        csvRows.push(csvHeader); 
+      
         machine_groups.forEach(group => {
-          let isGroupHeaderAdded = false; 
-  
+          let isGroupHeaderAdded = false;
+      
           group.machines.forEach(machine => {
             const row = [];
             let rowTotalProduction = 0;
-  
+      
             if (!isGroupHeaderAdded) {
               row.push(group.group_name);
               isGroupHeaderAdded = true;
             } else {
               row.push(''); 
             }
-  
+      
             row.push(machine.machine_name);
-  
+      
             shiftNamesArray.forEach((shiftName) => {
               const shift = machine.shifts.find(
                 (s) => s.shift_name === shiftName || `Shift ${s.shift_no}` === shiftName
               );
-              const productionCountForShift =
-                shift && !isNaN(shift.total_shift_production_count)
-                  ? shift.total_shift_production_count
-                  : 0;
+              const productionCountForShift = shift && !isNaN(shift.total_shift_production_count)
+                ? shift.total_shift_production_count
+                : 0;
               row.push(productionCountForShift);
               rowTotalProduction += productionCountForShift;
             });
-  
+      
             row.push(rowTotalProduction);
             csvRows.push(row);
           });
-  
+      
           if (csvRows.length > 1) {
             const lastRowOfGroup = csvRows[csvRows.length - 1];
             lastRowOfGroup.push(group.machines.reduce((total, machine) => {
@@ -476,9 +479,15 @@ const shiftNames = new Set();
             }, 0));
           }
         });
-  
-        generateCSV(csvRows, csvHeader, `Production_Summary_Report_${currentDate}.csv`);
+      
+      
+        const currentDate = format(new Date(), 'yyyy-MM-dd');
+        const fileName = `Production_Summary_Report_${currentDate}.csv`;
+      
+        
+        generateCSV(csvRows, fileName);
       }
+      
     } catch (error) {
       console.error('Error generating report:', error.message);
       setErrorMessage('Error generating report. Please check the console for details.');
