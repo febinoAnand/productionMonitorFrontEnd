@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef } from 'react';
 import {
   CCol,
   CRow,
   CFormInput,
+  CInputGroup,
   CButton,
   CCard,
   CCardHeader,
   CCardBody,
   CFormSelect,
 } from '@coreui/react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import axios from 'axios';
+import CIcon from '@coreui/icons-react';
+import { cilCalendar} from '@coreui/icons';
 import BaseURL from 'src/assets/contants/BaseURL';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -48,6 +53,27 @@ const generateCSV = (data, fileName) => {
   link.click();
   document.body.removeChild(link);
 };
+
+const CustomInput = forwardRef((props, ref) => (
+  <CInputGroup>
+    <CFormInput
+      value={props.value}
+      onClick={props.onClick}
+      readOnly
+      ref={ref}
+      style={{ paddingRight: '30px', height: '38px', borderRadius: '0px' }}
+    />
+    <CButton
+      type="button"
+      color="secondary"
+      onClick={props.onClick}
+      style={{ backgroundColor: '#047BC4', borderColor: '#047BC4' }}
+    >
+      <CIcon icon={cilCalendar} style={{ color: '#FFFFFF' }} />
+    </CButton>
+  </CInputGroup>
+));
+CustomInput.displayName = 'CustomInput';
 
 
 
@@ -95,8 +121,16 @@ const Download = () => {
   const handleFileFormatChange = (e) => {
     setSelectedFileFormat(e.target.value);
   };
+  const showErrorMessage = (message) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(''), 6000);
+  };
 
   const generateShiftwisePDF = async () => {
+    if (!selectedFileFormat) {
+      showErrorMessage('Please select a file format.');
+      return;
+    }
     try {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       const machineId = selectedMachine;
@@ -261,7 +295,7 @@ const Download = () => {
       }
     } catch (error) {
       console.error('Error generating report:', error.message);
-      setErrorMessage('Error generating report. Please check the console for details.');
+      showErrorMessage('Please select the machines.');
     }
   };
 
@@ -285,6 +319,10 @@ const Download = () => {
   };
 
   const generateSummaryPDF = async () => {
+    if (!selectedFileFormat) {
+      showErrorMessage('Please select a file format.');
+      return;
+    }
     try {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       const currentDate = format(new Date(), 'yyyy-MM-dd');
@@ -490,9 +528,11 @@ const shiftNames = new Set();
       
     } catch (error) {
       console.error('Error generating report:', error.message);
-      setErrorMessage('Error generating report. Please check the console for details.');
+      showErrorMessage('Error generating report. Please check the console for details.');
     }
   };
+
+  const today = new Date(); 
   return (
     <div className="page">
     {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
@@ -503,15 +543,20 @@ const shiftNames = new Set();
         </CCardHeader>
         <CCardBody>
           <CRow>
-            <CCol md={4}>
-              <CFormInput
-                type="date"
-                id="date"
-                name="date"
-                value={format(selectedDate, 'yyyy-MM-dd')}
-                onChange={e => handleDateChange(new Date(e.target.value))}
-              />
-            </CCol>
+          <CCol md={3} className="text-end">
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <CInputGroup> 
+                      <DatePicker
+                        selected={selectedDate}
+                        onChange={handleDateChange}
+                        customInput={<CustomInput />}
+                        dateFormat="dd/MM/yyyy"
+                        popperPlacement="bottom-end"
+                        maxDate={today}
+                      />
+                    </CInputGroup>
+                    </div>
+          </CCol>
             <CCol md={4}>
               <CFormSelect
                 id="machine"

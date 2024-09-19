@@ -20,12 +20,14 @@ import {
   CForm,
   CFormInput,
   CFormLabel,
-  CSpinner 
+  CSpinner
 } from '@coreui/react';
 import { cilPen, cilTrash } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -52,6 +54,8 @@ const Listachievement = () => {
   const [shiftHeaders, setShiftHeaders] = useState([]);
   const [groupedData, setGroupedData] = useState({});
   const [loading, setLoading] = useState(true);  
+  const [activeGroup, setActiveGroup] = useState(null);
+
   useEffect(() => {
     const fetchData = async () => {
       console.log('Fetching data...');
@@ -110,13 +114,12 @@ const Listachievement = () => {
     applyHeaderStyles();
   }, [data, shiftHeaders]);
 
-  const handleEdit = (item, groupName) => {
+  const handleEdit = (item) => {
     setCurrentItem(item);
   
-    
     const prefilledFormData = {
       date: item.date,
-      ...item.shifts, 
+      ...item.shifts,
     };
   
     setFormData(prefilledFormData);  
@@ -130,7 +133,7 @@ const Listachievement = () => {
 
   const handleSave = () => {
     const updatedData = data.map(item =>
-      item.date === currentItem.date ? formData : item
+      item.date === currentItem.date ? { ...currentItem, ...formData } : item
     );
     setData(updatedData);
     setModalVisible(false);
@@ -142,6 +145,13 @@ const Listachievement = () => {
       setData(updatedData);
     }
   };
+  useEffect(() => {
+    if (activeGroup) {
+      console.log(`Active group changed to: ${activeGroup}`);
+    }
+  }, [activeGroup]);
+  
+  
 
   const calculateTotal = (shifts) => {
     return shiftHeaders.reduce((total, shift) => {
@@ -149,10 +159,38 @@ const Listachievement = () => {
     }, 0);
   };
 
+  const downloadPDF = (groupName) => {
+    const doc = new jsPDF();
+    doc.text(`Achievements List for ${groupName}`, 14, 16);
+    
+    const columns = ['Date', ...shiftHeaders.map(shift => `Shift ${shift}`), 'Total'];
+    const rows = groupedData[groupName]?.map(item => [
+      item.date,
+      ...shiftHeaders.map(shift => item.shifts[`shift${shift}`] || 0),
+      calculateTotal(item.shifts)
+    ]) || [];
+    
+    doc.autoTable({
+      head: [columns],
+      body: rows,
+      startY: 24,
+      styles: { fontSize: 12, cellPadding: 6 },  
+      headStyles: { fillColor:[52, 107, 235] },
+      margin: { top: 24, right: 14, bottom: 24, left: 14 }, 
+      theme: 'grid',  
+      tableWidth: 'auto', 
+      rowPageBreak: 'avoid', 
+    });
+
+    const currentDate = new Date().toISOString().slice(0, 10); 
+
+    doc.save(`${groupName}Achievements-${currentDate}.pdf`);
+  };
+
   return (
     <>
       {loading ? ( 
-       <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <div style={{ textAlign: 'center', marginTop: '50px' }}>
           <CSpinner color="primary" variant="grow" />
           <CSpinner color="secondary" variant="grow" />
           <CSpinner color="success" variant="grow" />
@@ -165,58 +203,64 @@ const Listachievement = () => {
         <CRow>
           <CCol xs={12}>
             {Object.keys(groupedData).map((groupName, index) => (
-              <CCard className="mb-4" style={{ marginTop: '40px' }} key={index}>
-                <CCardHeader><h5>{groupName}</h5></CCardHeader>
-                <CCardBody style={{ marginTop: '10px' }}>
-                  <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                    <CTable striped hover>
-                      <CTableHead color='dark' className="custom-table-header">
-                        <CTableRow>
-                          <CTableHeaderCell scope="col">Date</CTableHeaderCell>
-                          {shiftHeaders.map((shift, index) => (
-                            <CTableHeaderCell key={index} scope="col">{`Shift ${shift}`}</CTableHeaderCell>
-                          ))}
-                          <CTableHeaderCell scope="col">Total</CTableHeaderCell>
-                          <CTableHeaderCell scope="col">Action</CTableHeaderCell>
-                        </CTableRow>
-                      </CTableHead>
-                      <CTableBody>
-                        {groupedData[groupName].length > 0 ? (
-                          groupedData[groupName].map((item, idx) => (
-                            <CTableRow key={idx}>
-                              <CTableDataCell>{item.date}</CTableDataCell>
-                              {shiftHeaders.map((shift, i) => (
-                                <CTableDataCell key={i}>{item.shifts[`shift${shift}`] || 0}</CTableDataCell>
-                              ))}
-                              <CTableDataCell style={{fontWeight: 'bold', color: '#007bff' }}>{calculateTotal(item.shifts)}</CTableDataCell>
-                              <CTableDataCell>
-                                <CButton color="primary" size="sm" className="me-2" onClick={() => handleEdit(item)}>
-                                  <CIcon icon={cilPen} />
-                                </CButton>
-                                <CButton color="primary" size="sm" onClick={() => handleDelete(item.date)}>
-                                  <CIcon icon={cilTrash} />
-                                </CButton>
-                              </CTableDataCell>
-                            </CTableRow>
-                          ))
-                        ) : (
+              <CCard 
+                className="mb-4" 
+                style={{ marginTop: '40px', cursor: 'pointer' }} 
+                key={index} 
+                onClick={() => setActiveGroup(groupName)}
+              >
+                <CCardHeader style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ccc' }}>
+                  <h5>{groupName}</h5>
+                  <CButton color="success" size="sm" variant='outline' onClick={(e) => { e.stopPropagation(); downloadPDF(groupName); }}>
+                    Download
+                  </CButton>
+                </CCardHeader>
+                  <CCardBody style={{ marginTop: '10px' }}>
+                    <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                      <CTable striped hover>
+                        <CTableHead color='dark' className="custom-table-header">
                           <CTableRow>
-                            <CTableDataCell colSpan={shiftHeaders.length + 2} className="text-center">
-                              No data available
-                            </CTableDataCell>
+                            <CTableHeaderCell scope="col">Date</CTableHeaderCell>
+                            {shiftHeaders.map((shift, index) => (
+                              <CTableHeaderCell key={index} scope="col">{`Shift ${shift}`}</CTableHeaderCell>
+                            ))}
+                            <CTableHeaderCell scope="col">Total</CTableHeaderCell>
+                            <CTableHeaderCell scope="col">Action</CTableHeaderCell>
                           </CTableRow>
-                        )}
-                      </CTableBody>
-                    </CTable>
-                  </div>
-                </CCardBody>
+                        </CTableHead>
+                        <CTableBody>
+                          {groupedData[groupName].length > 0 ? (
+                            groupedData[groupName].map((item, idx) => (
+                              <CTableRow key={idx}>
+                                <CTableDataCell>{item.date}</CTableDataCell>
+                                {shiftHeaders.map((shift, i) => (
+                                  <CTableDataCell key={i}>{item.shifts[`shift${shift}`] || 0}</CTableDataCell>
+                                ))}
+                                <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>{calculateTotal(item.shifts)}</CTableDataCell>
+                                <CTableDataCell>
+                                  <CButton color="primary" size="sm" className="me-2" onClick={() => handleEdit(item)}>
+                                    <CIcon icon={cilPen} />
+                                  </CButton>
+                                  <CButton color="primary" size="sm" onClick={() => handleDelete(item.date)}>
+                                    <CIcon icon={cilTrash} />
+                                  </CButton>
+                                </CTableDataCell>
+                              </CTableRow>
+                            ))
+                          ) : (
+                            <CTableRow>
+                              <CTableDataCell colSpan={shiftHeaders.length + 2}>No data available</CTableDataCell>
+                            </CTableRow>
+                          )}
+                        </CTableBody>
+                      </CTable>
+                    </div>
+                  </CCardBody>
               </CCard>
             ))}
           </CCol>
-        </CRow>
-      )}
 
-<CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+          <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader>
           <CModalTitle>Edit Achievement</CModalTitle>
         </CModalHeader>
@@ -262,6 +306,8 @@ const Listachievement = () => {
           </CButton>
         </CModalFooter>
       </CModal>
+        </CRow>
+      )}
     </>
   );
 };
