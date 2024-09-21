@@ -146,17 +146,20 @@ const ProductionMonitor = () => {
     };
   
     socket.onmessage = (event) => {
+      // Parse WebSocket message data
       const updatedData = JSON.parse(event.data);
-
+  
       console.log('WebSocket Response:', updatedData);
-
-      if (updatedData && updatedData.data && Array.isArray(updatedData.data)) {
-        const { data: machine_groups, date: responseDate } = updatedData;
-
+  
+      // Check if the necessary fields (machine_groups and date) exist in the response
+      if (updatedData && updatedData.machine_groups && Array.isArray(updatedData.machine_groups)) {
+        const { machine_groups, date: responseDate } = updatedData; // No need to check for `data` array anymore
+  
         if (responseDate === apiDate) {
           const shiftNamesMap = {};
           const shiftNumbers = new Set();
-
+  
+          // Process machine_groups as received from WebSocket
           const formattedGroups = machine_groups.reverse().map(group => {
             const formattedMachines = group.machines.map(machine => {
               const shiftTotals = {};
@@ -169,32 +172,34 @@ const ProductionMonitor = () => {
                   shiftTotals[shiftNumber] = (shiftTotals[shiftNumber] || 0) + (shift.total_shift_production_count || 0);
                 }
               });
-
+  
               return {
                 ...machine,
                 total_shift_production_count: Object.values(shiftTotals).reduce((sum, count) => sum + count, 0),
                 shiftTotals,
-                production_date: responseDate
+                production_date: responseDate,
               };
             });
-
+  
             return {
               ...group,
-              machines: formattedMachines
+              machines: formattedMachines,
             };
           });
-
+  
           const sortedShiftNumbers = Array.from(shiftNumbers).sort((a, b) => a - b);
-
+  
+          // Update state with new data from WebSocket
           setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
           setFilteredData(formattedGroups);
-
+  
           console.log('API and WebSocket responses match.');
         } else {
           console.log('WebSocket data date does not match API date. No update.');
         }
       } else {
-        console.log('Invalid WebSocket data or missing data array.');
+        // WebSocket response does not contain expected fields
+        console.log('Invalid WebSocket data or missing machine_groups array.');
       }
     };
   
@@ -211,7 +216,7 @@ const ProductionMonitor = () => {
       console.log('WebSocket closed');
     };
   }, [apiDate]);
-
+  
   if (loading) return (
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
       <CSpinner color="primary" variant="grow" />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   CButton,
@@ -28,9 +28,19 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const handleResize = () => {
+    setWindowWidth(window.innerWidth);
+  };
 
+  useEffect(() => {
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -82,7 +92,7 @@ const Login = () => {
       height: 'auto',         
       margin: '0 auto',        
       padding: '0',
-      transform: 'translate(175px)',             
+      transform: windowWidth < 768 ? 'none' : 'translate(175px)',            
     }}
   >
     <div
@@ -94,27 +104,30 @@ const Login = () => {
       }}
     >
       
-      <div
-        style={{
-          flex: '1 1 50%',     
-          maxWidth: '50%',
-          minWidth: '300px',
-          display: 'flex',      
-          justifyContent: 'center',  
-          alignItems: 'center',     
-        }}
-      >
-        <img
-          src="/mando company.jpg"
-          alt="Company Logo"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',    
-            borderRadius: '0',     
-          }}
-        />
-      </div>
+      {windowWidth >= 768 && (
+            <div
+              className="image-container"
+              style={{
+                flex: '1 1 50%',
+                maxWidth: '50%',
+                minWidth: '300px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <img
+                src="/mando company.jpg"
+                alt="Company Logo"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '0',
+                }}
+              />
+            </div>
+          )}
 
      
       <CCard
@@ -128,7 +141,8 @@ const Login = () => {
           padding: '20px',
           display: 'flex',
           justifyContent: 'center',  
-          alignItems: 'center',     
+          alignItems: 'center', 
+          margin: windowWidth < 768 ? '0 auto' : 'inherit',    
         }}
       >
             <CForm onSubmit={handleLogin} style={{ width: '100%' }}>

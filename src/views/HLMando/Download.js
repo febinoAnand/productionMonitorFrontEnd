@@ -251,7 +251,7 @@ const Download = () => {
         doc.setFont("helvetica", "normal");
         doc.text(`Generated on: ${format(new Date(), 'yyyy-MM-dd')}`, margin, doc.internal.pageSize.height - 10);
   
-        doc.save(`shiftwise_report_${formattedDate}.pdf`);
+        doc.save(`shiftwise_report (${formattedDate}).pdf`);
       } else if (selectedFileFormat === 'csv') {
         const csvHeaders = ['Shift', 'Time Range', 'Production Count', 'Target Count', 'Differences'];
         const csvData = [];
@@ -291,7 +291,7 @@ const Download = () => {
           }
         });
   
-        generateCSVForShiftwiseReport(csvData, csvHeaders, `shiftwise_report_${formattedDate}.csv`);
+        generateCSVForShiftwiseReport(csvData, csvHeaders, `shiftwise_report (${formattedDate}).csv`);
       }
     } catch (error) {
       console.error('Error generating report:', error.message);
@@ -325,8 +325,6 @@ const Download = () => {
     }
     try {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      const currentDate = format(new Date(), 'yyyy-MM-dd');
-
       const response = await axios.post(
         `${BaseURL}data/production/`,
         { date: formattedDate },
@@ -472,7 +470,7 @@ const shiftNames = new Set();
           }
         });
 
-        doc.save(`Production_Summary_Report_${currentDate}.pdf`);
+        doc.save(`Production_Summary_Report (${formattedDate}).pdf`);
       } else if (selectedFileFormat === 'csv') {
         const csvRows = [];
         const csvHeader = ['Group', 'Work Center', ...shiftNamesArray, 'Production Count', 'Total Production Count'];
@@ -518,9 +516,7 @@ const shiftNames = new Set();
           }
         });
       
-      
-        const currentDate = format(new Date(), 'yyyy-MM-dd');
-        const fileName = `Production_Summary_Report_${currentDate}.csv`;
+        const fileName = `Production_Summary_Report (${formattedDate}).csv`;
       
         
         generateCSV(csvRows, fileName);

@@ -400,7 +400,7 @@ const Groups = () => {
                         <CForm>
                             <CRow>
                                 <CCol xs={12}>
-                                <CFormLabel htmlFor="new-group-name">Group Name<span style={{ color: 'red' }}>*</span></CFormLabel>
+                                <CFormLabel htmlFor="groupName">Group Name<span style={{ color: 'red' }}>*</span></CFormLabel>
                                     <CFormInput
                                         id="groupName"
                                         value={selectedGroup.group_name}
@@ -451,7 +451,7 @@ const Groups = () => {
                         <CRow>
                             <CCol xs={12}>
                                 
-                            <CFormLabel htmlFor="new-group-name">Group Name<span style={{ color: 'red' }}>*</span></CFormLabel>
+                            <CFormLabel htmlFor="newGroupName">Group Name<span style={{ color: 'red' }}>*</span></CFormLabel>
                                 <CFormInput
                                     id="newGroupName"
                                     value={newGroupName}
@@ -462,7 +462,7 @@ const Groups = () => {
                                 )}
                             </CCol>
                             <CCol xs={12} className="mt-3">
-                            <CFormLabel htmlFor="machineList">Machines<span style={{ color: 'red' }}>*</span></CFormLabel>
+                            <CFormLabel htmlFor="newMachineList">Machines<span style={{ color: 'red' }}>*</span></CFormLabel>
                                 <CFormSelect
                                     id="newMachineList"
                                     multiple
