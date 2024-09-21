@@ -153,8 +153,9 @@ const ProductionMonitor = () => {
   
       // Check if the necessary fields (machine_groups and date) exist in the response
       if (updatedData && updatedData.machine_groups && Array.isArray(updatedData.machine_groups)) {
-        const { machine_groups, date: responseDate } = updatedData; // No need to check for `data` array anymore
+        const { machine_groups, date: responseDate } = updatedData;
   
+        // Ensure the response date matches the API date before updating state
         if (responseDate === apiDate) {
           const shiftNamesMap = {};
           const shiftNumbers = new Set();
@@ -216,6 +217,7 @@ const ProductionMonitor = () => {
       console.log('WebSocket closed');
     };
   }, [apiDate]);
+  
   
   if (loading) return (
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
