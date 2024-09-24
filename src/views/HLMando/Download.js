@@ -368,7 +368,7 @@ const Download = () => {
                 const blob = new Blob([buffer], { type: 'application/octet-stream' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = `shiftwise_report_${formattedDate}.xlsx`;
+                link.download = `shiftwise_report (${formattedDate}).xlsx`;
                 link.click();
             });
         }
@@ -615,14 +615,13 @@ const shiftNames = new Set();
           column.width = maxLength < 20 ? 20 : maxLength + 2; // Dynamic width
       });
   
-      // Generate Excel file and trigger download
       workbook.xlsx.writeBuffer().then((buffer) => {
           const blob = new Blob([buffer], { type: 'application/octet-stream' });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
           link.download = `Production_Summary_Report (${formattedDate}).xlsx`;
           link.click();
-          URL.revokeObjectURL(link.href); // Clean up
+          URL.revokeObjectURL(link.href);
       }).catch(err => {
           console.error("Error generating report:", err);
       });
@@ -712,7 +711,7 @@ const shiftNames = new Set();
                   variant="outline"
                   className="mb-3"
                   style={{ width: '100%' }}
-                  onClick={generateSummaryPDF} // Ensure this function handles Excel generation
+                  onClick={generateSummaryPDF} 
                 >
                   Summary Report
                 </CButton>
