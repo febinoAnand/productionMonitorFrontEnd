@@ -37,6 +37,7 @@
     "classnames": "^2.3.2",
     "core-js": "^3.31.0",
     "csv-writer": "^1.6.0",
+    "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
@@ -58,7 +59,8 @@
     "reactstrap": "^9.2.2",
     "redux": "4.2.1",
     "simplebar-react": "^2.4.3",
-    "styled-components": "^6.0.6"
+    "styled-components": "^6.0.6",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
