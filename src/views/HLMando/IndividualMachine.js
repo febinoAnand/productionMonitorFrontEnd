@@ -147,11 +147,6 @@ const Machine = () => {
       }, 0)
     : 'N/A';
 
-
-const getStatusColor = (status) => {
-  return status === 0 ? '#f61612' :'#4ded4f';
-};
-
   return (
     <div
       className="page"
@@ -220,24 +215,6 @@ const getStatusColor = (status) => {
                   Date
                 </CTableDataCell>
                 <CTableDataCell>{currentDate}</CTableDataCell>
-              </CTableRow>
-              <CTableRow>
-                <CTableDataCell style={{ fontWeight: 'bold' }}>
-                  Status
-                </CTableDataCell>
-                <CTableDataCell>
-                
-                <div
-                    style={{
-                      width: '80px',
-                      height: '20px',
-                      backgroundColor: getStatusColor(machine.status),
-                       
-                     marginRight:'80px'
-
-                    }}
-                  />
-                </CTableDataCell>
               </CTableRow>
             </CTableBody>
           </CTable>
