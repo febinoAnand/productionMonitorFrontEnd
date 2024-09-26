@@ -50,11 +50,9 @@ const Dashboard = () => {
       console.log('WebSocket connected');
     };
 
-
     socket.onmessage = (event) => {
-      
       const updatedData = JSON.parse(event.data);
-      setDashboardData(updatedData.groups.reverse()); 
+      setDashboardData(updatedData.groups.reverse());
       console.log('WebSocket message received:', updatedData.groups);
     };
 
@@ -70,13 +68,13 @@ const Dashboard = () => {
       socket.close();
       console.log('WebSocket closed');
     };
-  }, []); 
+  }, []);
 
   const widgetStyles = {
     borderRadius: '12px',
     padding: '20px',
     width: '250px',
-    height: '130px',
+    height: '170px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -84,7 +82,22 @@ const Dashboard = () => {
     textAlign: 'center',
     boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
     border: '1px solid rgba(255,255,255,0.2)',
-    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
+    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+  };
+
+  const innerWidgetStyles = {
+    borderRadius: '8px',
+    padding: '10px',
+    width: '170px',
+    height: '100px', 
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    backgroundColor: '#FFFFFF', 
+    border: '1px solid #ccc',
+    position: 'relative', 
   };
 
   const zoomOutStyle = {
@@ -130,7 +143,7 @@ const Dashboard = () => {
                   fontWeight: '700',
                   padding: '10px 20px',
                   borderBottom: '2px solid #e9ecef',
-                  fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
+                  fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
                 }}>
                   <h4 style={{ margin: 0 }}>{group.group_name}</h4>
                 </CCardHeader>
@@ -141,45 +154,80 @@ const Dashboard = () => {
                       const targetProduction = machine.target_production || 0;
                       const percentage = targetProduction > 0 ? (productionCount / targetProduction) * 100 : 0;
 
+                     
                       let backgroundColor;
                       if (percentage >= 95) {
-                        backgroundColor = '#80ff80';
+                        backgroundColor = '#80ff80'; 
                       } else if (percentage >= 85) {
-                        backgroundColor = '#ffff66';
+                        backgroundColor = '#ffff66'; 
                       } else {
-                        backgroundColor = '#ff4d4d';
+                        backgroundColor = '#ff4d4d'; 
                       }
+
+                     
+                      const rectangleColor = machine.status === 1 ? 'green' : 'red';
 
                       return (
                         <CCol xs={12} md={3} key={machine.machine_id}>
+                         
                           <CWidgetStatsA
                             className="mb-4"
                             style={{
                               ...widgetStyles,
-                              backgroundColor: backgroundColor,
-                              cursor: 'pointer'
+                              backgroundColor: backgroundColor, 
+                              cursor: 'pointer',
                             }}
                             onClick={() => handleClick(group.group_name, machine)}
                             value={
-                              <span style={{
-                                display: 'block',
-                                fontSize: '20px',
-                                fontWeight: 'bold',
-                                lineHeight: '1.2',
-                                color: '#000'
-                              }}>
-                                {`${machine.production_count || 0} / ${machine.target_production || 0}`}
-                              </span>
-                            }
-                            title={
-                              <span style={{
-                                fontSize: '20px',
-                                fontWeight: 'bold',
-                                lineHeight: '1.2',
-                                color: '#000' 
-                              }}>
-                                {machine.machine_name}
-                              </span>
+                              <div>
+                                
+                                <span style={{
+                                  fontSize: '20px',
+                                  fontWeight: 'bold',
+                                  lineHeight: '1.2',
+                                  color: '#000',
+                                  marginBottom:'15px',
+                                   display: 'block',
+                                }}>
+                                  {machine.machine_name}
+                                </span>
+                                <div style={innerWidgetStyles}>
+                                  <span style={{
+                                    fontSize: '20px',
+                                    lineHeight: '1.2',
+                                    color: '#000',
+                                  }}>
+                                    {productionCount}
+                                  </span>
+                                  
+                            
+                                  <div style={{
+                                    width: '50%',
+                                    height: '2px', 
+                                    backgroundColor: '#000',
+                                    margin: '5px 0',
+                                  }}></div>
+
+                                  <span style={{
+                                    fontSize: '20px',
+                                    lineHeight: '1.2',
+                                    color: '#000',
+                                  }}>
+                                    {targetProduction}
+                                  </span>
+
+                                 
+                                  <div style={{
+                                    marginTop: '20px',
+                                    width: '110px',
+                                    height: '10px',
+                                    backgroundColor: rectangleColor,
+                                   
+                                    position: 'absolute', 
+                                    bottom: '5px',
+                                  }}></div>
+                                </div>
+                              </div>
                             }
                           />
                         </CCol>
