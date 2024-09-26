@@ -74,7 +74,7 @@ const Dashboard = () => {
     borderRadius: '12px',
     padding: '20px',
     width: '250px',
-    height: '170px',
+    height: '180px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -89,7 +89,7 @@ const Dashboard = () => {
     borderRadius: '8px',
     padding: '10px',
     width: '170px',
-    height: '100px', 
+    height: '110px', 
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -107,8 +107,8 @@ const Dashboard = () => {
   };
 
   const handleClick = (groupName, machine) => {
-    console.log('Selected Machine ID:', machine.machine_id);
-    navigate('/HLMando/IndividualMachine', { state: { groupName, machineId: machine.machine_id } });
+    console.log('Selected Machine ID:', machine.machine_id,machine.status);
+    navigate('/HLMando/IndividualMachine', { state: { groupName, machineId: machine.machine_id, status:machine.status } });
   };
 
   if (loading) {
@@ -165,7 +165,7 @@ const Dashboard = () => {
                       }
 
                      
-                      const rectangleColor = machine.status === 1 ? 'green' : 'red';
+                      const rectangleColor = machine.status === 1 ? '#f61612' : '#4ded4f';
 
                       return (
                         <CCol xs={12} md={3} key={machine.machine_id}>
@@ -192,41 +192,49 @@ const Dashboard = () => {
                                   {machine.machine_name}
                                 </span>
                                 <div style={innerWidgetStyles}>
-                                  <span style={{
-                                    fontSize: '20px',
-                                    lineHeight: '1.2',
-                                    color: '#000',
-                                  }}>
-                                    {productionCount}
-                                  </span>
-                                  
-                            
                                   <div style={{
-                                    width: '50%',
-                                    height: '2px', 
-                                    backgroundColor: '#000',
-                                    margin: '5px 0',
-                                  }}></div>
-
-                                  <span style={{
-                                    fontSize: '20px',
-                                    lineHeight: '1.2',
-                                    color: '#000',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center', 
+                                    alignItems: 'center', 
+                                    width: '100%', 
+                                    marginBottom:'15px'
                                   }}>
-                                    {targetProduction}
-                                  </span>
+                                    <span style={{
+                                      fontSize: '20px',
+                                      lineHeight: '1.2',
+                                      color: '#000',
+                                    }}>
+                                      {productionCount}
+                                    </span>
 
-                                 
-                                  <div style={{
-                                    marginTop: '20px',
-                                    width: '110px',
-                                    height: '10px',
-                                    backgroundColor: rectangleColor,
-                                   
-                                    position: 'absolute', 
-                                    bottom: '5px',
-                                  }}></div>
+                                    <div style={{
+                                      width: '50%',
+                                      height: '2px',
+                                      backgroundColor: '#000',
+                                      margin: '5px 0',
+                                    }}></div>
+
+                                    <span style={{
+                                      fontSize: '20px',
+                                      lineHeight: '1.2',
+                                      color: '#000',
+                                    }}>
+                                      {targetProduction}
+                                    </span>
+                                  </div>
                                 </div>
+
+                                <div style={{
+                                  marginTop: '20px',
+                                  width: '110px',
+                                  height: '10px',
+                                  backgroundColor: rectangleColor,
+                                  position: 'absolute', 
+                                  bottom: '10px',
+                                  marginLeft:'30px',
+                                  marginBottom:'10px'
+                                }}></div>
                               </div>
                             }
                           />

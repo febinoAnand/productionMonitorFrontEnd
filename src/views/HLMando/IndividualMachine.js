@@ -33,10 +33,16 @@ const calculateEndTime = (startTime) => {
 const Machine = () => {
   const location = useLocation();
   const { state } = location;
-  const { machineId } = state || { machineId: null };
+  const { machineId ,status } = state || { machineId: null };
 
   const [machine, setMachine] = useState(null);
+  const [Machinestatus, setStatus] = useState(null);
   const [currentDate, setCurrentDate] = useState('');
+
+
+  useEffect(() => {
+    setStatus(status);
+  },[status])
 
   useEffect(() => {
     const fetchMachineData = async () => {
@@ -149,7 +155,9 @@ const Machine = () => {
 
 
 const getStatusColor = (status) => {
-  return status === 0 ? '#f61612' :'#4ded4f';
+  if(status === 1) return '#f61612';
+  if(status === 0) return '#4ded4f';
+  return 'yellow';
 };
 
   return (
@@ -231,7 +239,7 @@ const getStatusColor = (status) => {
                     style={{
                       width: '80px',
                       height: '20px',
-                      backgroundColor: getStatusColor(machine.status),
+                      backgroundColor: getStatusColor(Machinestatus),
                        
                      marginRight:'80px'
 
