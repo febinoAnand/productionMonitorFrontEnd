@@ -31,7 +31,7 @@ import {
    //cilSearch,
    //cilSwapHorizontal,
   //  cilVoiceOverRecord,
-   //cilShieldAlt,
+  cilShieldAlt,
    //cilPrint,
   //  cilLan,
   //cilBoltCircle,
@@ -275,13 +275,13 @@ const _nav = [
     icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
     
   },
-  //{
-    //component: CNavItem,
-    //name: 'Shift Timing',
-    //to: '/details/shifttiming',
-    //icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
+  isAdmin && {
+    component: CNavItem,
+    name: <span style={{ color: 'white' }}>Shift Timing</span>,
+    to: '/details/shifttiming',
+    icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
     
-  //},
+  },
   {
     component: CNavItem,
     name: <span style={{ color: 'white' }}>Machinegroup</span>,

@@ -33,10 +33,16 @@ const calculateEndTime = (startTime) => {
 const Machine = () => {
   const location = useLocation();
   const { state } = location;
-  const { machineId } = state || { machineId: null };
+  const { machineId ,status } = state || { machineId: null };
 
   const [machine, setMachine] = useState(null);
+  const [Machinestatus, setStatus] = useState(null);
   const [currentDate, setCurrentDate] = useState('');
+
+
+  useEffect(() => {
+    setStatus(status);
+  },[status])
 
   useEffect(() => {
     const fetchMachineData = async () => {
@@ -147,6 +153,13 @@ const Machine = () => {
       }, 0)
     : 'N/A';
 
+
+const getStatusColor = (status) => {
+  if(status === 1) return '#f61612';
+  if(status === 0) return '#4ded4f';
+  return 'yellow';
+};
+
   return (
     <div
       className="page"
@@ -215,6 +228,24 @@ const Machine = () => {
                   Date
                 </CTableDataCell>
                 <CTableDataCell>{currentDate}</CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableDataCell style={{ fontWeight: 'bold' }}>
+                  Status
+                </CTableDataCell>
+                <CTableDataCell>
+                
+                <div
+                    style={{
+                      width: '80px',
+                      height: '20px',
+                      backgroundColor: getStatusColor(Machinestatus),
+                       
+                     marginRight:'80px'
+
+                    }}
+                  />
+                </CTableDataCell>
               </CTableRow>
             </CTableBody>
           </CTable>

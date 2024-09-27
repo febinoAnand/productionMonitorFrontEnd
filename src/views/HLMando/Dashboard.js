@@ -76,7 +76,7 @@ const Dashboard = () => {
     borderRadius: '12px',
     padding: '20px',
     width: '250px',
-    height: '130px',
+    height: '180px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -84,7 +84,22 @@ const Dashboard = () => {
     textAlign: 'center',
     boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
     border: '1px solid rgba(255,255,255,0.2)',
-    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
+    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+  };
+
+  const innerWidgetStyles = {
+    borderRadius: '8px',
+    padding: '10px',
+    width: '170px',
+    height: '110px', 
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    backgroundColor: '#FFFFFF', 
+    border: '1px solid #ccc',
+    position: 'relative', 
   };
 
   const zoomOutStyle = {
@@ -94,8 +109,8 @@ const Dashboard = () => {
   };
 
   const handleClick = (groupName, machine) => {
-    console.log('Selected Machine ID:', machine.machine_id);
-    navigate('/HLMando/IndividualMachine', { state: { groupName, machineId: machine.machine_id } });
+    console.log('Selected Machine ID:', machine.machine_id,machine.status);
+    navigate('/HLMando/IndividualMachine', { state: { groupName, machineId: machine.machine_id, status:machine.status } });
   };
 
   if (loading) {
@@ -150,6 +165,9 @@ const Dashboard = () => {
                         backgroundColor = '#ff4d4d';
                       }
 
+                     
+                      const rectangleColor = machine.status === 1 ? '#f61612' : '#4ded4f';
+
                       return (
                         <CCol xs={12} md={3} key={machine.machine_id}>
                           <CWidgetStatsA
@@ -161,25 +179,63 @@ const Dashboard = () => {
                             }}
                             onClick={() => handleClick(group.group_name, machine)}
                             value={
-                              <span style={{
-                                display: 'block',
-                                fontSize: '20px',
-                                fontWeight: 'bold',
-                                lineHeight: '1.2',
-                                color: '#000'
-                              }}>
-                                {`${machine.production_count || 0} / ${machine.target_production || 0}`}
-                              </span>
-                            }
-                            title={
-                              <span style={{
-                                fontSize: '20px',
-                                fontWeight: 'bold',
-                                lineHeight: '1.2',
-                                color: '#000' 
-                              }}>
-                                {machine.machine_name}
-                              </span>
+                              <div>
+                                
+                                <span style={{
+                                  fontSize: '20px',
+                                  fontWeight: 'bold',
+                                  lineHeight: '1.2',
+                                  color: '#000',
+                                  marginBottom:'15px',
+                                   display: 'block',
+                                }}>
+                                  {machine.machine_name}
+                                </span>
+                                <div style={innerWidgetStyles}>
+                                  <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center', 
+                                    alignItems: 'center', 
+                                    width: '100%', 
+                                    marginBottom:'15px'
+                                  }}>
+                                    <span style={{
+                                      fontSize: '20px',
+                                      lineHeight: '1.2',
+                                      color: '#000',
+                                    }}>
+                                      {productionCount}
+                                    </span>
+
+                                    <div style={{
+                                      width: '50%',
+                                      height: '2px',
+                                      backgroundColor: '#000',
+                                      margin: '5px 0',
+                                    }}></div>
+
+                                    <span style={{
+                                      fontSize: '20px',
+                                      lineHeight: '1.2',
+                                      color: '#000',
+                                    }}>
+                                      {targetProduction}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div style={{
+                                  marginTop: '20px',
+                                  width: '110px',
+                                  height: '10px',
+                                  backgroundColor: rectangleColor,
+                                  position: 'absolute', 
+                                  bottom: '10px',
+                                  marginLeft:'30px',
+                                  marginBottom:'10px'
+                                }}></div>
+                              </div>
                             }
                           />
                         </CCol>
