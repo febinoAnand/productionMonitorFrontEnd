@@ -46,6 +46,7 @@ class ShiftTiming extends React.Component {
       currentShift: null,
       newShift: {
         shift_name: '',
+        shift_number: '',
         start_time: '',
         end_time: ''
       }
@@ -54,6 +55,7 @@ class ShiftTiming extends React.Component {
 
   componentDidMount() {
     this.fetchShiftData();
+    this.applyHeaderStyles();
   }
 
   fetchShiftData = async () => {
@@ -146,6 +148,14 @@ class ShiftTiming extends React.Component {
     setTimeout(() => this.setState({ successMessage: '' }), 3000);
   }
 
+  applyHeaderStyles = () => {
+    const headerCells = document.querySelectorAll('.custom-table-header th');
+    headerCells.forEach((cell) => {
+      cell.style.backgroundColor = '#047BC4';
+      cell.style.color = 'white';
+    });
+  }
+  
   render() {
     const { successMessage, shiftData, showAddModal, showUpdateModal, currentShift, newShift } = this.state;
 
@@ -166,10 +176,11 @@ class ShiftTiming extends React.Component {
               <CCardBody>
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                   <CTable striped hover>
-                    <CTableHead>
+                  <CTableHead color='dark' className="custom-table-header">
                       <CTableRow color="dark">
                         <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Shift Name</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Shift Number</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Start Time</CTableHeaderCell>
                         <CTableHeaderCell scope="col">End Time</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Created Date Time</CTableHeaderCell>
@@ -182,6 +193,7 @@ class ShiftTiming extends React.Component {
                         <CTableRow key={shift._id}>
                           <CTableDataCell>{index + 1}</CTableDataCell>
                           <CTableDataCell>{shift.shift_name}</CTableDataCell>
+                          <CTableDataCell>{shift.shift_number}</CTableDataCell>
                           <CTableDataCell>{shift.start_time}</CTableDataCell>
                           <CTableDataCell>{shift.end_time}</CTableDataCell>
                           <CTableDataCell>{new Date(shift.create_date_time).toLocaleString()}</CTableDataCell>
@@ -199,7 +211,7 @@ class ShiftTiming extends React.Component {
                         </CTableRow>
                       )) : (
                         <CTableRow>
-                          <CTableDataCell colSpan="7" className="text-center">
+                          <CTableDataCell colSpan="8" className="text-center">
                             No data available
                           </CTableDataCell>
                         </CTableRow>
@@ -219,6 +231,8 @@ class ShiftTiming extends React.Component {
             <CForm>
               <CFormLabel htmlFor="shift_name">Shift Name</CFormLabel>
               <CFormInput id="shift_name" value={newShift.shift_name} onChange={this.handleFormData} />
+              <CFormLabel htmlFor="shift_number">Shift Number</CFormLabel>
+              <CFormInput id="shift_number" value={newShift.shift_number} onChange={this.handleFormData} />
               <CFormLabel htmlFor="start_time">Start Time</CFormLabel>
               <CFormInput id="start_time" type="time" value={newShift.start_time} onChange={this.handleFormData} />
               <CFormLabel htmlFor="end_time">End Time</CFormLabel>
@@ -239,6 +253,8 @@ class ShiftTiming extends React.Component {
               <CForm>
                 <CFormLabel htmlFor="shift_name">Shift Name</CFormLabel>
                 <CFormInput id="shift_name" value={currentShift.shift_name} onChange={this.handleUpdateData} />
+                <CFormLabel htmlFor="shift_number">Shift Number</CFormLabel>
+                <CFormInput id="shift_number" value={currentShift.shift_number} onChange={this.handleUpdateData} />
                 <CFormLabel htmlFor="start_time">Start Time</CFormLabel>
                 <CFormInput id="start_time" type="time" value={currentShift.start_time} onChange={this.handleUpdateData} />
                 <CFormLabel htmlFor="end_time">End Time</CFormLabel>
