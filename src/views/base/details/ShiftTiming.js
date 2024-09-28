@@ -47,9 +47,11 @@ class ShiftTiming extends React.Component {
       newShift: {
         shift_name: '',
         shift_number: '',
+        start_hours: '' ,
         start_time: '',
-        end_time: ''
-      }
+        end_time: '',
+      },
+      errors: {}, 
     };
   }
 
@@ -90,7 +92,8 @@ class ShiftTiming extends React.Component {
       newShift: {
         ...prevState.newShift,
         [id]: value
-      }
+      },
+      errors: { ...prevState.errors, [id]: '' } 
     }));
   }
 
@@ -100,34 +103,69 @@ class ShiftTiming extends React.Component {
       currentShift: {
         ...prevState.currentShift,
         [id]: value
-      }
+      },
+      errors: { ...prevState.errors, [id]: '' } 
     }));
   }
 
   addShift = async () => {
+    const errors = this.validateForm(this.state.newShift);
+    if (Object.keys(errors).length > 0) {
+      this.setState({ errors });
+      return;
+    }
+
     try {
-      await axios.post(`${BaseURL}devices/shifttimings/`, this.state.newShift, { headers: getAuthHeaders() });
+      await axios.post(`${BaseURL}devices/shifttimings/`, {
+        ...this.state.newShift,
+        start_hours: this.state.newShift.start_hours,
+      }, { headers: getAuthHeaders() });
       this.displaySuccessMessage('Shift added successfully');
       this.fetchShiftData();
       this.closeAddModal();
+      this.setState({
+        newShift: {
+          shift_name: '',
+          shift_number: '',
+          start_hours: '',
+          start_time: '',
+          end_time: '',
+        },
+        errors: {}
+      });
     } catch (error) {
       console.error("Error adding shift", error);
     }
   }
 
+
+
   updateShift = async () => {
+    const { currentShift } = this.state;
+    const errors = this.validateForm(currentShift);
+    if (Object.keys(errors).length > 0) {
+      this.setState({ errors });
+      return;
+    }
+
     try {
-      const { currentShift } = this.state;
-      await axios.put(`${BaseURL}devices/shifttimings/${currentShift._id}/`, currentShift, { headers: getAuthHeaders() });
+      await axios.put(`${BaseURL}devices/shifttimings/${currentShift.id}/`, {
+        ...currentShift,
+        start_hours: currentShift.start_hours,
+      }, { headers: getAuthHeaders() });
       this.displaySuccessMessage('Shift updated successfully');
       this.fetchShiftData();
       this.closeUpdateModal();
+      this.setState({
+        currentShift: null,
+        errors: {}
+      });
     } catch (error) {
       console.error("Error updating shift", error);
     }
   }
-
-  deleteShift = async (shiftId) => {
+  
+   deleteShift = async (shiftId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this shift?");
     
     if (!confirmDelete) {
@@ -137,7 +175,7 @@ class ShiftTiming extends React.Component {
     try {
       await axios.delete(`${BaseURL}devices/shifttimings/${shiftId}/`, { headers: getAuthHeaders() });
       this.displaySuccessMessage('Shift deleted successfully');
-      this.fetchShiftData();
+      this.fetchShiftData(); 
     } catch (error) {
       console.error("Error deleting shift", error);
     }
@@ -155,15 +193,35 @@ class ShiftTiming extends React.Component {
       cell.style.color = 'white';
     });
   }
+
+  validateForm = (shiftData) => {
+    const errors = {};
+    if (!shiftData.shift_number) errors.shift_number = "Shift Number is required";
+    if (!shiftData.start_time) errors.start_time = "Start Time is required";
+    if (!shiftData.end_time) errors.end_time = "End Time is required";
+    if (shiftData.start_time && shiftData.end_time) {
+      const startTime = new Date(`1970-01-01T${shiftData.start_time}:00`);
+      const endTime = new Date(`1970-01-01T${shiftData.end_time}:00`);
+
+      if (startTime >= endTime) {
+          errors.start_time = "Start Time must be before End Time";
+          errors.end_time = "End Time must be after Start Time";
+      }
+  }
+
+  return errors;
+}
+
   
   render() {
-    const { successMessage, shiftData, showAddModal, showUpdateModal, currentShift, newShift } = this.state;
+    const { successMessage, shiftData, showAddModal, showUpdateModal, currentShift, newShift, errors } = this.state;
 
     return (
       <div className="page">
         <CRow>
           {successMessage && (
             <CAlert color="success" dismissible onClose={() => this.setState({ successMessage: '' })}>
+              
               {successMessage}
             </CAlert>
           )}
@@ -181,10 +239,9 @@ class ShiftTiming extends React.Component {
                         <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Shift Name</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Shift Number</CTableHeaderCell>
+                        <CTableHeaderCell scope="col">Start Hours</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Start Time</CTableHeaderCell>
                         <CTableHeaderCell scope="col">End Time</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Created Date Time</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Updated Date Time</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Action</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
@@ -194,16 +251,15 @@ class ShiftTiming extends React.Component {
                           <CTableDataCell>{index + 1}</CTableDataCell>
                           <CTableDataCell>{shift.shift_name}</CTableDataCell>
                           <CTableDataCell>{shift.shift_number}</CTableDataCell>
+                          <CTableDataCell>{shift.start_hours}</CTableDataCell>
                           <CTableDataCell>{shift.start_time}</CTableDataCell>
                           <CTableDataCell>{shift.end_time}</CTableDataCell>
-                          <CTableDataCell>{new Date(shift.create_date_time).toLocaleString()}</CTableDataCell>
-                          <CTableDataCell>{new Date(shift.update_date_time).toLocaleString()}</CTableDataCell>
                           <CTableDataCell>
                             <div className="d-flex gap-2">
                               <CButton color="primary" size='sm' onClick={() => this.openUpdateModal(shift)}>
                                 <CIcon icon={cilPen} />
                               </CButton>
-                              <CButton color="primary" size='sm' onClick={() => this.deleteShift(shift._id)}>
+                              <CButton color="primary" size='sm' onClick={() => this.deleteShift(shift.id)}>
                                 <CIcon icon={cilTrash} />
                               </CButton>
                             </div>
@@ -211,7 +267,7 @@ class ShiftTiming extends React.Component {
                         </CTableRow>
                       )) : (
                         <CTableRow>
-                          <CTableDataCell colSpan="8" className="text-center">
+                          <CTableDataCell colSpan="6" className="text-center">
                             No data available
                           </CTableDataCell>
                         </CTableRow>
@@ -231,12 +287,17 @@ class ShiftTiming extends React.Component {
             <CForm>
               <CFormLabel htmlFor="shift_name">Shift Name</CFormLabel>
               <CFormInput id="shift_name" value={newShift.shift_name} onChange={this.handleFormData} />
-              <CFormLabel htmlFor="shift_number">Shift Number</CFormLabel>
+              <CFormLabel htmlFor="shift_number">Shift Number<span style={{ color: 'red' }}>*</span></CFormLabel>
               <CFormInput id="shift_number" value={newShift.shift_number} onChange={this.handleFormData} />
-              <CFormLabel htmlFor="start_time">Start Time</CFormLabel>
+               {errors.shift_number && <div className="text-danger">{errors.shift_number}</div>}
+              <CFormLabel htmlFor="start_hours">Start Hours</CFormLabel>
+              <CFormInput id="start_hours" type="time" value={newShift.start_hours} onChange={this.handleFormData} />
+              <CFormLabel htmlFor="start_time">Start Time<span style={{ color: 'red' }}>*</span></CFormLabel>
               <CFormInput id="start_time" type="time" value={newShift.start_time} onChange={this.handleFormData} />
-              <CFormLabel htmlFor="end_time">End Time</CFormLabel>
+              {errors.start_time && <div className="text-danger">{errors.start_time}</div>}
+              <CFormLabel htmlFor="end_time">End Time<span style={{ color: 'red' }}>*</span></CFormLabel>
               <CFormInput id="end_time" type="time" value={newShift.end_time} onChange={this.handleFormData} />
+              {errors.end_time && <div className="text-danger">{errors.end_time}</div>}
             </CForm>
           </CModalBody>
           <CModalFooter>
@@ -245,7 +306,7 @@ class ShiftTiming extends React.Component {
           </CModalFooter>
         </CModal>
         <CModal visible={showUpdateModal} onClose={this.closeUpdateModal}>
-          <CModalHeader>
+          <CModalHeader> 
             <CModalTitle>Update Shift</CModalTitle>
           </CModalHeader>
           <CModalBody>
@@ -253,12 +314,17 @@ class ShiftTiming extends React.Component {
               <CForm>
                 <CFormLabel htmlFor="shift_name">Shift Name</CFormLabel>
                 <CFormInput id="shift_name" value={currentShift.shift_name} onChange={this.handleUpdateData} />
-                <CFormLabel htmlFor="shift_number">Shift Number</CFormLabel>
+                <CFormLabel htmlFor="shift_number">Shift Number<span style={{ color: 'red' }}>*</span></CFormLabel>
                 <CFormInput id="shift_number" value={currentShift.shift_number} onChange={this.handleUpdateData} />
-                <CFormLabel htmlFor="start_time">Start Time</CFormLabel>
+                 {errors.shift_number && <div className="text-danger">{errors.shift_number}</div>}
+                <CFormLabel htmlFor="start_hours">Start Hours</CFormLabel>
+                <CFormInput id="start_hours" type="time" value={currentShift.start_hours} onChange={this.handleUpdateData} />
+                <CFormLabel htmlFor="start_time">Start Time<span style={{ color: 'red' }}>*</span></CFormLabel>
                 <CFormInput id="start_time" type="time" value={currentShift.start_time} onChange={this.handleUpdateData} />
-                <CFormLabel htmlFor="end_time">End Time</CFormLabel>
+                {errors.start_time && <div className="text-danger">{errors.start_time}</div>}
+                <CFormLabel htmlFor="end_time">End Time<span style={{ color: 'red' }}>*</span></CFormLabel>
                 <CFormInput id="end_time" type="time" value={currentShift.end_time} onChange={this.handleUpdateData} />
+                 {errors.end_time && <div className="text-danger">{errors.end_time}</div>}
               </CForm>
             )}
           </CModalBody>
