@@ -20,7 +20,6 @@ import {
   CForm,
   CFormInput,
   CFormLabel,
-  CSpinner
 } from '@coreui/react';
 import { cilPen, cilTrash } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
@@ -28,6 +27,7 @@ import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import LoadingSpinner from './Loadingspinner';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -187,19 +187,12 @@ const Listachievement = () => {
     doc.save(`${groupName}Achievements-${currentDate}.pdf`);
   };
 
+  if (loading) {
+    return <LoadingSpinner />; 
+  }
+
   return (
     <>
-      {loading ? ( 
-        <div style={{ textAlign: 'center', marginTop: '50px' }}>
-          <CSpinner color="primary" variant="grow" />
-          <CSpinner color="secondary" variant="grow" />
-          <CSpinner color="success" variant="grow" />
-          <CSpinner color="danger" variant="grow" />
-          <CSpinner color="warning" variant="grow" />
-          <CSpinner color="info" variant="grow" />
-          <CSpinner color="dark" variant="grow" />
-        </div>
-      ) : (
         <CRow>
           <CCol xs={12}>
             {Object.keys(groupedData).map((groupName, index) => (
@@ -307,7 +300,6 @@ const Listachievement = () => {
         </CModalFooter>
       </CModal>
         </CRow>
-      )}
     </>
   );
 };

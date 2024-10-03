@@ -26,11 +26,11 @@ import {
     CTooltip,
     CAlert,
     CForm,
-    CSpinner
 } from '@coreui/react';
 import axios from 'axios';
 import CIcon from '@coreui/icons-react';
 import BaseURL from 'src/assets/contants/BaseURL';
+import LoadingSpinner from '../../HLMando/Loadingspinner';
 
 
 const handleAuthError = (error) => {
@@ -62,7 +62,7 @@ const Groups = () => {
     const [successMessage, setSuccessMessage] = useState('');
     const [deleteMessage, setDeleteMessage] = useState('');
     const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const MESSAGE_DISPLAY_DURATION = 3000;
 
     const fetchGroupData = useCallback(async () => {
@@ -276,19 +276,11 @@ const Groups = () => {
 
     const isAdmin = username === 'admin' && password === 'admin';
 
+    if (loading) {
+        return <LoadingSpinner />;
+      }
     return (
         <div className="page">
-          {loading && (
-            <div style={{ textAlign: 'center', marginTop: '50px' }}>
-              <CSpinner color="primary" variant="grow" />
-              <CSpinner color="secondary" variant="grow" />
-              <CSpinner color="success" variant="grow" />
-              <CSpinner color="danger" variant="grow" />
-              <CSpinner color="warning" variant="grow" />
-              <CSpinner color="info" variant="grow" />
-              <CSpinner color="dark" variant="grow" />
-            </div>
-          )}
             {(successMessage || deleteMessage) && (
                 <CRow>
                     <CCol>
@@ -337,7 +329,7 @@ const Groups = () => {
                             </CCol>
                             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                                 <CTable striped hover>
-                                    <CTableHead className="custom-table-header">
+                                <CTableHead className="custom-table-header initial-data">
                                         <CTableRow>
                                             <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Group</CTableHeaderCell>
