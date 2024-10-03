@@ -21,6 +21,9 @@ import { cilCalendar } from '@coreui/icons';
 import BaseURL from 'src/assets/contants/BaseURL';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from './Loadingspinner';
+
+
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -62,10 +65,12 @@ const Download = () => {
   const [machineOptions, setMachineOptions] = useState([]);
   const [selectedFileFormat, setSelectedFileFormat] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(true); 
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); 
       try {
         const machineResponse = await fetch(`${BaseURL}devices/machine/`, { headers: getAuthHeaders() });
         if (!machineResponse.ok) {
@@ -82,6 +87,8 @@ const Download = () => {
         setMachineOptions(machineNames);
       } catch (error) {
         console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false); 
       }
     };
 
@@ -636,6 +643,9 @@ const shiftNames = new Set();
   }
 }
   
+if (loading) {
+  return <LoadingSpinner />; 
+}
   
   const today = new Date();
 
