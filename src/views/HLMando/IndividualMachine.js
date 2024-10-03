@@ -7,8 +7,6 @@ import { cilMemory } from '@coreui/icons';
 import {
   CCard,
   CCardBody,
-  //CRow,
-  //CCol,
   CTableHead,
   CTableHeaderCell,
   CTable,
@@ -33,16 +31,16 @@ const calculateEndTime = (startTime) => {
 const Machine = () => {
   const location = useLocation();
   const { state } = location;
-  const { machineId ,status } = state || { machineId: null };
+  const { machineId, status } = state || { machineId: null };
 
   const [machine, setMachine] = useState(null);
   const [Machinestatus, setStatus] = useState(null);
   const [currentDate, setCurrentDate] = useState('');
-
+  const [filteredShifts, setFilteredShifts] = useState([]);
 
   useEffect(() => {
     setStatus(status);
-  },[status])
+  }, [status]);
 
   useEffect(() => {
     const fetchMachineData = async () => {
@@ -60,6 +58,7 @@ const Machine = () => {
 
         console.log('API Response:', response.data); 
         setMachine(response.data);
+        setFilteredShifts(response.data.shifts.filter((shift) => shift.timing && Object.keys(shift.timing).length > 0));
       } catch (error) {
         console.error('Error fetching machine data:', error);
       }
@@ -76,11 +75,10 @@ const Machine = () => {
       const formattedDate = now.toISOString().split('T')[0];
       setCurrentDate(formattedDate);
     };
-  
+
     updateDateTime(); 
   }, []);
   
-
   useEffect(() => {
     const applyHeaderStyles = () => {
       const headerCells = document.querySelectorAll('.custom-table-header th');
@@ -89,6 +87,7 @@ const Machine = () => {
         cell.style.color = 'white';
       });
     };
+
 
     applyHeaderStyles();
   }, [machine]);
@@ -100,6 +99,34 @@ const Machine = () => {
       'Content-Type': 'application/json',
     };
   };
+
+  useEffect(() => {
+    if (machineId) {
+      const wsUrl = `${BaseURL.replace("https", "wss")}data/individual-report/${machineId}/`;
+      const socket = new WebSocket(wsUrl);
+
+      socket.onopen = () => {
+        console.log('WebSocket connection established');
+      };
+
+      socket.onmessage = (event) => {
+        const updatedData = JSON.parse(event.data);
+        console.log('WebSocket message received:', updatedData);
+        
+        
+        setMachine(updatedData);
+        setFilteredShifts(updatedData.shifts.filter((shift) => shift.timing && Object.keys(shift.timing).length > 0));
+      };
+
+      socket.onclose = () => {
+        console.log('WebSocket connection closed');
+      };
+
+      return () => {
+        socket.close();
+      };
+    }
+  }, [machineId]);
 
   if (!machine) {
     return (
@@ -114,10 +141,6 @@ const Machine = () => {
       </div>
     );
   }
-
-  const filteredShifts = machine.shifts.filter((shift) => {
-    return shift.timing && Object.keys(shift.timing).length > 0;
-  });
 
   const latestShift = filteredShifts.reduce((latest, shift) => {
     const shiftTime = new Date(shift.shift_start_time);
@@ -149,174 +172,174 @@ const Machine = () => {
     : 'N/A';
 
 
-const getStatusColor = (status) => {
-  if(status === 1) return '#f61612';
-  if(status === 0) return '#4ded4f';
-  return 'yellow';
-};
-
-  return (
-    <div
-      className="page"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        minHeight: '100vh',
-        paddingTop: '50px',
-      }}
-    >
-      <CCard
-        style={{ maxWidth: '450px', width: '100%', marginBottom: '15px' }}
+  const getStatusColor = (status) => {
+    if(status === 1) return '#f61612';
+    if(status === 0) return '#4ded4f';
+    return 'yellow';
+  };
+  
+    return (
+      <div
+        className="page"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          minHeight: '100vh',
+          paddingTop: '50px',
+        }}
       >
-        <CCardBody style={{ textAlign: 'center' }}>
-          <CIcon
-            icon={cilMemory}
-            size="4xl"
-            style={{ color: '#047BC4', marginBottom: '20px' }}
-          />
-          <h2 style={{ textAlign: 'center', color: '#047BC4' }}>
-            {machine.machine_name}
-          </h2>
-          <CTable
-            striped
-            hover
-            style={{
-              fontSize: '0.9rem',
-              marginTop: '20px',
-              textAlign: 'left',
-            }}
-          >
-            <CTableBody>
-              <CTableRow>
-                <CTableDataCell style={{ fontWeight: 'bold' }}>
-                  Total Production Count 
-                </CTableDataCell>
-                <CTableDataCell>{totalProductionCountAllShifts}</CTableDataCell>
-              </CTableRow>
-              <CTableRow>
-                <CTableDataCell style={{ fontWeight: 'bold' }}>
-                  Shift Name
-                </CTableDataCell>
-                <CTableDataCell>
-                  {latestShiftData?.shift_name || `Shift ${latestShiftData?.shift_no}` || 'N/A'}
-                </CTableDataCell>
-              </CTableRow>
-              <CTableRow>
-                <CTableDataCell style={{ fontWeight: 'bold' }}>
-                  Current Shift Total
-                </CTableDataCell>
-                <CTableDataCell>{totalProductionCountCurrentShift}</CTableDataCell>
-              </CTableRow>
-              <CTableRow>
-                <CTableDataCell style={{ fontWeight: 'bold' }}>
-                  Shift Time
-                </CTableDataCell>
-                <CTableDataCell>
-                  {latestShiftData?.shift_start_time
-                    ? calculateEndTime(latestShiftData.shift_start_time)
-                    : 'N/A'}
-                </CTableDataCell>
-              </CTableRow>
-              <CTableRow>
-                <CTableDataCell style={{ fontWeight: 'bold' }}>
-                  Date
-                </CTableDataCell>
-                <CTableDataCell>{currentDate}</CTableDataCell>
-              </CTableRow>
-              <CTableRow>
-                <CTableDataCell style={{ fontWeight: 'bold' }}>
-                  Status
-                </CTableDataCell>
-                <CTableDataCell>
-                
-                <div
-                    style={{
-                      width: '80px',
-                      height: '20px',
-                      backgroundColor: getStatusColor(Machinestatus),
-                       
-                     marginRight:'80px'
-
-                    }}
-                  />
-                </CTableDataCell>
-              </CTableRow>
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
-      <CCard style={{ width: '100%' }}>
-        <CCardHeader>
-          <strong>Shift Reports</strong>
-        </CCardHeader>
-        <CCardBody>
-          {filteredShifts.length > 0 ? (
-            filteredShifts.map((shift) => (
-              <CCard className="mb-4" key={shift.shift_start_time}>
-                <CCardHeader>
-                  <strong>{shift.shift_name || `Shift ${shift.shift_no}`}</strong>
-                </CCardHeader>
-                <CCardBody>
-                  <CTable striped hover>
-                    <CTableHead className="custom-table-header">
-                      <CTableRow>
-                        <CTableHeaderCell scope="col">Time</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Production Count</CTableHeaderCell>
-                        <CTableHeaderCell scope="col">Target Count</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {Object.keys(shift.timing).length > 0 ? (
-                        Object.keys(shift.timing).map((timeRange) => (
-                          <CTableRow key={timeRange}>
-                            <CTableDataCell>{timeRange}</CTableDataCell>
-                            <CTableDataCell>
-                              {shift.timing[timeRange]?.actual_production || '0'}
-                            </CTableDataCell>
-                            <CTableDataCell>
-                              {shift.timing[timeRange]?.target_production || '0'}
+        <CCard
+          style={{ maxWidth: '450px', width: '100%', marginBottom: '15px' }}
+        >
+          <CCardBody style={{ textAlign: 'center' }}>
+            <CIcon
+              icon={cilMemory}
+              size="4xl"
+              style={{ color: '#047BC4', marginBottom: '20px' }}
+            />
+            <h2 style={{ textAlign: 'center', color: '#047BC4' }}>
+              {machine.machine_name}
+            </h2>
+            <CTable
+              striped
+              hover
+              style={{
+                fontSize: '0.9rem',
+                marginTop: '20px',
+                textAlign: 'left',
+              }}
+            >
+              <CTableBody>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Total Production Count 
+                  </CTableDataCell>
+                  <CTableDataCell>{totalProductionCountAllShifts}</CTableDataCell>
+                </CTableRow>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Shift Name
+                  </CTableDataCell>
+                  <CTableDataCell>
+                    {latestShiftData?.shift_name || `Shift ${latestShiftData?.shift_no}` || 'N/A'}
+                  </CTableDataCell>
+                </CTableRow>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Current Shift Total
+                  </CTableDataCell>
+                  <CTableDataCell>{totalProductionCountCurrentShift}</CTableDataCell>
+                </CTableRow>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Shift Time
+                  </CTableDataCell>
+                  <CTableDataCell>
+                    {latestShiftData?.shift_start_time
+                      ? calculateEndTime(latestShiftData.shift_start_time)
+                      : 'N/A'}
+                  </CTableDataCell>
+                </CTableRow>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Date
+                  </CTableDataCell>
+                  <CTableDataCell>{currentDate}</CTableDataCell>
+                </CTableRow>
+                <CTableRow>
+                  <CTableDataCell style={{ fontWeight: 'bold' }}>
+                    Status
+                  </CTableDataCell>
+                  <CTableDataCell>
+                  
+                  <div
+                      style={{
+                        width: '80px',
+                        height: '20px',
+                        backgroundColor: getStatusColor(Machinestatus),
+                         
+                       marginRight:'80px'
+  
+                      }}
+                    />
+                  </CTableDataCell>
+                </CTableRow>
+              </CTableBody>
+            </CTable>
+          </CCardBody>
+        </CCard>
+        <CCard style={{ width: '100%' }}>
+          <CCardHeader>
+            <strong>Shift Reports</strong>
+          </CCardHeader>
+          <CCardBody>
+            {filteredShifts.length > 0 ? (
+              filteredShifts.map((shift) => (
+                <CCard className="mb-4" key={shift.shift_start_time}>
+                  <CCardHeader>
+                    <strong>{shift.shift_name || `Shift ${shift.shift_no}`}</strong>
+                  </CCardHeader>
+                  <CCardBody>
+                    <CTable striped hover>
+                      <CTableHead className="custom-table-header">
+                        <CTableRow>
+                          <CTableHeaderCell scope="col">Time</CTableHeaderCell>
+                          <CTableHeaderCell scope="col">Production Count</CTableHeaderCell>
+                          <CTableHeaderCell scope="col">Target Count</CTableHeaderCell>
+                        </CTableRow>
+                      </CTableHead>
+                      <CTableBody>
+                        {Object.keys(shift.timing).length > 0 ? (
+                          Object.keys(shift.timing).map((timeRange) => (
+                            <CTableRow key={timeRange}>
+                              <CTableDataCell>{timeRange}</CTableDataCell>
+                              <CTableDataCell>
+                                {shift.timing[timeRange]?.actual_production || '0'}
+                              </CTableDataCell>
+                              <CTableDataCell>
+                                {shift.timing[timeRange]?.target_production || '0'}
+                              </CTableDataCell>
+                            </CTableRow>
+                          ))
+                        ) : (
+                          <CTableRow>
+                            <CTableDataCell colSpan="3" style={{ textAlign: 'center' }}>
+                              No data available
                             </CTableDataCell>
                           </CTableRow>
-                        ))
-                      ) : (
+                        )}
                         <CTableRow>
-                          <CTableDataCell colSpan="3" style={{ textAlign: 'center' }}>
-                            No data available
+                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                            Total
+                          </CTableDataCell>
+                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                            {Object.values(shift.timing).reduce(
+                              (sum, timing) => sum + (timing.actual_production || 0),
+                              0
+                            )}
+                          </CTableDataCell>
+                          <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
+                            {Object.values(shift.timing).reduce(
+                              (sum, timing) => sum + (timing.target_production || 0),
+                              0
+                            )}
                           </CTableDataCell>
                         </CTableRow>
-                      )}
-                      <CTableRow>
-                        <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
-                          Total
-                        </CTableDataCell>
-                        <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
-                          {Object.values(shift.timing).reduce(
-                            (sum, timing) => sum + (timing.actual_production || 0),
-                            0
-                          )}
-                        </CTableDataCell>
-                        <CTableDataCell style={{ fontWeight: 'bold', color: '#007bff' }}>
-                          {Object.values(shift.timing).reduce(
-                            (sum, timing) => sum + (timing.target_production || 0),
-                            0
-                          )}
-                        </CTableDataCell>
-                      </CTableRow>
-                    </CTableBody>
-                  </CTable>
-                </CCardBody>
-              </CCard>
-            ))
-          ) : (
-            <CCardBody style={{ textAlign: 'center' }}>
-              No shifts available
-            </CCardBody>
-          )}
-        </CCardBody>
-      </CCard>
-    </div>
-  );
-};
-
-export default Machine;
+                      </CTableBody>
+                    </CTable>
+                  </CCardBody>
+                </CCard>
+              ))
+            ) : (
+              <CCardBody style={{ textAlign: 'center' }}>
+                No shifts available
+              </CCardBody>
+            )}
+          </CCardBody>
+        </CCard>
+      </div>
+    );
+  };
+  
+  export default Machine;
