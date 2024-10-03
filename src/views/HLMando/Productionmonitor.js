@@ -11,13 +11,13 @@ import {
   CTableRow,
   CFormInput,
   CButton,
-  CSpinner,
 } from '@coreui/react';
 import axios from 'axios';
 import BaseURL from 'src/assets/contants/BaseURL';
 import CIcon from '@coreui/icons-react';
 import { cilSearch } from '@coreui/icons';
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from './Loadingspinner';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -146,21 +146,20 @@ const ProductionMonitor = () => {
     };
   
     socket.onmessage = (event) => {
-      // Parse WebSocket message data
+     
       const updatedData = JSON.parse(event.data);
   
       console.log('WebSocket Response:', updatedData);
   
-      // Check if the necessary fields (machine_groups and date) exist in the response
+     
       if (updatedData && updatedData.machine_groups && Array.isArray(updatedData.machine_groups)) {
         const { machine_groups, date: responseDate } = updatedData;
   
-        // Ensure the response date matches the API date before updating state
+        
         if (responseDate === apiDate) {
           const shiftNamesMap = {};
           const shiftNumbers = new Set();
   
-          // Process machine_groups as received from WebSocket
           const formattedGroups = machine_groups.reverse().map(group => {
             const formattedMachines = group.machines.map(machine => {
               const shiftTotals = {};
@@ -190,7 +189,7 @@ const ProductionMonitor = () => {
   
           const sortedShiftNumbers = Array.from(shiftNumbers).sort((a, b) => a - b);
   
-          // Update state with new data from WebSocket
+          
           setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
           setFilteredData(formattedGroups);
   
@@ -199,7 +198,7 @@ const ProductionMonitor = () => {
           console.log('WebSocket data date does not match API date. No update.');
         }
       } else {
-        // WebSocket response does not contain expected fields
+        
         console.log('Invalid WebSocket data or missing machine_groups array.');
       }
     };
@@ -219,17 +218,10 @@ const ProductionMonitor = () => {
   }, [apiDate]);
   
   
-  if (loading) return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <CSpinner color="primary" variant="grow" />
-      <CSpinner color="secondary" variant="grow" />
-      <CSpinner color="success" variant="grow" />
-      <CSpinner color="danger" variant="grow" />
-      <CSpinner color="warning" variant="grow" />
-      <CSpinner color="info" variant="grow" />
-      <CSpinner color="dark" variant="grow" />
-    </div>
-  );
+ 
+  if (loading) {
+    return <LoadingSpinner />; 
+  }
 
   if (error) return <div>{error}</div>;
 

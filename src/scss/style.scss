@@ -15,3 +15,7 @@ $enable-rtl: true;
 
 // If you want to add custom CSS you can put it here.
 @import "custom";
+.custom-table-header.initial-data th {
+    background-color: #047BC4;
+    color: white;
+  }

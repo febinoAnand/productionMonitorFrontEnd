@@ -24,10 +24,10 @@ import {
     CModalTitle,
     CFormLabel,
     CForm,
-    CSpinner
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import BaseURL from 'src/assets/contants/BaseURL';
+import LoadingSpinner from '../../HLMando/Loadingspinner';
 
 const handleAuthError = (error) => {
     if (error.response && error.response.status === 401) {
@@ -49,7 +49,7 @@ const Users = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [passwordModalVisible, setPasswordModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchUsers();
@@ -290,20 +290,15 @@ const Users = () => {
                 });
         }
     };
+
+    if (loading) {
+        return <LoadingSpinner />; 
+      }
+
     
 
     return (
         <div className="page">
-             {loading && (
-                <div style={{ textAlign: 'center', marginTop: '50px' }}>
-                    <CSpinner color="primary" variant="grow" />
-                    <CSpinner color="secondary" variant="grow" />
-                    <CSpinner color="success" variant="grow" />
-                    <CSpinner color="danger" variant="grow" />
-                    <CSpinner color="warning" variant="grow" />
-                    <CSpinner color="info" variant="grow" />
-                </div>
-            )}
             {successMessage && (
                 <div className="alert alert-success" role="alert">
                     {successMessage}
@@ -338,7 +333,7 @@ const Users = () => {
                             </CCol>
                             <div style={{ overflowX: 'auto' }}>
                             <CTable striped hover>
-                            <CTableHead className="custom-table-header">
+                            <CTableHead className="custom-table-header initial-data">
                                     <CTableRow color="dark">
                                         <CTableHeaderCell scope="col">
                                             <input

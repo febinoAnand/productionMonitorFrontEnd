@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useLayoutEffect, useCallback ,useEffect} from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom'; 
@@ -18,12 +18,12 @@ import {
   CTableRow,
   CInputGroup,
   CFormSelect,
-  CSpinner,
   CButton
 } from '@coreui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import BaseURL from 'src/assets/contants/BaseURL';
+import LoadingSpinner from './Loadingspinner';
 
 const HARDCORE_SHIFT_DATA = [
   {
@@ -77,7 +77,7 @@ const Shiftreport = () => {
   const [machineHourlyData, setMachineHourlyData] = useState(HARDCORE_SHIFT_DATA);
   const [setErrorMessage] = useState('');
   const navigate = useNavigate(); 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
@@ -143,7 +143,6 @@ const Shiftreport = () => {
     fetchData();
   }, [fetchData]);
 
-  useEffect(() => {
     const applyHeaderStyles = () => {
       const headerCells = document.querySelectorAll('.custom-table-header th');
       headerCells.forEach((cell) => {
@@ -152,9 +151,9 @@ const Shiftreport = () => {
       });
     };
    
-    applyHeaderStyles();
-  }, [machineHourlyData]);
-
+    useLayoutEffect(() => {
+      applyHeaderStyles();
+    }, [machineHourlyData]);
   const calculateTotal = (timing, index) => {
     return Object.values(timing).reduce((acc, value) => acc + value[index], 0);
   };
@@ -183,19 +182,11 @@ const Shiftreport = () => {
     </div>
   );
 
+  if (loading) {
+    return <LoadingSpinner />; 
+  }
   return (
     <div className="page">
-      {loading && (
-        <div style={{ textAlign: 'center', marginTop: '50px' }}>
-          <CSpinner color="primary" variant="grow" />
-          <CSpinner color="secondary" variant="grow" />
-          <CSpinner color="success" variant="grow" />
-          <CSpinner color="danger" variant="grow" />
-          <CSpinner color="warning" variant="grow" />
-          <CSpinner color="info" variant="grow" />
-          <CSpinner color="dark" variant="grow" />
-        </div>
-      )}
 
       <CCard className="mb-3" style={{ marginTop: '30px' }}>
         <CCardHeader>
@@ -263,7 +254,7 @@ const Shiftreport = () => {
                 <CCardBody style={{ marginTop: '10px' }}>
                   <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                     <CTable striped hover>
-                      <CTableHead className="custom-table-header">
+                    <CTableHead className="custom-table-header initial-data">
                         <CTableRow>
                           <CTableHeaderCell scope="col">Time</CTableHeaderCell>
                           <CTableHeaderCell scope="col">Production Count </CTableHeaderCell>

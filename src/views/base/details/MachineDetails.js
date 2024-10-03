@@ -24,11 +24,10 @@ import {
   CFormLabel,
   CFormText,
   CAlert,
-  CSpinner
 } from '@coreui/react';
 import axios from 'axios';
 import CIcon from '@coreui/icons-react';
-
+import LoadingSpinner from '../../HLMando/Loadingspinner';
 
 const username = localStorage.getItem('username');
 const password = localStorage.getItem('password');
@@ -68,7 +67,7 @@ class MachineDetails extends React.Component {
       selectedMachine: null,
       successMessage: '',
       errors: {}, 
-      loading: false // Added loading state
+      loading: true // Added loading state
     };
   }
 
@@ -262,20 +261,12 @@ class MachineDetails extends React.Component {
 
   render() {
     const { machineList, showAddModal, showUpdateModal, machineID, name, manufacture, line, successMessage, errors, productionPerHour, loading } = this.state;
+    if (loading) {
+      return <LoadingSpinner />;
+    }
 
     return (
       <div className="page">
-        {loading && (
-          <div style={{ textAlign: 'center', marginTop: '50px' }}>
-            <CSpinner color="primary" variant="grow" />
-            <CSpinner color="secondary" variant="grow" />
-            <CSpinner color="success" variant="grow" />
-            <CSpinner color="danger" variant="grow" />
-            <CSpinner color="warning" variant="grow" />
-            <CSpinner color="info" variant="grow" />
-            <CSpinner color="dark" variant="grow" />
-          </div>
-        )}
         <CRow>
           {successMessage && (
             <CAlert color="success" dismissible onClose={() => this.setState({ successMessage: '' })}>
@@ -300,7 +291,7 @@ class MachineDetails extends React.Component {
               <CCardBody>
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                   <CTable striped hover>
-                  <CTableHead className="custom-table-header">
+                  <CTableHead className="custom-table-header initial-data">
                       <CTableRow color>
                         <CTableHeaderCell scope="col">Si.No</CTableHeaderCell>
                         <CTableHeaderCell scope="col">Machine ID</CTableHeaderCell>
