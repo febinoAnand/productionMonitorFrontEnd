@@ -67,8 +67,6 @@ const Machine = () => {
 
     if (machineId) {
       fetchMachineData();
-      const dataFetchInterval = setInterval(fetchMachineData, 10000);
-      return () => clearInterval(dataFetchInterval);
     }
   }, [machineId]);
 
@@ -76,15 +74,12 @@ const Machine = () => {
     const updateDateTime = () => {
       const now = new Date();
       const formattedDate = now.toISOString().split('T')[0];
-
       setCurrentDate(formattedDate);
     };
-
-    updateDateTime();
-    const timeUpdateInterval = setInterval(updateDateTime, 1000);
-
-    return () => clearInterval(timeUpdateInterval);
+  
+    updateDateTime(); 
   }, []);
+  
 
   useEffect(() => {
     const applyHeaderStyles = () => {
