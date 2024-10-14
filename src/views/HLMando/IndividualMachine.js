@@ -248,6 +248,12 @@ const Machine = () => {
                   <CTableDataCell>{currentDate}</CTableDataCell>
                 </CTableRow>
                 <CTableRow>
+                <CTableDataCell style={{ fontWeight: 'bold' }}>
+                   Last Production Time
+                  </CTableDataCell>
+                  <CTableDataCell>{machine.latest_production_count}</CTableDataCell>
+                  </CTableRow>
+                <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
                     Status
                   </CTableDataCell>

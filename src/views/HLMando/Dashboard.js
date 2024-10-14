@@ -4,9 +4,49 @@ import { CRow, CCol, CCard, CCardHeader, CCardBody, CWidgetStatsA} from '@coreui
 import { useNavigate } from 'react-router-dom';
 import BaseURL from 'src/assets/contants/BaseURL';
 import LoadingSpinner from './Loadingspinner';
+
+const DeviceStatusIndicator = ({ status }) => {
+  const indicatorColor = status === 1 ? 'green' : 'red'; 
+  const statusText = status === 1 ? 'Online' : 'Offline';
+  return (
+    <div style={{
+      position: 'absolute',
+      top: '-30px',
+      right: '20px',
+      display: 'flex',
+      alignItems: 'center',
+      padding: '10px',
+      backgroundColor: '#fff',
+      borderRadius: '5px',
+      boxShadow: '0 0 5px rgba(0,0,0,0.3)',
+      zIndex: 2000, 
+    }}>
+      <span style={{
+        marginRight: '8px',
+        fontSize: '16px',
+        fontWeight: 'bold',
+      }}>Device:</span>
+      <span style={{
+        width: '12px',
+        height: '12px',
+        borderRadius: '50%',
+        backgroundColor: indicatorColor,
+        display: 'inline-block',
+      }} />
+       <span style={{
+        marginLeft: '8px', 
+        fontSize: '16px',
+        fontWeight: 'bold',
+        color: indicatorColor, 
+      }}>{statusText}</span>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deviceStatus, setDeviceStatus] = useState(0); 
   const navigate = useNavigate();
 
   const getAuthHeaders = () => {
@@ -26,6 +66,7 @@ const Dashboard = () => {
     try {
       const response = await axios.get(BaseURL + 'data/dashboard-data/', { headers: getAuthHeaders() });
       setDashboardData(response.data.groups.reverse());
+      setDeviceStatus(response.device_status)
       console.log(response.data.groups);
     } catch (error) {
       if (error.response && error.response.status === 401) {
@@ -55,6 +96,7 @@ const Dashboard = () => {
       
       const updatedData = JSON.parse(event.data);
       setDashboardData(updatedData.groups.reverse()); 
+      setDeviceStatus(updatedData.device_status)
       console.log('WebSocket message received:', updatedData.groups);
     };
 
@@ -122,6 +164,7 @@ const Dashboard = () => {
 
   return (
     <div className="page" style={{ ...zoomOutStyle, marginTop: '20px' }}>
+      <DeviceStatusIndicator status={deviceStatus} /> 
       <CRow className="mb-3">
         {dashboardData.map((group) => (
           group.machines.length > 0 && (
