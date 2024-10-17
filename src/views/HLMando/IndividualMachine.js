@@ -251,7 +251,7 @@ const Machine = () => {
                 <CTableDataCell style={{ fontWeight: 'bold' }}>
                    Last Production Time
                   </CTableDataCell>
-                  <CTableDataCell>{machine.latest_production_count}</CTableDataCell>
+                  <CTableDataCell>{machine.latest_production_time}</CTableDataCell>
                   </CTableRow>
                 <CTableRow>
                   <CTableDataCell style={{ fontWeight: 'bold' }}>
