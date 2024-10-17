@@ -16,7 +16,7 @@ import {
   // cilUser,
   cilDescription,
   // cilAccountLogout,
-  cilClock,
+  //cilClock,
 
   //cilGroup,
   cilCloud,
@@ -31,7 +31,7 @@ import {
    //cilSearch,
    //cilSwapHorizontal,
   //  cilVoiceOverRecord,
-  cilShieldAlt,
+  //cilShieldAlt,
    //cilPrint,
   //  cilLan,
   //cilBoltCircle,
@@ -86,12 +86,12 @@ const _nav = [
     to: '/HLMando/Download',
     icon: <CIcon icon={cilArrowCircleBottom} customClassName="nav-icon" />,
   },
-   {
-     component: CNavItem,
-     name: <span style={{ color: 'white' }}>List Achievement</span>,
-     to: '/HLMando/Listachievement',
-     icon: <CIcon icon={cilClock} customClassName="nav-icon" />,
-   },
+   //{
+     //component: CNavItem,
+     //name: <span style={{ color: 'white' }}>List Achievement</span>,
+     //to: '/HLMando/Listachievement',
+     //icon: <CIcon icon={cilClock} customClassName="nav-icon" />,
+   //},
 
 
 
@@ -275,13 +275,13 @@ const _nav = [
     icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
     
   },
-  isAdmin && {
-    component: CNavItem,
-    name: <span style={{ color: 'white' }}>Shift Timing</span>,
-    to: '/details/shifttiming',
-    icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
+  //isAdmin && {
+    //component: CNavItem,
+    //name: <span style={{ color: 'white' }}>Shift Timing</span>,
+    //to: '/details/shifttiming',
+    //icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
     
-  },
+  //},
   {
     component: CNavItem,
     name: <span style={{ color: 'white' }}>Machinegroup</span>,

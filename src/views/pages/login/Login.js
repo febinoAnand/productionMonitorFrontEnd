@@ -1,15 +1,16 @@
 import React, { useState,useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+ import { useNavigate} from 'react-router-dom';
+//  import { Link } from 'react-router-dom';
 import {
   CButton,
   CCard,
-  CCol,
+  //CCol,
   CContainer,
   CForm,
   CFormInput,
   CInputGroup,
   CInputGroupText,
-  CRow,
+  //CRow,
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser, cilExitToApp } from '@coreui/icons';
@@ -185,7 +186,7 @@ const Login = () => {
               >
                 <CIcon icon={cilExitToApp} /> Sign In
               </CButton>
-              <CRow className="mt-3 text-center">
+              {/* <CRow className="mt-3 text-center">
                 <CCol>
                   <Link to="/users/Logindemo" style={{ fontSize: '0.8rem', color: '#FFFFFF' }}>
                     Demo User OTP
@@ -196,7 +197,7 @@ const Login = () => {
                     To Activate Demo User
                   </Link>
                 </CCol>
-              </CRow>
+              </CRow> */}
             </CForm>
           </CCard>
         </div>
