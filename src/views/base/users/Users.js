@@ -49,23 +49,12 @@ const Users = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [passwordModalVisible, setPasswordModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         fetchUsers();
     }, []);
 
-    const applyHeaderStyles = () => {
-        const headerCells = document.querySelectorAll('.custom-table-header th');
-        headerCells.forEach((cell) => {
-            cell.style.backgroundColor = '#047BC4';
-            cell.style.color = 'white';
-        });
-    };
-
-    useEffect(() => {
-        applyHeaderStyles();
-    }, []);
     useEffect(() => {
         const interval = setInterval(() => {
             if (successMessage) {
@@ -294,9 +283,7 @@ const Users = () => {
     if (loading) {
         return <LoadingSpinner />; 
       }
-
     
-
     return (
         <div className="page">
             {successMessage && (
@@ -333,8 +320,8 @@ const Users = () => {
                             </CCol>
                             <div style={{ overflowX: 'auto' }}>
                             <CTable striped hover>
-                            <CTableHead className="custom-table-header initial-data">
-                                    <CTableRow color="dark">
+                            <CTableHead className="custom-table-header">
+                                    <CTableRow>
                                         <CTableHeaderCell scope="col">
                                             <input
                                                 type="checkbox"
