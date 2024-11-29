@@ -128,6 +128,17 @@ const Machine = () => {
     }
   }, [machineId]);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (machineId) {
+        fetchMachineData(); 
+      }
+    }, 10000); 
+
+    return () => clearInterval(intervalId);
+  }, [machineId]);
+
+
   if (!machine) {
     return (
       <div style={{ textAlign: 'center', marginTop: '50px' }}>
