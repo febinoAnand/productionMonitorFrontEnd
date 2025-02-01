@@ -169,7 +169,7 @@ const Download = () => {
             const pageWidth = doc.internal.pageSize.width;
             const margin = 10;
             const contentWidth = pageWidth - 2 * margin;
-            const columnCount = 5;
+            const columnCount = 8;
             const columnWidth = contentWidth / columnCount;
 
             doc.setFontSize(14);
@@ -193,6 +193,7 @@ const Download = () => {
                     let totalProduction = 0;
                     let totalTarget = 0;
                     let firstRow = true;
+                    let shiftSerialNumber = 1;
 
                     Object.entries(shift.timing).forEach(([timeRange, [proCount, targetCount]]) => {
                         const production = proCount || 0;
@@ -202,11 +203,14 @@ const Download = () => {
                         totalTarget += target;
 
                         tableData.push([
-                            firstRow ? shiftLabel : '',
-                            timeRange,
-                            production,
-                            target,
-                            production - target
+                          shiftSerialNumber++,
+                          shiftLabel,
+                          formattedDate,
+                          timeRange,
+                          machine_name,
+                          production,
+                          target,
+                          production - target
                         ]);
 
                         firstRow = false;
@@ -216,6 +220,9 @@ const Download = () => {
                         tableData.push([
                             'Total',
                             '',
+                            '',
+                            '',
+                            '',
                             totalProduction,
                             totalTarget,
                             totalProduction - totalTarget
@@ -224,7 +231,7 @@ const Download = () => {
                 });
 
                 autoTable(doc, {
-                    head: [['Shift', 'Time Range', 'Production Count', 'Target Count', 'Differences']],
+                    head: [['Si.No', 'Shift', 'Date', 'Time', 'Line', 'Production Count', 'Target Count', 'Differences']],
                     body: tableData,
                     startY: 30,
                     theme: 'plain',
@@ -241,9 +248,12 @@ const Download = () => {
                         1: { cellWidth: columnWidth, halign: 'center', lineWidth: 0.5 },
                         2: { cellWidth: columnWidth, halign: 'center', lineWidth: 0.5 },
                         3: { cellWidth: columnWidth, halign: 'center', lineWidth: 0.5 },
-                        4: { cellWidth: columnWidth, halign: 'center', lineWidth: 0.5 }
+                        4: { cellWidth: columnWidth, halign: 'center', lineWidth: 0.5 },
+                        5: { cellWidth: columnWidth, halign: 'center', lineWidth: 0.5 },
+                        6: { cellWidth: columnWidth, halign: 'center', lineWidth: 0.5 },
+                        7: { cellWidth: columnWidth, halign: 'center', lineWidth: 0.5 }
                     },
-                    tableWidth: contentWidth,
+                    tableWidth: contentWidth + 5,
                     didParseCell: function (data) {
                         if (data.row.raw[0] === 'Total') {
                             data.cell.styles.fillColor = [240, 240, 240];
