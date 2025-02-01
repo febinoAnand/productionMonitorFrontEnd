@@ -113,19 +113,16 @@ const Download = () => {
     setErrorMessage('');
   };
 
-  // const handleMachineChange = (machineId) => {
-  //   setSelectedMachine(prevSelected => {
-  //     if (prevSelected.includes(machineId)) {
-  //       return prevSelected.filter(id => id !== machineId);
-  //     } else {
-  //       return [...prevSelected, machineId];
-  //     }
-  //   });
-  // };
-
-  const handleMachineChange = (e) => {
-    setSelectedMachine(e.target.value);
+  const handleMachineChange = (machineId) => {
+    setSelectedMachine(prevSelected => {
+      if (prevSelected.includes(machineId)) {
+        return prevSelected.filter(id => id !== machineId);
+      } else {
+        return [...prevSelected, machineId];
+      }
+    });
   };
+
 
   const handleFileFormatChange = (e) => {
     const { id, checked } = e.target;
@@ -713,7 +710,7 @@ if (loading) {
                   </CInputGroup>
                 </div>
               </CCol>
-              {/* <CCol md={3}>
+              <CCol md={3}>
                 <CButton
                   onClick={toggleDropdown}
                   color="white"
@@ -767,21 +764,6 @@ if (loading) {
                     ))}
                   </div>
                 </CCollapse>
-              </CCol> */}
-              <CCol md={4}>
-                <CFormSelect
-                  id="machine"
-                  name="machine"
-                  value={selectedMachine}
-                  onChange={handleMachineChange}
-                >
-                  <option value="">Select Machine</option>
-                  {machineOptions.map(option => (
-                    <option key={option.id} value={option.id}>
-                      {option.name}
-                    </option>
-                  ))}
-                </CFormSelect>
               </CCol>
               <CCol md={4}>
                 <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px' }}>
