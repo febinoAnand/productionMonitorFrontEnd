@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from 'react';
+import React, { useState, useEffect, forwardRef, useRef } from 'react';
 import {
   CCol,
   CRow,
@@ -8,6 +8,8 @@ import {
   CCard,
   CCardHeader,
   CCardBody,
+  CCollapse,
+  CFormCheck,
   CFormSelect,
 } from '@coreui/react';
 import DatePicker from 'react-datepicker';
@@ -61,12 +63,18 @@ CustomInput.displayName = 'CustomInput';
 
 const Download = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedToDate, setSelectedToDate] = useState(new Date());
   const [selectedMachine, setSelectedMachine] = useState('');
   const [machineOptions, setMachineOptions] = useState([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
   const [selectedFileFormat, setSelectedFileFormat] = useState('');
+  const [selectedReportType, setSelectedReportType] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(true); 
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,12 +108,32 @@ const Download = () => {
     setErrorMessage('');
   };
 
+  const handleToDateChange = (date) => {
+    setSelectedToDate(date);
+    setErrorMessage('');
+  };
+
+  // const handleMachineChange = (machineId) => {
+  //   setSelectedMachine(prevSelected => {
+  //     if (prevSelected.includes(machineId)) {
+  //       return prevSelected.filter(id => id !== machineId);
+  //     } else {
+  //       return [...prevSelected, machineId];
+  //     }
+  //   });
+  // };
+
   const handleMachineChange = (e) => {
     setSelectedMachine(e.target.value);
   };
 
   const handleFileFormatChange = (e) => {
-    setSelectedFileFormat(e.target.value);
+    const { id, checked } = e.target;
+    if (checked) {
+      setSelectedFileFormat(id);
+    } else {
+      setSelectedFileFormat(null);
+    }
   };
 
   const showErrorMessage = (message) => {
@@ -240,136 +268,101 @@ const Download = () => {
 
             doc.save(`shiftwise_report (${formattedDate}).pdf`);
           }else if (selectedFileFormat === 'excel') {
-            const excelHeaders = ['Shift', 'Time Range', 'Production Count', 'Target Count', 'Differences'];
-            const excelData = [];
+            const excelHeaders = ['Si.No', 'Shift', 'Date', 'Time', 'Line', 'Production Count', 'Target Count', 'Differences'];
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Report');
+        
+            let rowIndex = 1;
         
             shifts.forEach(shift => {
-                const shiftLabel = `Shift ${shift.shift_no}`;
                 let totalProduction = 0;
                 let totalTarget = 0;
-                let firstRow = true;
+                let hasData = false;
+        
+                let shiftSerialNumber = 1;
+        
+                Object.entries(shift.timing).forEach(([timeRange, [proCount, targetCount]]) => {
+                    const production = proCount || 0;
+                    const target = targetCount || 0;
+                    totalProduction += production;
+                    totalTarget += target;
+                    if (production !== 0 || target !== 0) {
+                        hasData = true;
+                    }
+                });
+        
+                if (!hasData) return;
+        
+                const shiftLabel = `Shift ${shift.shift_no}`;
+        
+                const shiftTitleRow = worksheet.addRow([`${shiftLabel} : ${formattedDate} - ${machine_name}`]);
+                shiftTitleRow.font = { size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+                shiftTitleRow.alignment = { horizontal: 'center', vertical: 'middle' };
+                worksheet.mergeCells(`A${rowIndex}:H${rowIndex}`);
+                shiftTitleRow.eachCell(cell => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4CAF50' } };
+                });
+                worksheet.getRow(rowIndex).height = 20;
+                rowIndex++;
+        
+                const headerRow = worksheet.addRow(excelHeaders);
+                headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+                headerRow.eachCell(cell => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF007BFF' } };
+                });
+                rowIndex++;
         
                 Object.entries(shift.timing).forEach(([timeRange, [proCount, targetCount]]) => {
                     const production = proCount || 0;
                     const target = targetCount || 0;
         
-                    totalProduction += production;
-                    totalTarget += target;
-        
-                    excelData.push([
-                        firstRow ? shiftLabel : '',
+                    const row = worksheet.addRow([
+                        shiftSerialNumber++,
+                        shiftLabel,
+                        formattedDate,
                         timeRange,
+                        machine_name,
                         production,
                         target,
                         production - target
                     ]);
-        
-                    firstRow = false;
+                    row.eachCell((cell) => {
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    });
+                    rowIndex++;
                 });
         
-               
-                if (totalProduction !== 0 || totalTarget !== 0) {
-                    excelData.push([
-                        'Total',
-                        '',
-                        totalProduction,
-                        totalTarget,
-                        totalProduction - totalTarget
-                    ]);
-                }
+                const totalRow = worksheet.addRow(['Total','', '', '', '', totalProduction, totalTarget, totalProduction - totalTarget]);
+                totalRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                totalRow.alignment = { horizontal: 'center', vertical: 'middle' };
+                totalRow.eachCell(cell => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF607D8B' } };
+                });
+                rowIndex++;
             });
         
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Report');
-        
-            
-            const titleRow = worksheet.addRow(['Shiftwise Production Report']);
-            titleRow.font = { size: 16, bold: true };
-            titleRow.alignment = { horizontal: 'center' };
-            
-            
-            worksheet.mergeCells('A1:E1');
-            
-            titleRow.getCell(1).fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FF4CAF50' } 
-            };
-            titleRow.getCell(1).font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 14 };
-        
-            
-            const headerRow = worksheet.addRow(excelHeaders);
-            headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
-            
-            
-            worksheet.getCell('A2').fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FF007BFF' } 
-            };
-            worksheet.getCell('B2').fill = worksheet.getCell('A2').fill;
-            worksheet.getCell('C2').fill = worksheet.getCell('A2').fill;
-            worksheet.getCell('D2').fill = worksheet.getCell('A2').fill;
-            worksheet.getCell('E2').fill = worksheet.getCell('A2').fill;
-        
-            headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
-            headerRow.height = 20; 
-        
-            
-            worksheet.getRow(2).commit();
-        
-            excelData.forEach(rowData => {
-                const row = worksheet.addRow(rowData);
-        
-                
-                row.getCell(3).numFmt = '#,##0';
-                row.getCell(4).numFmt = '#,##0';
-                row.getCell(5).numFmt = '#,##0';
-        
-                
-                row.alignment = {
-                    horizontal: (index) => index >= 3 ? 'right' : 'center',
-                    vertical: 'middle'
-                };
-        
-                
-                if (row.getCell(1).value === 'Total') {
-                    row.font = { bold: true, color: { argb: 'FFFFFFFF' } }; 
-                    row.getCell('A').fill = {
-                        type: 'pattern',
-                        pattern: 'solid',
-                        fgColor: { argb: 'FF607D8B' } 
-                    };
-                    row.getCell('B').fill = row.getCell('A').fill;
-                    row.getCell('C').fill = row.getCell('A').fill;
-                    row.getCell('D').fill = row.getCell('A').fill;
-                    row.getCell('E').fill = row.getCell('A').fill;
-                }
-            });
-        
-            
-            worksheet.eachRow((row) => {
-                for (let col = 1; col <= 5; col++) { 
-                    const cell = row.getCell(col);
+            worksheet.eachRow(row => {
+                row.eachCell(cell => {
                     cell.border = {
                         top: { style: 'thin' },
                         left: { style: 'thin' },
                         bottom: { style: 'thin' },
                         right: { style: 'thin' },
                     };
-                }
+                });
             });
         
-           
             worksheet.columns = [
-                { width: 12 }, 
-                { width: 25 }, 
-                { width: 20 }, 
-                { width: 20 }, 
-                { width: 20 }, 
+                { width: 8 },
+                { width: 12 },
+                { width: 20 },
+                { width: 25 },
+                { width: 20 },
+                { width: 20 },
+                { width: 20 },
+                { width: 20 },
             ];
-        
-            worksheet.views = [{ state: 'frozen', ySplit: 2 }];
         
             workbook.xlsx.writeBuffer().then((buffer) => {
                 const blob = new Blob([buffer], { type: 'application/octet-stream' });
@@ -642,6 +635,43 @@ const shiftNames = new Set();
     showErrorMessage('Error generating report. Please check the console for details.');
   }
 }
+
+const toggleDropdown = () => {
+  setDropdownOpen(!dropdownOpen);
+};
+
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setDropdownOpen(false);
+    }
+  };
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, []);
+
+const handleSearchChange = (e) => {
+  setSearchQuery(e.target.value);
+};
+
+const filteredMachines = machineOptions.filter((machine) =>
+  machine.name.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+const handleSelectAll = (e) => {
+  setSelectAll(e.target.checked);
+  setSelectedMachine(e.target.checked ? machineOptions.map((machine) => machine.id) : []);
+};
+
+const handleDownload = () => {
+  if (selectedReportType === 'shiftwise') {
+    generateShiftwisePDF();
+  } else if (selectedReportType === 'summary') {
+    generateSummaryPDF();
+  }
+};
   
 if (loading) {
   return <LoadingSpinner />; 
@@ -659,9 +689,9 @@ if (loading) {
           </CCardHeader>
           <CCardBody>
             <CRow>
-              <CCol md={3} className="text-end">
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  <CInputGroup>
+              <CCol md={5} className="text-end">
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <CInputGroup style={{ marginRight: '8px' }}>
                     <DatePicker
                       selected={selectedDate}
                       onChange={handleDateChange}
@@ -671,8 +701,73 @@ if (loading) {
                       maxDate={today}
                     />
                   </CInputGroup>
+                  <CInputGroup>
+                    <DatePicker
+                      selected={selectedToDate}
+                      onChange={handleToDateChange}
+                      customInput={<CustomInput />}
+                      dateFormat="dd/MM/yyyy"
+                      popperPlacement="bottom-end"
+                      maxDate={today}
+                    />
+                  </CInputGroup>
                 </div>
               </CCol>
+              {/* <CCol md={3}>
+                <CButton
+                  onClick={toggleDropdown}
+                  color="white"
+                  style={{ width: '100%', marginBottom: '10px', border: '0.5px solid rgb(197, 197, 197)', borderRadius: '5px', }}
+                >
+                  Select Machines
+                </CButton>
+
+                <CCollapse visible={dropdownOpen}>
+                  <div
+                    ref={dropdownRef}
+                    style={{
+                      position: 'absolute',
+                      width: '22.5%', 
+                      maxHeight: dropdownOpen ? '360px' : '0',
+                      overflowY: 'scroll',
+                      backgroundColor: '#f7f7f7',
+                      border: '0.5px solid rgb(197, 197, 197)',
+                      padding: dropdownOpen ? '10px' : '0',
+                      borderRadius: '5px',
+                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.3s ease',
+                      zIndex: 1000,
+                    }}
+                  >
+                    <div style={{ marginBottom: '10px' }}>
+                      <CFormInput
+                        type="text"
+                        placeholder="Search Machines"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        style={{ marginBottom: '10px' }}
+                      />
+                    </div>
+                    <div style={{ border: '0.5px solid rgb(197, 197, 197)', backgroundColor: '#fff', padding: '5px', borderRadius: '5px', marginBottom: '5px' }}>
+                      <CFormCheck
+                        id="selectAll"
+                        label="Select All"
+                        checked={selectAll}
+                        onChange={handleSelectAll}
+                      />
+                    </div>
+                    {filteredMachines.map((machine) => (
+                      <CFormCheck
+                        key={machine.id}
+                        id={machine.id}
+                        label={machine.name}
+                        checked={selectedMachine.includes(machine.id)}
+                        onChange={() => handleMachineChange(machine.id)}
+                      />
+                    ))}
+                  </div>
+                </CCollapse>
+              </CCol> */}
               <CCol md={4}>
                 <CFormSelect
                   id="machine"
@@ -689,31 +784,41 @@ if (loading) {
                 </CFormSelect>
               </CCol>
               <CCol md={4}>
-                <CFormSelect
-                  id="fileFormat"
-                  name="fileFormat"
-                  value={selectedFileFormat}
-                  onChange={handleFileFormatChange}
-                >
-                  <option value="">Select Format</option>
-                  <option value="pdf">PDF</option>
-                  <option value="excel">Excel</option>
-                </CFormSelect>
+                <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px' }}>
+                  <CFormCheck
+                    id="pdf"
+                    label="PDF"
+                    checked={selectedFileFormat === 'pdf'}
+                    onChange={handleFileFormatChange}
+                  />
+                  <CFormCheck
+                    id="excel"
+                    label="Excel"
+                    checked={selectedFileFormat === 'excel'}
+                    onChange={handleFileFormatChange}
+                  />
+                </div>
               </CCol>
             </CRow>
-            <CRow className="justify-content-center mt-5">
-              <CCol md={3} className="text-center">
-                <CButton
-                  type="button"
-                  color="primary"
-                  variant="outline"
-                  className="mb-3"
-                  style={{ width: '100%' }}
-                  onClick={generateShiftwisePDF}
-                >
-                  Shiftwise Report
-                </CButton>
+            <CRow className="justify-content-center mt-4">
+              <CCol md={4}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px' }}>
+                <CFormCheck 
+                  id="shiftwise"
+                  label="Shiftwise Report"
+                  checked={selectedReportType === 'shiftwise'}
+                  onChange={() => setSelectedReportType('shiftwise')}
+                />
+                <CFormCheck 
+                  id="summary"
+                  label="Summary Report"
+                  checked={selectedReportType === 'summary'}
+                  onChange={() => setSelectedReportType('summary')}
+                />
+              </div>
               </CCol>
+            </CRow>
+            <CRow className="justify-content-center mt-4">
               <CCol md={3} className="text-center">
                 <CButton
                   type="button"
@@ -721,9 +826,10 @@ if (loading) {
                   variant="outline"
                   className="mb-3"
                   style={{ width: '100%' }}
-                  onClick={generateSummaryPDF} 
+                  onClick={handleDownload}
+                  disabled={!selectedReportType}
                 >
-                  Summary Report
+                  Download
                 </CButton>
               </CCol>
             </CRow>
