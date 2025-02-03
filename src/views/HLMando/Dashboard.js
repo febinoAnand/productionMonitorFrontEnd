@@ -164,7 +164,7 @@ const Dashboard = () => {
 
   return (
     <div className="page" style={{ ...zoomOutStyle, marginTop: '20px' }}>
-      <DeviceStatusIndicator status={deviceStatus} /> 
+      {/* <DeviceStatusIndicator status={deviceStatus} />  */}
       <CRow className="mb-3">
         {dashboardData.map((group) => (
           group.machines.length > 0 && (
