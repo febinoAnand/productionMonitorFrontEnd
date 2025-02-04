@@ -63,7 +63,6 @@ CustomInput.displayName = 'CustomInput';
 
 const Download = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedToDate, setSelectedToDate] = useState(new Date());
   const [selectedMachine, setSelectedMachine] = useState('');
   const [machineOptions, setMachineOptions] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -105,11 +104,6 @@ const Download = () => {
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    setErrorMessage('');
-  };
-
-  const handleToDateChange = (date) => {
-    setSelectedToDate(date);
     setErrorMessage('');
   };
 
@@ -696,22 +690,12 @@ if (loading) {
           </CCardHeader>
           <CCardBody>
             <CRow>
-              <CCol md={5} className="text-end">
+              <CCol md={3} className="text-end">
                 <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                   <CInputGroup style={{ marginRight: '8px' }}>
                     <DatePicker
                       selected={selectedDate}
                       onChange={handleDateChange}
-                      customInput={<CustomInput />}
-                      dateFormat="dd/MM/yyyy"
-                      popperPlacement="bottom-end"
-                      maxDate={today}
-                    />
-                  </CInputGroup>
-                  <CInputGroup>
-                    <DatePicker
-                      selected={selectedToDate}
-                      onChange={handleToDateChange}
                       customInput={<CustomInput />}
                       dateFormat="dd/MM/yyyy"
                       popperPlacement="bottom-end"
@@ -725,6 +709,7 @@ if (loading) {
                   onClick={toggleDropdown}
                   color="white"
                   style={{ width: '100%', marginBottom: '10px', border: '0.5px solid rgb(197, 197, 197)', borderRadius: '5px', }}
+                  disabled={selectedReportType === 'summary'}
                 >
                   Select Machines
                 </CButton>
