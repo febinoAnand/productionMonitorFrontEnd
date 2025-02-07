@@ -140,7 +140,7 @@ const Download = () => {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       const machineId = selectedMachine;
 
-      const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
+      const response = await axios.post(`${BaseURL}data/hourly-shift-report-select-machine/`, {
           date: formattedDate,
           machine_id: machineId,
       }, { headers: getAuthHeaders() });
@@ -150,176 +150,224 @@ const Download = () => {
           return;
       }
 
-      const { date, machine_name, shifts } = response.data;
+      const { date, machine_data } = response.data;
 
       if (selectedFileFormat === 'pdf') {
-          const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-          const pageWidth = doc.internal.pageSize.width;
-          const margin = 10;
-          let pageNumber = 1;
+        const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.width;
+        const margin = 10;
+        let pageNumber = 1;
 
-          doc.setFontSize(14).setFont("helvetica", "bold").text(`Shiftwise Report`, pageWidth / 2, 20, { align: 'center' });
-          doc.setFontSize(10).setFont("helvetica", "normal");
-          doc.text(`Machine Name: ${machine_name}`, margin, 30);
-          doc.text(`Date: ${date}`, pageWidth - margin, 30, { align: 'right' });
-          doc.setLineWidth(0.5).line(margin, 35, pageWidth - margin, 35);
+        doc.setFontSize(14).setFont("helvetica", "bold").text(`Shiftwise Report`, pageWidth / 2, 15, { align: 'center' });
+        doc.setFontSize(10).setFont("helvetica", "normal");
+        doc.text(`Date: ${date}`, pageWidth - margin, 25, { align: 'right' });
+        doc.setLineWidth(0.5).line(margin, 30, pageWidth - margin, 30);
 
-          if (!shifts || shifts.length === 0) {
-              doc.setFontSize(10);
-              doc.text('No shift data available.', pageWidth / 2, 50, { align: 'center' });
-          } else {
-              const tableData = [];
-              const excelHeaders = ['Si.No', 'Shift', 'Date', 'Time', 'Line', 'Production Count', 'Target Count', 'Differences'];
+        if (!machine_data || Object.keys(machine_data).length === 0) {
+            doc.setFontSize(10);
+            doc.text('No machine data available.', pageWidth / 2, 50, { align: 'center' });
+        } else {
+            Object.entries(machine_data).forEach(([machineId, shifts]) => {
+                const machineName = shifts[0][2];
 
-              shifts.forEach((shift, shiftIndex) => {
-                  let totalProduction = 0, totalTarget = 0, shiftSerialNumber = 1;
+                doc.setFontSize(12).text(`Machine: ${machineName} (${machineId})`, margin, doc.autoTableEndPosY() + 25);
 
-                  Object.entries(shift.timing).forEach(([timeRange, [proCount, targetCount]]) => {
-                      totalProduction += proCount;
-                      totalTarget += targetCount;
-                      tableData.push([
-                          shiftSerialNumber++, 
-                          `Shift ${shift.shift_no}`, 
-                          formattedDate, 
-                          timeRange, 
-                          machine_name, 
-                          proCount, 
-                          targetCount, 
-                          proCount - targetCount
-                      ]);
-                  });
-
-                  if (totalProduction || totalTarget) {
-                      tableData.push(['Total', '', '', '', '', totalProduction, totalTarget, totalProduction - totalTarget]);
-                  }
-              });
-
-              autoTable(doc, {
-                  head: [excelHeaders],
-                  body: tableData,
-                  startY: 40,
-                  theme: 'plain',
-                  headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255], fontSize: 8 },
-                  styles: { cellPadding: 2, fontSize: 7, valign: 'middle', textColor: [0, 0, 0] },
-                  columnStyles: { 0: { halign: 'center' }, 7: { halign: 'center' } },
-                  didParseCell: data => {
-                      if (data.row.raw[0] === 'Total') {
-                          data.cell.styles.fillColor = [240, 240, 240];
-                          data.cell.styles.fontStyle = 'bold';
-                      }
-                  }
-              });
-
-              doc.setFontSize(8).text(`${pageNumber}`, pageWidth / 2, doc.internal.pageSize.height - 10, { align: 'center' });
-              pageNumber++;
-          }
-
-          doc.save(`shiftwise_report (${formattedDate}).pdf`);
-          }else if (selectedFileFormat === 'excel') {
-            const excelHeaders = ['Si.No', 'Shift', 'Date', 'Time', 'Line', 'Production Count', 'Target Count', 'Differences'];
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Report');
-        
-            let rowIndex = 1;
-        
-            shifts.forEach(shift => {
+                const excelHeaders = ['Si.No', 'Shift', 'Date', 'Time', 'Line', 'Production Count', 'Target Count', 'Differences'];
+                const tableData = [];
+                let shiftSerialNumber = 0;
                 let totalProduction = 0;
                 let totalTarget = 0;
-                let hasData = false;
-        
-                let shiftSerialNumber = 1;
-        
-                Object.entries(shift.timing).forEach(([timeRange, [proCount, targetCount]]) => {
-                    const production = proCount || 0;
-                    const target = targetCount || 0;
-                    totalProduction += production;
-                    totalTarget += target;
-                    if (production !== 0 || target !== 0) {
-                        hasData = true;
-                    }
-                });
-        
-                if (!hasData) return;
-        
-                const shiftLabel = `Shift ${shift.shift_no}`;
-        
-                const shiftTitleRow = worksheet.addRow([`${shiftLabel} : ${formattedDate} - ${machine_name}`]);
-                shiftTitleRow.font = { size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
-                shiftTitleRow.alignment = { horizontal: 'center', vertical: 'middle' };
-                worksheet.mergeCells(`A${rowIndex}:H${rowIndex}`);
-                shiftTitleRow.eachCell(cell => {
-                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4CAF50' } };
-                });
-                worksheet.getRow(rowIndex).height = 20;
-                rowIndex++;
-        
-                const headerRow = worksheet.addRow(excelHeaders);
-                headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-                headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
-                headerRow.eachCell(cell => {
-                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF007BFF' } };
-                });
-                rowIndex++;
-        
-                Object.entries(shift.timing).forEach(([timeRange, [proCount, targetCount]]) => {
-                    const production = proCount || 0;
-                    const target = targetCount || 0;
-        
-                    const row = worksheet.addRow([
-                        shiftSerialNumber++,
-                        shiftLabel,
-                        formattedDate,
-                        timeRange,
-                        machine_name,
+
+                shifts.forEach((shift, shiftIndex) => {
+                    shiftSerialNumber++;
+                    const production = shift[4];
+                    const target = shift[5];
+
+                    tableData.push([
+                        shiftSerialNumber,
+                        `Shift ${shift[0]}`,
+                        shift[1],
+                        shift[3],
+                        machineName,
                         production,
                         target,
                         production - target
                     ]);
-                    row.eachCell((cell) => {
-                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                    });
-                    rowIndex++;
+
+                    totalProduction += production;
+                    totalTarget += target;
+
+                    const isLastRow = shiftIndex === shifts.length - 1;
+                    const isNextShiftDifferent = isLastRow || shifts[shiftIndex + 1][0] !== shift[0];
+
+                    if (isNextShiftDifferent) {
+                        tableData.push(['Total', '', '', '', '', totalProduction, totalTarget, totalProduction - totalTarget]);
+
+                        totalProduction = 0;
+                        totalTarget = 0;
+                    }
                 });
-        
-                const totalRow = worksheet.addRow(['Total','', '', '', '', totalProduction, totalTarget, totalProduction - totalTarget]);
-                totalRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-                totalRow.alignment = { horizontal: 'center', vertical: 'middle' };
-                totalRow.eachCell(cell => {
-                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF607D8B' } };
+
+                autoTable(doc, {
+                    head: [excelHeaders],
+                    body: tableData,
+                    startY: doc.autoTableEndPosY() + 35,
+                    theme: 'plain',
+                    headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255], fontSize: 8 },
+                    styles: { cellPadding: 2, fontSize: 7, valign: 'middle', textColor: [0, 0, 0] },
+                    columnStyles: { 0: { halign: 'center' }, 7: { halign: 'center' } },
+                    didParseCell: data => {
+                        if (data.row.raw[0] === 'Total') {
+                            data.cell.styles.fillColor = [240, 240, 240];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
                 });
-                rowIndex++;
-            });
-        
-            worksheet.eachRow(row => {
-                row.eachCell(cell => {
-                    cell.border = {
-                        top: { style: 'thin' },
-                        left: { style: 'thin' },
-                        bottom: { style: 'thin' },
-                        right: { style: 'thin' },
-                    };
-                });
-            });
-        
-            worksheet.columns = [
-                { width: 8 },
-                { width: 12 },
-                { width: 20 },
-                { width: 25 },
-                { width: 20 },
-                { width: 20 },
-                { width: 20 },
-                { width: 20 },
-            ];
-        
-            workbook.xlsx.writeBuffer().then((buffer) => {
-                const blob = new Blob([buffer], { type: 'application/octet-stream' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `shiftwise_report (${formattedDate}).xlsx`;
-                link.click();
+
+                doc.setFontSize(8).text(`${pageNumber}`, pageWidth / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+                pageNumber++;
             });
         }
+
+        doc.save(`shiftwise_report (${formattedDate}).pdf`);
+        }else if (selectedFileFormat === 'excel') {
+          const excelHeaders = ['Si.No', 'Shift', 'Date', 'Time', 'Line', 'Production Count', 'Target Count', 'Differences'];
+          const workbook = new ExcelJS.Workbook();
+          const worksheet = workbook.addWorksheet('Report');
+      
+          let rowIndex = 1;
+      
+          Object.entries(machine_data).forEach(([machineId, shifts]) => {
+              if (!shifts.length) return;
+      
+              let totalProduction = 0;
+              let totalTarget = 0;
+              let shiftSerialNumber = 1;
+      
+              const machineName = shifts[0][2];
+      
+              const totalColumns = 8;
+              const lastColumnLetter = String.fromCharCode(65 + totalColumns - 1);
+      
+              const machineHeaderRow = worksheet.addRow([
+                  `Machine: ${machineName} (${machineId})`,
+                  ...new Array(totalColumns - 1).fill('')
+              ]);
+              const headerRowIndex = machineHeaderRow.number;
+              worksheet.mergeCells(`A${headerRowIndex}:${lastColumnLetter}${headerRowIndex}`);
+              machineHeaderRow.font = { size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
+              machineHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+              machineHeaderRow.eachCell((cell, colNumber) => {
+                  if (colNumber <= totalColumns) {
+                      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4CAF50' } };
+                  }
+              });
+      
+              rowIndex++;
+      
+              const headerRow = worksheet.addRow(excelHeaders);
+              headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+              headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+              headerRow.eachCell(cell => {
+                  cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF007BFF' } };
+              });
+      
+              rowIndex++;
+      
+              let previousShiftNo = null;
+      
+              shifts.forEach((shift, shiftIndex) => {
+                  const shiftNo = shift[0];
+                  const shiftDate = shift[1];
+                  const shiftTime = shift[3];
+                  const production = shift[4] || 0;
+                  const target = shift[5] || 0;
+      
+                  totalProduction += production;
+                  totalTarget += target;
+      
+                  if (shiftNo !== previousShiftNo) {
+                      const shiftTitleRow = worksheet.addRow([
+                          `Shift-${shiftNo} : ${shiftDate}`,
+                          ...new Array(totalColumns - 1).fill('')
+                      ]);
+                      const shiftTitleRowIndex = shiftTitleRow.number;
+                      worksheet.mergeCells(`A${shiftTitleRowIndex}:${lastColumnLetter}${shiftTitleRowIndex}`);
+                      shiftTitleRow.font = { size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
+                      shiftTitleRow.alignment = { horizontal: 'center', vertical: 'middle' };
+                      shiftTitleRow.eachCell((cell, colNumber) => {
+                          if (colNumber <= totalColumns) {
+                              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF9C27B0' } };
+                          }
+                      });
+      
+                      rowIndex++;
+                      previousShiftNo = shiftNo;
+                  }
+      
+                  worksheet.addRow([
+                      shiftSerialNumber++,
+                      `Shift ${shiftNo}`,
+                      shiftDate,
+                      shiftTime,
+                      machineName,
+                      production,
+                      target,
+                      production - target
+                  ]).eachCell(cell => {
+                      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                  });
+      
+                  const isLastRow = shiftIndex === shifts.length - 1;
+                  const isNextShiftDifferent = isLastRow || shifts[shiftIndex + 1][0] !== shiftNo;
+      
+                  if (isNextShiftDifferent) {
+                      const totalRow = worksheet.addRow(['Total', '', '', '', '', totalProduction, totalTarget, totalProduction - totalTarget]);
+                      totalRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                      totalRow.alignment = { horizontal: 'center', vertical: 'middle' };
+                      totalRow.eachCell(cell => {
+                          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF607D8B' } }; // Dark gray shade
+                      });
+      
+                      rowIndex++;
+                      totalProduction = 0;
+                      totalTarget = 0;
+                  }
+              });
+      
+              rowIndex++;
+          });
+      
+          worksheet.eachRow(row => {
+              row.eachCell(cell => {
+                  cell.border = {
+                      top: { style: 'thin' },
+                      left: { style: 'thin' },
+                      bottom: { style: 'thin' },
+                      right: { style: 'thin' },
+                  };
+              });
+          });
+      
+          worksheet.columns = [
+              { width: 8 },
+              { width: 12 },
+              { width: 15 },
+              { width: 20 },
+              { width: 20 },
+              { width: 15 },
+              { width: 15 },
+              { width: 15 },
+          ];
+      
+          workbook.xlsx.writeBuffer().then((buffer) => {
+              const blob = new Blob([buffer], { type: 'application/octet-stream' });
+              const link = document.createElement('a');
+              link.href = URL.createObjectURL(blob);
+              link.download = `shiftwise_report (${formattedDate}).xlsx`;
+              link.click();
+          });
+      }
       } catch (error) {
         console.error('Error generating report:', error.message);
         showErrorMessage('Failed to generate report. Please try again later.');
