@@ -39,34 +39,44 @@ const Machine = () => {
 
 
   useEffect(() => {
+    let intervalId;
+  
     const fetchMachineData = async () => {
       try {
         const response = await axios.post(
           `${BaseURL}data/individual-report/`,
           {
-            date: new Date().toISOString().split('T')[0], 
+            date: new Date().toISOString().split('T')[0],
             machine_id: machineId,
           },
           {
             headers: getAuthHeaders(),
           }
         );
-
-        console.log('API Response:', response.data); 
+  
+        console.log('API Response:', response.data);
         setMachine(response.data);
-        setFilteredShifts(response.data.shifts.filter((shift) => shift.timing && Object.keys(shift.timing).length > 0));
+        setFilteredShifts(
+          response.data.shifts.filter(
+            (shift) => shift.timing && Object.keys(shift.timing).length > 0
+          )
+        );
       } catch (error) {
         console.error('Error fetching machine data:', error);
       }
     };
-
-    const intervalId = setInterval(() => {
-      if (machineId) {
-        fetchMachineData(); 
+  
+    if (machineId) {
+      fetchMachineData();
+      intervalId = setInterval(fetchMachineData, 60000);
+    }
+  
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
       }
-    }, 60000);
-    return () => clearInterval(intervalId);
-  }, [machineId]);
+    };
+  }, [machineId]);   
 
   useEffect(() => {
     const updateDateTime = () => {

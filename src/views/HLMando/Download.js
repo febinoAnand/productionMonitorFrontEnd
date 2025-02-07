@@ -52,7 +52,7 @@ const CustomInput = forwardRef((props, ref) => (
       type="button"
       color="secondary"
       onClick={props.onClick}
-      style={{ backgroundColor: '#047BC4', borderColor: '#047BC4' }}
+      style={{ height: '38px', borderRadius: '0px', backgroundColor: '#047BC4', borderColor: '#047BC4' }}
     >
       <CIcon icon={cilCalendar} style={{ color: '#FFFFFF' }} />
     </CButton>
@@ -157,80 +157,81 @@ const Download = () => {
         const pageWidth = doc.internal.pageSize.width;
         const margin = 10;
         let pageNumber = 1;
+        let isFirstPage = true;
 
         doc.setFontSize(14).setFont("helvetica", "bold").text(`Shiftwise Report`, pageWidth / 2, 15, { align: 'center' });
         doc.setFontSize(10).setFont("helvetica", "normal");
         doc.text(`Date: ${date}`, pageWidth - margin, 25, { align: 'right' });
         doc.setLineWidth(0.5).line(margin, 30, pageWidth - margin, 30);
+    
+        Object.entries(machine_data).forEach(([machineId, shifts], index) => {
+            if (!isFirstPage) {
+                doc.addPage();
+            }
+            isFirstPage = false;
+    
+            const machineName = shifts[0][2];
 
-        if (!machine_data || Object.keys(machine_data).length === 0) {
-            doc.setFontSize(10);
-            doc.text('No machine data available.', pageWidth / 2, 50, { align: 'center' });
-        } else {
-            Object.entries(machine_data).forEach(([machineId, shifts]) => {
-                const machineName = shifts[0][2];
-
-                doc.setFontSize(12).text(`Machine: ${machineName} (${machineId})`, margin, doc.autoTableEndPosY() + 25);
-
-                const excelHeaders = ['Si.No', 'Shift', 'Date', 'Time', 'Line', 'Production Count', 'Target Count', 'Differences'];
-                const tableData = [];
-                let shiftSerialNumber = 0;
-                let totalProduction = 0;
-                let totalTarget = 0;
-
-                shifts.forEach((shift, shiftIndex) => {
-                    shiftSerialNumber++;
-                    const production = shift[4];
-                    const target = shift[5];
-
-                    tableData.push([
-                        shiftSerialNumber,
-                        `Shift ${shift[0]}`,
-                        shift[1],
-                        shift[3],
-                        machineName,
-                        production,
-                        target,
-                        production - target
-                    ]);
-
-                    totalProduction += production;
-                    totalTarget += target;
-
-                    const isLastRow = shiftIndex === shifts.length - 1;
-                    const isNextShiftDifferent = isLastRow || shifts[shiftIndex + 1][0] !== shift[0];
-
-                    if (isNextShiftDifferent) {
-                        tableData.push(['Total', '', '', '', '', totalProduction, totalTarget, totalProduction - totalTarget]);
-
-                        totalProduction = 0;
-                        totalTarget = 0;
-                    }
-                });
-
-                autoTable(doc, {
-                    head: [excelHeaders],
-                    body: tableData,
-                    startY: doc.autoTableEndPosY() + 35,
-                    theme: 'plain',
-                    headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255], fontSize: 8 },
-                    styles: { cellPadding: 2, fontSize: 7, valign: 'middle', textColor: [0, 0, 0] },
-                    columnStyles: { 0: { halign: 'center' }, 7: { halign: 'center' } },
-                    didParseCell: data => {
-                        if (data.row.raw[0] === 'Total') {
-                            data.cell.styles.fillColor = [240, 240, 240];
-                            data.cell.styles.fontStyle = 'bold';
-                        }
-                    }
-                });
-
-                doc.setFontSize(8).text(`${pageNumber}`, pageWidth / 2, doc.internal.pageSize.height - 10, { align: 'center' });
-                pageNumber++;
+            doc.setFontSize(12).text(`Machine: ${machineName} (${machineId})`, margin, 25); 
+    
+            const excelHeaders = ['Si.No', 'Shift', 'Date', 'Time', 'Line', 'Production Count', 'Target Count', 'Differences'];
+            const tableData = [];
+            let shiftSerialNumber = 0;
+            let totalProduction = 0;
+            let totalTarget = 0;
+    
+            shifts.forEach((shift, shiftIndex) => {
+                shiftSerialNumber++;
+                const production = shift[4];
+                const target = shift[5];
+    
+                tableData.push([
+                    shiftSerialNumber,
+                    `Shift ${shift[0]}`,
+                    shift[1],
+                    shift[3],
+                    machineName,
+                    production,
+                    target,
+                    production - target
+                ]);
+    
+                totalProduction += production;
+                totalTarget += target;
+    
+                const isLastRow = shiftIndex === shifts.length - 1;
+                const isNextShiftDifferent = isLastRow || shifts[shiftIndex + 1][0] !== shift[0];
+    
+                if (isNextShiftDifferent) {
+                    tableData.push(['Total', '', '', '', '', totalProduction, totalTarget, totalProduction - totalTarget]);
+    
+                    totalProduction = 0;
+                    totalTarget = 0;
+                }
             });
-        }
+    
+            autoTable(doc, {
+                head: [excelHeaders],
+                body: tableData,
+                startY: isFirstPage ? 40 : 35,
+                theme: 'plain',
+                headStyles: { fillColor: [0, 123, 255], textColor: [255, 255, 255], fontSize: 8 },
+                styles: { cellPadding: 2, fontSize: 7, valign: 'middle', textColor: [0, 0, 0] },
+                columnStyles: { 0: { halign: 'center' }, 7: { halign: 'center' } },
+                didParseCell: data => {
+                    if (data.row.raw[0] === 'Total') {
+                        data.cell.styles.fillColor = [240, 240, 240];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                }
+            });
 
+            doc.setFontSize(8).text(`${pageNumber}`, pageWidth / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+            pageNumber++;
+        });
+    
         doc.save(`shiftwise_report (${formattedDate}).pdf`);
-        }else if (selectedFileFormat === 'excel') {
+      }else if (selectedFileFormat === 'excel') {
           const excelHeaders = ['Si.No', 'Shift', 'Date', 'Time', 'Line', 'Production Count', 'Target Count', 'Differences'];
           const workbook = new ExcelJS.Workbook();
           const worksheet = workbook.addWorksheet('Report');
@@ -735,7 +736,7 @@ if (loading) {
                         style={{ marginBottom: '10px' }}
                       />
                     </div>
-                    <div style={{ border: '0.5px solid rgb(197, 197, 197)', backgroundColor: '#fff', padding: '5px', borderRadius: '5px', marginBottom: '5px' }}>
+                    <div>
                       <CFormCheck
                         id="selectAll"
                         label="Select All"
@@ -743,6 +744,7 @@ if (loading) {
                         onChange={handleSelectAll}
                       />
                     </div>
+                    <hr style={{ margin: '10px 0', borderTop: '1px solid rgb(102, 102, 102)' }} />
                     {filteredMachines.map((machine) => (
                       <CFormCheck
                         key={machine.id}
@@ -754,18 +756,73 @@ if (loading) {
                     ))}
                   </div>
                 </CCollapse>
+
+                {selectedMachine.length > 0 && (
+                  <div>
+                    <strong>Selected Machines:</strong>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, minmax(120px, 1fr))',
+                        gap: '10px',
+                        marginTop: '10px',
+                      }}
+                    >
+                      {selectedMachine.map((id) => {
+                        const machine = filteredMachines?.find((m) => m.id === id);
+                        return machine ? (
+                          <div
+                            key={id}
+                            style={{
+                              padding: '5px',
+                              backgroundColor: '#f7f7f7',
+                              border: '0.5px solid rgb(197, 197, 197)',
+                              borderRadius: '5px',
+                              textAlign: 'center',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {machine.name}
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
               </CCol>
               <CCol md={4}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px' }}>
+                <div
+                  style={{
+                    border: '0.5px solid rgb(197, 197, 197)', 
+                    borderRadius: '5px',
+                    padding: '3px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '10px',
+                    width: '50%'
+                  }}
+                >
                   <CFormCheck
+                    type="radio"
                     id="pdf"
                     label="PDF"
+                    name="fileType"
                     checked={selectedFileFormat === 'pdf'}
                     onChange={handleFileFormatChange}
                   />
+
+                  <div style={{ width: '1px', height: '30px', backgroundColor: 'rgb(197, 197, 197)' }} />
+
                   <CFormCheck
+                    type="radio"
                     id="excel"
                     label="Excel"
+                    name="fileType"
                     checked={selectedFileFormat === 'excel'}
                     onChange={handleFileFormatChange}
                   />
@@ -774,15 +831,31 @@ if (loading) {
             </CRow>
             <CRow className="justify-content-center mt-4">
               <CCol md={4}>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px' }}>
+              <div
+                  style={{
+                    border: '0.5px solid rgb(197, 197, 197)', 
+                    borderRadius: '5px',
+                    padding: '3px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '10px',
+                    width: '350px'
+                  }}
+                >
                 <CFormCheck 
+                  type="radio" 
                   id="shiftwise"
+                  name="reportType"
                   label="Shiftwise Report"
                   checked={selectedReportType === 'shiftwise'}
                   onChange={() => setSelectedReportType('shiftwise')}
                 />
+                <div style={{ width: '1px', height: '30px', backgroundColor: 'rgb(197, 197, 197)' }} />
                 <CFormCheck 
+                  type="radio" 
                   id="summary"
+                  name="reportType"
                   label="Summary Report"
                   checked={selectedReportType === 'summary'}
                   onChange={() => setSelectedReportType('summary')}
