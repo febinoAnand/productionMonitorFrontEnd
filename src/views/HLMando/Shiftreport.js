@@ -162,6 +162,7 @@ const Shiftreport = () => {
     return Object.values(timing).reduce((acc, [prodCount, targetCount]) => acc + (prodCount - targetCount), 0);
   };
   
+  const today = new Date();
 
   const CustomInput = ({ value, onClick }) => (
     <div className="input-group" style={{ height: '38px', borderRadius: '0px' }}>
@@ -226,6 +227,7 @@ const Shiftreport = () => {
                     const rawDate = new Date(e.target.value);
                     setStartDate(isNaN(rawDate.getTime()) ? null : rawDate);
                   }}
+                  maxDate={today}
                 />
                 <CButton
                   type="button"

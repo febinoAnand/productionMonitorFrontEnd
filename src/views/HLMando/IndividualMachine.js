@@ -31,16 +31,12 @@ const calculateEndTime = (startTime) => {
 const Machine = () => {
   const location = useLocation();
   const { state } = location;
-  const { machineId, status } = state || { machineId: null };
+  const { machineId } = state || { machineId: null };
 
   const [machine, setMachine] = useState(null);
-  const [Machinestatus, setStatus] = useState(null);
   const [currentDate, setCurrentDate] = useState('');
   const [filteredShifts, setFilteredShifts] = useState([]);
 
-  useEffect(() => {
-    setStatus(status);
-  }, [status]);
 
   useEffect(() => {
     const fetchMachineData = async () => {
@@ -64,9 +60,12 @@ const Machine = () => {
       }
     };
 
-    if (machineId) {
-      fetchMachineData();
-    }
+    const intervalId = setInterval(() => {
+      if (machineId) {
+        fetchMachineData(); 
+      }
+    }, 60000);
+    return () => clearInterval(intervalId);
   }, [machineId]);
 
   useEffect(() => {
@@ -99,44 +98,6 @@ const Machine = () => {
       'Content-Type': 'application/json',
     };
   };
-
-  useEffect(() => {
-    if (machineId) {
-      const wsUrl = `${BaseURL.replace("https", "wss")}data/individual-report/${machineId}/`;
-      const socket = new WebSocket(wsUrl);
-
-      socket.onopen = () => {
-        console.log('WebSocket connection established');
-      };
-
-      socket.onmessage = (event) => {
-        const updatedData = JSON.parse(event.data);
-        console.log('WebSocket message received:', updatedData);
-        
-        
-        setMachine(updatedData);
-        setFilteredShifts(updatedData.shifts.filter((shift) => shift.timing && Object.keys(shift.timing).length > 0));
-      };
-
-      socket.onclose = () => {
-        console.log('WebSocket connection closed');
-      };
-
-      return () => {
-        socket.close();
-      };
-    }
-  }, [machineId]);
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (machineId) {
-        fetchMachineData(); 
-      }
-    }, 10000); 
-
-    return () => clearInterval(intervalId);
-  }, [machineId]);
 
 
   if (!machine) {
@@ -274,7 +235,7 @@ const Machine = () => {
                       style={{
                         width: '80px',
                         height: '20px',
-                        backgroundColor: getStatusColor(Machinestatus),
+                        backgroundColor: getStatusColor(machine.status),
                          
                        marginRight:'80px'
   

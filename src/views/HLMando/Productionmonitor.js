@@ -136,87 +136,16 @@ const ProductionMonitor = () => {
 
     applyHeaderStyles();
   }, [filteredData]);
-
+  
   useEffect(() => {
-    const wsUrl = `${BaseURL.replace("https", "wss")}data/production/`;
-    const socket = new WebSocket(wsUrl);
-  
-    socket.onopen = () => {
-      console.log('WebSocket connected');
-    };
-  
-    socket.onmessage = (event) => {
-     
-      const updatedData = JSON.parse(event.data);
-  
-      console.log('WebSocket Response:', updatedData);
-  
-     
-      if (updatedData && updatedData.machine_groups && Array.isArray(updatedData.machine_groups)) {
-        const { machine_groups, date: responseDate } = updatedData;
-  
-        
-        if (responseDate === apiDate) {
-          const shiftNamesMap = {};
-          const shiftNumbers = new Set();
-  
-          const formattedGroups = machine_groups.reverse().map(group => {
-            const formattedMachines = group.machines.map(machine => {
-              const shiftTotals = {};
-              const shiftArray = machine.shifts || [];
-              shiftArray.forEach(shift => {
-                if (shift.shift_no !== 0 && ![4, 5, 6].includes(shift.shift_no)) {
-                  const shiftNumber = shift.shift_no;
-                  shiftNamesMap[shiftNumber] = shift.shift_name || `Shift ${shiftNumber}`;
-                  shiftNumbers.add(shiftNumber);
-                  shiftTotals[shiftNumber] = (shiftTotals[shiftNumber] || 0) + (shift.total_shift_production_count || 0);
-                }
-              });
-  
-              return {
-                ...machine,
-                total_shift_production_count: Object.values(shiftTotals).reduce((sum, count) => sum + count, 0),
-                shiftTotals,
-                production_date: responseDate,
-              };
-            });
-  
-            return {
-              ...group,
-              machines: formattedMachines,
-            };
-          });
-  
-          const sortedShiftNumbers = Array.from(shiftNumbers).sort((a, b) => a - b);
-  
-          
-          setShiftData({ names: shiftNamesMap, numbers: sortedShiftNumbers });
-          setFilteredData(formattedGroups);
-  
-          console.log('API and WebSocket responses match.');
-        } else {
-          console.log('WebSocket data date does not match API date. No update.');
-        }
-      } else {
-        
-        console.log('Invalid WebSocket data or missing machine_groups array.');
+    const intervalId = setInterval(() => {
+      if (localStorage.getItem('token')) {
+        fetchData();
       }
-    };
+    }, 60000);
   
-    socket.onclose = () => {
-      console.log('WebSocket disconnected');
-    };
-  
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-  
-    return () => {
-      socket.close();
-      console.log('WebSocket closed');
-    };
-  }, [apiDate]);
-  
+    return () => clearInterval(intervalId);
+  }, [fetchData]);
   
  
   if (loading) {
