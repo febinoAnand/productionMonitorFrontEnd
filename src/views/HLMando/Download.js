@@ -685,184 +685,186 @@ if (loading) {
             <h4>Download</h4>
           </CCardHeader>
           <CCardBody>
-            <CRow>
-              <CCol md={3} className="text-end">
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <CInputGroup style={{ marginRight: '8px' }}>
-                    <DatePicker
-                      selected={selectedDate}
-                      onChange={handleDateChange}
-                      customInput={<CustomInput />}
-                      dateFormat="dd/MM/yyyy"
-                      popperPlacement="bottom-end"
-                      maxDate={today}
-                    />
-                  </CInputGroup>
-                </div>
-              </CCol>
-              <CCol md={3}>
+          <CRow>
+            <CCol md={3} className="text-end">
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                <CInputGroup style={{ marginRight: '8px' }}>
+                  <DatePicker
+                    selected={selectedDate}
+                    onChange={handleDateChange}
+                    customInput={<CustomInput />}
+                    dateFormat="dd/MM/yyyy"
+                    popperPlacement="bottom-end"
+                    maxDate={today}
+                  />
+                </CInputGroup>
+              </div>
+            </CCol>
+
+            <CCol md={3}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <CButton
                   onClick={toggleDropdown}
                   color="white"
-                  style={{ width: '100%', marginBottom: '10px', border: '0.5px solid rgb(197, 197, 197)', borderRadius: '5px', }}
+                  style={{
+                    width: '100%',
+                    border: '0.5px solid rgb(197, 197, 197)',
+                    borderRadius: '5px',
+                    marginBottom: '10px',
+                  }}
                   disabled={selectedReportType === 'summary'}
                 >
                   Select Machines
                 </CButton>
+              </div>
 
-                <CCollapse visible={dropdownOpen}>
+              <CCollapse visible={dropdownOpen}>
+                <div
+                  ref={dropdownRef}
+                  style={{
+                    position: 'absolute',
+                    width: '22.5%',
+                    maxHeight: dropdownOpen ? '360px' : '0',
+                    overflowY: 'scroll',
+                    backgroundColor: '#f7f7f7',
+                    border: '0.5px solid rgb(197, 197, 197)',
+                    padding: dropdownOpen ? '10px' : '0',
+                    borderRadius: '5px',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                    transition: 'all 0.3s ease',
+                    zIndex: 1000,
+                  }}
+                >
+                  <div style={{ marginBottom: '10px' }}>
+                    <CFormInput
+                      type="text"
+                      placeholder="Search Machines"
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      style={{ marginBottom: '10px' }}
+                    />
+                  </div>
+                  <div>
+                    <CFormCheck id="selectAll" label="Select All" checked={selectAll} onChange={handleSelectAll} />
+                  </div>
+                  <hr style={{ margin: '10px 0', borderTop: '1px solid rgb(102, 102, 102)' }} />
+                  {filteredMachines.map((machine) => (
+                    <CFormCheck
+                      key={machine.id}
+                      id={machine.id}
+                      label={machine.name}
+                      checked={selectedMachine.includes(machine.id)}
+                      onChange={() => handleMachineChange(machine.id)}
+                    />
+                  ))}
+                </div>
+              </CCollapse>
+
+              {selectedMachine.length > 0 && (
+                <div>
+                  <strong>Selected Machines:</strong>
                   <div
-                    ref={dropdownRef}
                     style={{
-                      position: 'absolute',
-                      width: '22.5%', 
-                      maxHeight: dropdownOpen ? '360px' : '0',
-                      overflowY: 'scroll',
-                      backgroundColor: '#f7f7f7',
-                      border: '0.5px solid rgb(197, 197, 197)',
-                      padding: dropdownOpen ? '10px' : '0',
-                      borderRadius: '5px',
-                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                      transition: 'all 0.3s ease',
-                      zIndex: 1000,
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(5, minmax(120px, 1fr))',
+                      gap: '10px',
+                      marginTop: '10px',
                     }}
                   >
-                    <div style={{ marginBottom: '10px' }}>
-                      <CFormInput
-                        type="text"
-                        placeholder="Search Machines"
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                        style={{ marginBottom: '10px' }}
-                      />
-                    </div>
-                    <div>
-                      <CFormCheck
-                        id="selectAll"
-                        label="Select All"
-                        checked={selectAll}
-                        onChange={handleSelectAll}
-                      />
-                    </div>
-                    <hr style={{ margin: '10px 0', borderTop: '1px solid rgb(102, 102, 102)' }} />
-                    {filteredMachines.map((machine) => (
-                      <CFormCheck
-                        key={machine.id}
-                        id={machine.id}
-                        label={machine.name}
-                        checked={selectedMachine.includes(machine.id)}
-                        onChange={() => handleMachineChange(machine.id)}
-                      />
-                    ))}
+                    {selectedMachine.map((id) => {
+                      const machine = filteredMachines?.find((m) => m.id === id);
+                      return machine ? (
+                        <div
+                          key={id}
+                          style={{
+                            padding: '5px',
+                            backgroundColor: '#f7f7f7',
+                            border: '0.5px solid rgb(197, 197, 197)',
+                            borderRadius: '5px',
+                            textAlign: 'center',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {machine.name}
+                        </div>
+                      ) : null;
+                    })}
                   </div>
-                </CCollapse>
-
-                {selectedMachine.length > 0 && (
-                  <div>
-                    <strong>Selected Machines:</strong>
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(5, minmax(120px, 1fr))',
-                        gap: '10px',
-                        marginTop: '10px',
-                      }}
-                    >
-                      {selectedMachine.map((id) => {
-                        const machine = filteredMachines?.find((m) => m.id === id);
-                        return machine ? (
-                          <div
-                            key={id}
-                            style={{
-                              padding: '5px',
-                              backgroundColor: '#f7f7f7',
-                              border: '0.5px solid rgb(197, 197, 197)',
-                              borderRadius: '5px',
-                              textAlign: 'center',
-                              fontSize: '12px',
-                              fontWeight: 'bold',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {machine.name}
-                          </div>
-                        ) : null;
-                      })}
-                    </div>
-                  </div>
-                )}
-              </CCol>
-              <CCol md={4}>
-                <div
+                </div>
+              )}
+            </CCol>
+            <CCol md={3}>
+            <div
                   style={{
-                    border: '0.5px solid rgb(197, 197, 197)', 
+                    border: '0.5px solid rgb(197, 197, 197)',
                     borderRadius: '5px',
                     padding: '3px',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    gap: '10px',
-                    width: '50%'
+                    gap: '8px',
+                    width: '105%'
                   }}
                 >
                   <CFormCheck
                     type="radio"
-                    id="pdf"
-                    label="PDF"
-                    name="fileType"
-                    checked={selectedFileFormat === 'pdf'}
-                    onChange={handleFileFormatChange}
+                    id="shiftwise"
+                    name="reportType"
+                    label="Shiftwise"
+                    checked={selectedReportType === 'shiftwise'}
+                    onChange={() => setSelectedReportType('shiftwise')}
                   />
-
                   <div style={{ width: '1px', height: '30px', backgroundColor: 'rgb(197, 197, 197)' }} />
-
                   <CFormCheck
                     type="radio"
-                    id="excel"
-                    label="Excel"
-                    name="fileType"
-                    checked={selectedFileFormat === 'excel'}
-                    onChange={handleFileFormatChange}
+                    id="summary"
+                    name="reportType"
+                    label="Summary"
+                    checked={selectedReportType === 'summary'}
+                    onChange={() => setSelectedReportType('summary')}
                   />
                 </div>
-              </CCol>
-            </CRow>
-            <CRow className="justify-content-center mt-4">
-              <CCol md={4}>
+            </CCol>
+
+            <CCol md={3}>
               <div
-                  style={{
-                    border: '0.5px solid rgb(197, 197, 197)', 
-                    borderRadius: '5px',
-                    padding: '3px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '10px',
-                    width: '350px'
-                  }}
-                >
-                <CFormCheck 
-                  type="radio" 
-                  id="shiftwise"
-                  name="reportType"
-                  label="Shiftwise Report"
-                  checked={selectedReportType === 'shiftwise'}
-                  onChange={() => setSelectedReportType('shiftwise')}
+                style={{
+                  border: '0.5px solid rgb(197, 197, 197)',
+                  borderRadius: '5px',
+                  padding: '3px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '6px',
+                  width: '80%',
+                }}
+              >
+                <CFormCheck
+                  type="radio"
+                  id="pdf"
+                  label="PDF"
+                  name="fileType"
+                  checked={selectedFileFormat === 'pdf'}
+                  onChange={handleFileFormatChange}
                 />
+
                 <div style={{ width: '1px', height: '30px', backgroundColor: 'rgb(197, 197, 197)' }} />
-                <CFormCheck 
-                  type="radio" 
-                  id="summary"
-                  name="reportType"
-                  label="Summary Report"
-                  checked={selectedReportType === 'summary'}
-                  onChange={() => setSelectedReportType('summary')}
+
+                <CFormCheck
+                  type="radio"
+                  id="excel"
+                  label="Excel"
+                  name="fileType"
+                  checked={selectedFileFormat === 'excel'}
+                  onChange={handleFileFormatChange}
                 />
               </div>
-              </CCol>
-            </CRow>
+            </CCol>
+          </CRow>
             <CRow className="justify-content-center mt-4">
               <CCol md={3} className="text-center">
                 <CButton
